@@ -8,10 +8,44 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
+    --color-arabic-sand: #fdfbf7;
+    --color-arabic-cream: #f4ebe1;
+    --color-arabic-bronze: #4a3e3d;
+    --color-arabic-gold: #d4af37;
+    --color-arabic-gold-light: #fdf6e9;
+    --color-arabic-emerald: #10b981;
+
     --font-sans:
         'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
+
+    --font-serif-ar: 'Amiri', serif;
+    --font-sans-ar: 'Cairo', sans-serif;
+
+    --animate-float: float 6s ease-in-out infinite;
+    --animate-float-slow: floatSlow 8s ease-in-out infinite;
+    --animate-fade-in-up: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    --animate-spin-slow: spin 25s linear infinite;
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+    }
+    @keyframes floatSlow {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-12px) rotate(2deg); }
+    }
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
