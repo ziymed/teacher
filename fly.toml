@@ -1,0 +1,42 @@
+# fly.toml app configuration file for Fly.io deployment
+
+app = "teacher-platform"
+primary_region = "cdg"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  APP_ENV = "production"
+  APP_LOCALE = "en"
+  APP_FALLBACK_LOCALE = "en"
+  BCRYPT_ROUNDS = "12"
+  LOG_CHANNEL = "stack"
+  LOG_LEVEL = "info"
+  
+  # Cache, Session, and Queue drivers matching project defaults
+  SESSION_DRIVER = "database"
+  CACHE_STORE = "database"
+  QUEUE_CONNECTION = "database"
+  
+  # SQLite Database Configuration residing on the persistent volume
+  DB_CONNECTION = "sqlite"
+  DB_DATABASE = "/var/www/html/storage/database/database.sqlite"
+
+[[mounts]]
+  source = "storage_vol"
+  destination = "/var/www/html/storage/database"
+  initial_size = "1GB"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+[vm]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512

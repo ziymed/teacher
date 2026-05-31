@@ -1,0 +1,42 @@
+# Exclude node modules and PHP vendor packages
+node_modules/
+vendor/
+
+# Exclude git and environment files
+.git/
+.github/
+.gitignore
+.gitattributes
+.env
+.env.example
+.env.*
+
+# Exclude local caches, sessions, logs, and database files
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/logs/*.log
+storage/database/*.sqlite
+database/*.sqlite
+
+# Exclude tests and development files
+tests/
+phpunit.xml
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+composer.lock
+
+# Exclude task management and documentation artifacts
+implementation_plan.md
+task.md
+walkthrough.md
+AGENTS.md
+README.md
+boost.json
+components.json
+eslint.config.js
+pint.json
+pnpm-workspace.yaml
+tsconfig.json
+vite.config.ts
