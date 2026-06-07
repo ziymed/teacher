@@ -1,5 +1,13 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Calendar, Award, LayoutGrid, Users, Settings } from 'lucide-react';
+import {
+    BookOpen,
+    Calendar,
+    Award,
+    LayoutGrid,
+    Users,
+    Settings,
+    GraduationCap,
+} from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -38,9 +46,19 @@ export function AppSidebar() {
             return [
                 ...baseItems,
                 {
-                    title: 'Programs & Settings',
-                    href: '/admin/dashboard', // admin panel manages programs
-                    icon: Settings,
+                    title: 'Programs',
+                    href: '/admin/programs',
+                    icon: BookOpen,
+                },
+                {
+                    title: 'Teachers',
+                    href: '/admin/teachers',
+                    icon: Users,
+                },
+                {
+                    title: 'Students',
+                    href: '/admin/students',
+                    icon: GraduationCap,
                 },
             ];
         }
@@ -50,7 +68,7 @@ export function AppSidebar() {
                 ...baseItems,
                 {
                     title: 'Schedule & Slots',
-                    href: '/teacher/dashboard',
+                    href: '/',
                     icon: Calendar,
                 },
             ];
@@ -61,7 +79,7 @@ export function AppSidebar() {
             ...baseItems,
             {
                 title: 'Book a Session',
-                href: '/',
+                href: '/student/dashboard#book-session',
                 icon: Calendar,
             },
         ];

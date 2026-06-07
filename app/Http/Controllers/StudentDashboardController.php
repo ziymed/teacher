@@ -65,7 +65,7 @@ class StudentDashboardController extends Controller
             ->orderBy('start_time')
             ->get();
 
-        $programs = Program::all();
+        $programs = Program::where('is_hidden', false)->get();
 
         return Inertia::render('student/dashboard', [
             'upcomingBookings' => $upcomingBookings,

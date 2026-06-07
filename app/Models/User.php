@@ -16,7 +16,7 @@ use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'avatar', 'subscription_plan', 'subscription_status', 'subscription_ends_at'])]
+#[Fillable(['name', 'email', 'password', 'role', 'avatar', 'dashboard_layout', 'provider', 'provider_id'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements PasskeyUser
 {
@@ -34,7 +34,7 @@ class User extends Authenticatable implements PasskeyUser
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
-            'subscription_ends_at' => 'datetime',
+            'dashboard_layout' => 'array',
         ];
     }
 
@@ -110,41 +110,5 @@ class User extends Authenticatable implements PasskeyUser
     public function certificates(): HasMany
     {
         return $this->hasMany(Certificate::class, 'student_id');
-    }
-
-    /**
-     * Check if the user has an active subscription.
-     */
-    public function hasActiveSubscription(): bool
-    {
-        if ($this->subscription_plan === 'free') {
-            return false;
-        }
-
-        if ($this->subscription_status === 'active') {
-            return true;
-        }
-
-        if ($this->subscription_ends_at && $this->subscription_ends_at->isFuture()) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Get the student's booking limit based on their subscription plan.
-     */
-    public function getBookingLimit(): int
-    {
-        if ($this->subscription_plan === 'pro') {
-            return 8;
-        }
-
-        if ($this->subscription_plan === 'premium') {
-            return 99999;
-        }
-
-        return 1;
     }
 }

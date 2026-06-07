@@ -51,6 +51,17 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
+        $tuhfatulAthfal = Program::create([
+            'name' => 'Tuhfatul Athfal Program',
+            'description' => 'Durasi: 12 minggu. Durasi per pertemuan: 60 menit. Tujuan umum: Peserta mampu menghafal matan Tuhfatul Athfal, memahami makna setiap bait, mengetahui hukum-hukum tajwid yang dijelaskan dalam matan, dan menerapkannya dalam membaca Al-Qur\'an.',
+            'details_json' => [
+                'Menghafal matan Tuhfatul Athfal',
+                'Memahami makna setiap bait',
+                'Mengetahui hukum-hukum tajwid yang dijelaskan dalam matan',
+                'Menerapkan hukum tajwid dalam membaca Al-Qur\'an',
+            ],
+        ]);
+
         // 2. Seed Admin User
         User::create([
             'name' => 'System Admin',
@@ -62,11 +73,11 @@ class DatabaseSeeder extends Seeder
 
         // 3. Seed Teachers
         $teacher1 = User::create([
-            'name' => 'Ustaz Marouane',
-            'email' => 'marouane@example.com',
+            'name' => 'Ustaz Zouhir',
+            'email' => 'zouhir@example.com',
             'password' => bcrypt('password'),
             'role' => 'teacher',
-            'avatar' => 'https://ui-avatars.com/api/?name=Ustaz+Marouane&background=4A3E3D&color=FDFBF7&size=200',
+            'avatar' => 'https://ui-avatars.com/api/?name=Ustaz+Zouhir&background=4A3E3D&color=FDFBF7&size=200',
             'email_verified_at' => now(),
         ]);
 
@@ -74,8 +85,8 @@ class DatabaseSeeder extends Seeder
             'user_id' => $teacher1->id,
             'bio' => 'Experienced Arabic and Quran teacher from Morocco. Specializes in Talqin and makhraj correction for beginners, children, and adults. Passionate about helping students master pronunciation.',
             'whatsapp_number' => '+6282251985570',
-            'zoom_link' => 'https://zoom.us/j/marouane-arabic-class',
-            'google_meet_link' => 'https://meet.google.com/mar-ouan-tea',
+            'zoom_link' => 'https://zoom.us/j/zouhir-arabic-class',
+            'google_meet_link' => 'https://meet.google.com/zou-hir-tea',
             'specializations_json' => ['Talqin', 'Tahseen'],
         ]);
 

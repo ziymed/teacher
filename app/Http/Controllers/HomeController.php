@@ -17,7 +17,7 @@ class HomeController extends Controller
      */
     public function index(Request $request): Response
     {
-        $programs = Program::all();
+        $programs = Program::where('is_hidden', false)->get();
 
         $teachers = User::where('role', 'teacher')
             ->with('teacherProfile')
@@ -26,7 +26,7 @@ class HomeController extends Controller
         // Fetch available slots from today onwards
         $availableSlots = Slot::where('is_booked', false)
             ->where('start_time', '>=', now())
-            ->with('teacher')
+            ->with(['teacher', 'teacher.teacherProfile'])
             ->orderBy('start_time')
             ->get();
 
@@ -53,5 +53,21 @@ class HomeController extends Controller
         }
 
         return redirect()->route('student.dashboard');
+    }
+
+    /**
+     * Update the authenticated user's dashboard layout preferences.
+     */
+    public function updateLayout(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'dashboard_layout' => ['required', 'array'],
+        ]);
+
+        $request->user()->update([
+            'dashboard_layout' => $request->dashboard_layout,
+        ]);
+
+        return back()->with('success', 'Alhamdulillah! Dashboard layout updated successfully.');
     }
 }

@@ -20,6 +20,7 @@ class BookingController extends Controller
             'slot_id' => ['required', 'exists:slots,id'],
             'program_id' => ['required', 'exists:programs,id'],
             'student_notes' => ['nullable', 'string', 'max:1000'],
+            'video_platform' => ['nullable', 'string', 'in:zoom,google_meet'],
         ]);
 
         $user = $request->user();
@@ -27,16 +28,6 @@ class BookingController extends Controller
         // Enforce student role check
         if (! $user->isStudent()) {
             return back()->withErrors(['error' => 'Only registered students can book learning sessions.']);
-        }
-
-        // Enforce Subscription Booking Limits
-        $bookingLimit = $user->getBookingLimit();
-        $activeBookingsCount = $user->studentBookings()->where('status', '!=', 'cancelled')->count();
-
-        if ($activeBookingsCount >= $bookingLimit) {
-            return back()->withErrors([
-                'error' => "You have reached the private session limit for your current '" . strtoupper($user->subscription_plan ?? 'free') . "' plan ($bookingLimit bookings limit). Please upgrade your subscription plan to continue booking!"
-            ]);
         }
 
         try {
@@ -54,13 +45,48 @@ class BookingController extends Controller
                 $teacher = $slot->teacher;
                 $profile = $teacher->teacherProfile;
 
-                // Set default platform & meeting details (Google Meet by default, or Zoom if profile lists only Zoom)
-                $platform = 'google_meet';
-                $videoUrl = $profile?->google_meet_link ?? 'https://meet.google.com/abc-defg-hij';
+                // Determine chosen platform from request
+                $requestedPlatform = $request->input('video_platform');
 
-                if ($profile?->zoom_link && ! $profile?->google_meet_link) {
-                    $platform = 'zoom';
-                    $videoUrl = $profile->zoom_link;
+                // Gather available links
+                $googleMeetLink = $profile?->google_meet_link;
+                $zoomLink = $profile?->zoom_link;
+
+                // Resolve platform & url based on what the teacher has and what was requested
+                if ($requestedPlatform === 'zoom') {
+                    if ($zoomLink) {
+                        $platform = 'zoom';
+                        $videoUrl = $zoomLink;
+                    } elseif ($googleMeetLink) {
+                        $platform = 'google_meet';
+                        $videoUrl = $googleMeetLink;
+                    } else {
+                        $platform = 'zoom';
+                        $videoUrl = 'https://zoom.us/j/default-meeting-id';
+                    }
+                } elseif ($requestedPlatform === 'google_meet') {
+                    if ($googleMeetLink) {
+                        $platform = 'google_meet';
+                        $videoUrl = $googleMeetLink;
+                    } elseif ($zoomLink) {
+                        $platform = 'zoom';
+                        $videoUrl = $zoomLink;
+                    } else {
+                        $platform = 'google_meet';
+                        $videoUrl = 'https://meet.google.com/abc-defg-hij';
+                    }
+                } else {
+                    // Default behavior (no selection, or fallback)
+                    if ($googleMeetLink) {
+                        $platform = 'google_meet';
+                        $videoUrl = $googleMeetLink;
+                    } elseif ($zoomLink) {
+                        $platform = 'zoom';
+                        $videoUrl = $zoomLink;
+                    } else {
+                        $platform = 'google_meet';
+                        $videoUrl = 'https://meet.google.com/abc-defg-hij';
+                    }
                 }
 
                 // Create the booking

@@ -96,3 +96,57 @@ test('session double-booking is blocked', function () {
     // Should return validation/session errors for locked slot
     $response->assertSessionHasErrors(['error']);
 });
+
+test('student gets the real Google Meet link when they choose Google Meet', function () {
+    $this->actingAs($this->student);
+
+    $response = $this->post(route('bookings.store'), [
+        'slot_id' => $this->slot->id,
+        'program_id' => $this->program->id,
+        'video_platform' => 'google_meet',
+    ]);
+
+    $response->assertSessionHasNoErrors();
+
+    $booking = Booking::where('slot_id', $this->slot->id)->first();
+    $this->assertEquals('google_meet', $booking->video_platform);
+    $this->assertEquals('https://meet.google.com/abc-defg-hij', $booking->video_url);
+});
+
+test('student gets the real Zoom link when they choose Zoom', function () {
+    $this->actingAs($this->student);
+
+    $response = $this->post(route('bookings.store'), [
+        'slot_id' => $this->slot->id,
+        'program_id' => $this->program->id,
+        'video_platform' => 'zoom',
+    ]);
+
+    $response->assertSessionHasNoErrors();
+
+    $booking = Booking::where('slot_id', $this->slot->id)->first();
+    $this->assertEquals('zoom', $booking->video_platform);
+    $this->assertEquals('https://zoom.us/j/teacher-zoom', $booking->video_url);
+});
+
+test('booking falls back to available link if chosen link is missing', function () {
+    $profile = $this->teacher->teacherProfile;
+    $profile->update([
+        'google_meet_link' => null,
+        'zoom_link' => 'https://zoom.us/j/only-zoom-link',
+    ]);
+
+    $this->actingAs($this->student);
+
+    $response = $this->post(route('bookings.store'), [
+        'slot_id' => $this->slot->id,
+        'program_id' => $this->program->id,
+        'video_platform' => 'google_meet',
+    ]);
+
+    $response->assertSessionHasNoErrors();
+
+    $booking = Booking::where('slot_id', $this->slot->id)->first();
+    $this->assertEquals('zoom', $booking->video_platform);
+    $this->assertEquals('https://zoom.us/j/only-zoom-link', $booking->video_url);
+});

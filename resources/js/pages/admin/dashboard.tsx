@@ -1,9 +1,29 @@
-import AdminLteLayout from '@/layouts/admin-lte-layout';
-import { Head, useForm } from '@inertiajs/react';
-import { Award, Users, BookOpen, Calendar, ShieldAlert, BarChart3, Clock, Check, Plus, Minus, AlertCircle, X, ArrowRight, RefreshCw } from 'lucide-react';
+import AppLayout from '@/layouts/app-layout';
+import { Head, useForm, Link, router, usePage } from '@inertiajs/react';
+import {
+    Award,
+    Users,
+    BookOpen,
+    Calendar,
+    Clock,
+    Check,
+    X,
+    User,
+    ArrowRight,
+    GripVertical,
+    RefreshCw,
+} from 'lucide-react';
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { dashboard } from '@/routes';
@@ -59,6 +79,13 @@ interface Certificate {
     };
 }
 
+interface Program {
+    id: number;
+    name: string;
+    description: string;
+    is_hidden: boolean;
+}
+
 interface AdminDashboardProps {
     metrics: {
         totalBookings: number;
@@ -71,7 +98,7 @@ interface AdminDashboardProps {
     teachers: Teacher[];
     bookings: Booking[];
     certificates: Certificate[];
-    programs: any[];
+    programs: Program[];
 }
 
 export default function AdminDashboard({
@@ -84,15 +111,129 @@ export default function AdminDashboard({
 }: AdminDashboardProps) {
     const [isIssuing, setIsIssuing] = useState(false);
 
-    // Collapsible widget states (AdminLTE Card controls)
-    const [isTeachersCollapsed, setIsTeachersCollapsed] = useState(false);
-    const [isStudentsCollapsed, setIsStudentsCollapsed] = useState(false);
-    const [isCertificatesCollapsed, setIsCertificatesCollapsed] = useState(false);
+    const { auth } = usePage<any>().props;
+    const user = auth?.user;
 
-    // Visible widget states (AdminLTE Card close controls)
-    const [isTeachersVisible, setIsTeachersVisible] = useState(true);
-    const [isStudentsVisible, setIsStudentsVisible] = useState(true);
-    const [isCertificatesVisible, setIsCertificatesVisible] = useState(true);
+    const defaultLayout = {
+        left: ['teachers_registry', 'students_registry', 'classroom_activity'],
+        right: ['programs_overview', 'certificates_audit'],
+    };
+
+    const [layout, setLayout] = useState(() => {
+        let left = [
+            'teachers_registry',
+            'students_registry',
+            'classroom_activity',
+        ];
+        let right = ['programs_overview', 'certificates_audit'];
+
+        if (
+            user?.dashboard_layout &&
+            typeof user.dashboard_layout === 'object'
+        ) {
+            const saved = user.dashboard_layout;
+            if (Array.isArray(saved.left) && Array.isArray(saved.right)) {
+                left = [...saved.left];
+                right = [...saved.right];
+            }
+        }
+
+        return { left, right };
+    });
+
+    const [draggingId, setDraggingId] = useState<string | null>(null);
+    const [draggingCol, setDraggingCol] = useState<'left' | 'right' | null>(
+        null,
+    );
+    const [dragOverId, setDragOverId] = useState<string | null>(null);
+
+    const handleDragStart = (
+        e: React.DragEvent,
+        id: string,
+        col: 'left' | 'right',
+    ) => {
+        setDraggingId(id);
+        setDraggingCol(col);
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', id);
+    };
+
+    const handleDragOver = (e: React.DragEvent, id: string) => {
+        e.preventDefault();
+        setDragOverId(id);
+    };
+
+    const handleDragLeave = () => {
+        setDragOverId(null);
+    };
+
+    const handleDrop = (
+        e: React.DragEvent,
+        targetIndex: number,
+        targetCol: 'left' | 'right',
+    ) => {
+        e.preventDefault();
+        setDragOverId(null);
+        if (!draggingId || !draggingCol) return;
+
+        const sourceList = [...layout[draggingCol]];
+        const targetList =
+            draggingCol === targetCol ? sourceList : [...layout[targetCol]];
+
+        const sourceIndex = sourceList.indexOf(draggingId);
+        if (sourceIndex > -1) {
+            sourceList.splice(sourceIndex, 1);
+        }
+
+        targetList.splice(targetIndex, 0, draggingId);
+
+        const newLayout = {
+            ...layout,
+            [draggingCol]: sourceList,
+            [targetCol]: targetList,
+        };
+
+        if (draggingCol === targetCol) {
+            newLayout[targetCol] = targetList;
+        }
+
+        setLayout(newLayout);
+        setDraggingId(null);
+        setDraggingCol(null);
+
+        router.post(
+            '/dashboard/layout',
+            {
+                dashboard_layout: newLayout,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success(
+                        'Alhamdulillah! Dashboard layout updated successfully.',
+                    );
+                },
+            },
+        );
+    };
+
+    const handleResetLayout = () => {
+        setLayout(defaultLayout);
+        router.post(
+            '/dashboard/layout',
+            {
+                dashboard_layout: defaultLayout,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success(
+                        'Alhamdulillah! Dashboard layout reset successfully.',
+                    );
+                },
+            },
+        );
+    };
 
     const certForm = useForm({
         student_id: '',
@@ -117,7 +258,9 @@ export default function AdminDashboard({
             onSuccess: () => {
                 setIsIssuing(false);
                 certForm.reset();
-                toast.success('Alhamdulillah! Official learning certificate has been successfully issued!');
+                toast.success(
+                    'Alhamdulillah! Official learning certificate has been successfully issued!',
+                );
             },
             onError: (err: any) => {
                 toast.error(err.error || 'Failed to issue certificate.');
@@ -126,355 +269,645 @@ export default function AdminDashboard({
     };
 
     const breadcrumbs = [
+        { title: 'Dashboard', href: dashboard() },
         { title: 'Admin Portal', href: adminDashboard() },
     ];
 
-    const triggerRefresh = (sectionName: string) => {
-        toast.info(`Refreshing ${sectionName} registry data...`);
+    const renderSection = (id: string) => {
+        switch (id) {
+            case 'teachers_registry':
+                return (
+                    <Card className="overflow-hidden rounded-[1.5rem] border border-arabic-cream bg-arabic-sand shadow-sm">
+                        <CardHeader className="border-b border-arabic-cream/40 bg-arabic-cream/10 p-5 pb-2">
+                            <div className="flex cursor-grab items-center justify-between active:cursor-grabbing">
+                                <CardTitle className="flex items-center gap-2 text-sm font-black tracking-wider text-arabic-bronze uppercase">
+                                    <GripVertical className="h-4 w-4 shrink-0 text-arabic-gold/70" />
+                                    <Users className="h-4.5 w-4.5 text-arabic-gold" />{' '}
+                                    Moroccan Teachers Registry
+                                </CardTitle>
+                                <Badge className="bg-arabic-cream text-[9px] font-bold text-arabic-bronze">
+                                    Draggable
+                                </Badge>
+                            </div>
+                            <CardDescription className="mt-1 text-[11px] font-medium text-arabic-bronze/70">
+                                Approved native teachers and their scheduled
+                                tutoring capacities.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <div className="overflow-x-auto">
+                                <table className="w-full min-w-[600px] border-collapse text-left text-xs">
+                                    <thead>
+                                        <tr className="border-b border-arabic-cream/45 bg-arabic-cream/20 text-[10px] font-black tracking-wider text-arabic-bronze/80 uppercase">
+                                            <th className="p-4">
+                                                Teacher Name
+                                            </th>
+                                            <th className="p-4">
+                                                Contact Info
+                                            </th>
+                                            <th className="p-4 text-center">
+                                                Open Hours
+                                            </th>
+                                            <th className="p-4 text-right">
+                                                Status
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-arabic-cream/35 font-semibold text-arabic-bronze">
+                                        {teachers.map((teacher) => (
+                                            <tr
+                                                key={teacher.id}
+                                                className="transition hover:bg-arabic-cream/10"
+                                            >
+                                                <td className="flex items-center gap-2.5 p-4">
+                                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-arabic-cream text-xs shadow-inner">
+                                                        🇲🇦
+                                                    </div>
+                                                    <span className="font-extrabold text-arabic-bronze">
+                                                        {teacher.name}
+                                                    </span>
+                                                </td>
+                                                <td className="p-4 font-mono text-[10px] text-arabic-bronze/70">
+                                                    {teacher.email} <br />
+                                                    <span className="text-[10px] font-bold text-arabic-gold">
+                                                        {
+                                                            teacher
+                                                                .teacher_profile
+                                                                ?.whatsapp_number
+                                                        }
+                                                    </span>
+                                                </td>
+                                                <td className="p-4 text-center font-extrabold text-arabic-gold">
+                                                    {teacher.slots_count} slots
+                                                </td>
+                                                <td className="p-4 text-right">
+                                                    <Badge className="rounded-full bg-arabic-emerald px-2 py-0.5 text-[9px] font-bold text-white">
+                                                        Active
+                                                    </Badge>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </CardContent>
+                        <CardFooter className="flex justify-end border-t border-arabic-cream/40 bg-arabic-cream/5 p-5">
+                            <Link
+                                href="/admin/teachers"
+                                className="w-full sm:w-auto"
+                            >
+                                <Button className="h-9 w-full gap-1.5 rounded-xl bg-arabic-bronze text-xs font-bold text-arabic-sand shadow-sm hover:bg-arabic-bronze/90 sm:w-auto">
+                                    Manage Teachers{' '}
+                                    <ArrowRight className="h-3.5 w-3.5 text-arabic-gold" />
+                                </Button>
+                            </Link>
+                        </CardFooter>
+                    </Card>
+                );
+
+            case 'students_registry':
+                return (
+                    <Card className="overflow-hidden rounded-[1.5rem] border border-arabic-cream bg-arabic-sand shadow-sm">
+                        <CardHeader className="border-b border-arabic-cream/40 bg-arabic-cream/10 p-5 pb-2">
+                            <div className="flex cursor-grab items-center justify-between active:cursor-grabbing">
+                                <CardTitle className="flex items-center gap-2 text-sm font-black tracking-wider text-arabic-bronze uppercase">
+                                    <GripVertical className="h-4 w-4 shrink-0 text-arabic-gold/70" />
+                                    <Users className="h-4.5 w-4.5 text-arabic-gold" />{' '}
+                                    Active Students Registry
+                                </CardTitle>
+                                <Badge className="bg-arabic-cream text-[9px] font-bold text-arabic-bronze">
+                                    Draggable
+                                </Badge>
+                            </div>
+                            <CardDescription className="mt-1 text-[11px] font-medium text-arabic-bronze/70">
+                                Registered students and their total private
+                                learning hours booked.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <div className="overflow-x-auto">
+                                <table className="w-full min-w-[500px] border-collapse text-left text-xs">
+                                    <thead>
+                                        <tr className="border-b border-arabic-cream/45 bg-arabic-cream/20 text-[10px] font-black tracking-wider text-arabic-bronze/80 uppercase">
+                                            <th className="p-4">
+                                                Student Name & Account
+                                            </th>
+                                            <th className="p-4">
+                                                Total Bookings
+                                            </th>
+                                            <th className="p-4 text-right">
+                                                Status
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-arabic-cream/35 font-semibold text-arabic-bronze">
+                                        {students.map((student) => (
+                                            <tr
+                                                key={student.id}
+                                                className="transition hover:bg-arabic-cream/10"
+                                            >
+                                                <td className="p-4">
+                                                    <span className="block font-extrabold text-arabic-bronze">
+                                                        {student.name}
+                                                    </span>
+                                                    <span className="mt-0.5 block font-mono text-[10px] text-arabic-bronze/60">
+                                                        {student.email}
+                                                    </span>
+                                                </td>
+                                                <td className="p-4 font-bold text-arabic-bronze/70">
+                                                    {
+                                                        student.student_bookings_count
+                                                    }{' '}
+                                                    hours booked
+                                                </td>
+                                                <td className="p-4 text-right">
+                                                    <Badge className="rounded-full border border-arabic-bronze/25 bg-arabic-bronze/10 px-2 py-0.5 text-[9px] font-bold text-arabic-bronze">
+                                                        Enrolled
+                                                    </Badge>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </CardContent>
+                        <CardFooter className="flex justify-end border-t border-arabic-cream/40 bg-arabic-cream/5 p-5">
+                            <Link
+                                href="/admin/students"
+                                className="w-full sm:w-auto"
+                            >
+                                <Button className="h-9 w-full gap-1.5 rounded-xl bg-arabic-bronze text-xs font-bold text-arabic-sand shadow-sm hover:bg-arabic-bronze/90 sm:w-auto">
+                                    Manage Students{' '}
+                                    <ArrowRight className="h-3.5 w-3.5 text-arabic-gold" />
+                                </Button>
+                            </Link>
+                        </CardFooter>
+                    </Card>
+                );
+
+            case 'classroom_activity':
+                return (
+                    <Card className="overflow-hidden rounded-[1.5rem] border border-arabic-cream bg-arabic-sand shadow-sm">
+                        <CardHeader className="border-b border-arabic-cream/40 bg-arabic-cream/10 p-5 pb-2">
+                            <div className="flex cursor-grab items-center justify-between active:cursor-grabbing">
+                                <CardTitle className="flex items-center gap-2 text-sm font-black tracking-wider text-arabic-bronze uppercase">
+                                    <GripVertical className="h-4 w-4 shrink-0 text-arabic-gold/70" />
+                                    <Calendar className="h-4.5 w-4.5 text-arabic-gold" />{' '}
+                                    Recent Classroom Activity
+                                </CardTitle>
+                                <Badge className="bg-arabic-cream text-[9px] font-bold text-arabic-bronze">
+                                    Draggable
+                                </Badge>
+                            </div>
+                            <CardDescription className="mt-1 text-[11px] font-medium text-arabic-bronze/70">
+                                Latest scheduled private sessions across all
+                                Quranic programs.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <div className="overflow-x-auto">
+                                <table className="w-full min-w-[600px] border-collapse text-left text-xs">
+                                    <thead>
+                                        <tr className="border-b border-arabic-cream/45 bg-arabic-cream/20 text-[10px] font-black tracking-wider text-arabic-bronze/80 uppercase">
+                                            <th className="p-4">Student</th>
+                                            <th className="p-4">
+                                                Teacher & Time
+                                            </th>
+                                            <th className="p-4">Program</th>
+                                            <th className="p-4 text-right">
+                                                Status
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-arabic-cream/35 font-semibold text-arabic-bronze">
+                                        {bookings.map((booking) => {
+                                            const dateStr = new Date(
+                                                booking.slot.start_time,
+                                            ).toLocaleDateString('en-US', {
+                                                month: 'short',
+                                                day: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                            });
+
+                                            return (
+                                                <tr
+                                                    key={booking.id}
+                                                    className="transition hover:bg-arabic-cream/10"
+                                                >
+                                                    <td className="p-4">
+                                                        <span className="font-extrabold text-arabic-bronze">
+                                                            {
+                                                                booking.student
+                                                                    .name
+                                                            }
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <span className="block font-bold text-arabic-bronze">
+                                                            {
+                                                                booking.slot
+                                                                    .teacher
+                                                                    .name
+                                                            }
+                                                        </span>
+                                                        <span className="mt-0.5 block text-[10px] font-medium text-arabic-bronze/60">
+                                                            {dateStr}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <span className="rounded-full border border-arabic-cream/80 bg-arabic-cream px-2 py-0.5 text-[10px] font-bold text-arabic-bronze">
+                                                            {booking.program.name.replace(
+                                                                ' Program',
+                                                                '',
+                                                            )}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-4 text-right">
+                                                        <Badge
+                                                            className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${
+                                                                booking.status ===
+                                                                'completed'
+                                                                    ? 'bg-arabic-emerald text-white'
+                                                                    : booking.status ===
+                                                                        'confirmed'
+                                                                      ? 'bg-arabic-gold text-arabic-bronze'
+                                                                      : 'bg-rose-500 text-white'
+                                                            }`}
+                                                        >
+                                                            {booking.status}
+                                                        </Badge>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                        {bookings.length === 0 && (
+                                            <tr>
+                                                <td
+                                                    colSpan={4}
+                                                    className="p-8 text-center text-xs font-bold text-arabic-bronze/50"
+                                                >
+                                                    No sessions booked yet.
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </CardContent>
+                    </Card>
+                );
+
+            case 'programs_overview':
+                return (
+                    <Card className="overflow-hidden rounded-[1.5rem] border border-arabic-cream bg-arabic-sand shadow-sm">
+                        <CardHeader className="border-b border-arabic-cream/40 bg-arabic-cream/10 p-5 pb-2">
+                            <div className="flex cursor-grab items-center justify-between active:cursor-grabbing">
+                                <CardTitle className="flex items-center gap-2 text-sm font-black tracking-wider text-arabic-bronze uppercase">
+                                    <GripVertical className="h-4 w-4 shrink-0 text-arabic-gold/70" />
+                                    <BookOpen className="h-4.5 w-4.5 text-arabic-gold" />{' '}
+                                    Programs Overview
+                                </CardTitle>
+                                <Badge className="bg-arabic-cream text-[9px] font-bold text-arabic-bronze">
+                                    Draggable
+                                </Badge>
+                            </div>
+                            <CardDescription className="mt-1 text-[11px] font-medium text-arabic-bronze/70">
+                                Quick look at listed learning programs.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-5 pb-0">
+                            <div className="space-y-3.5">
+                                {programs.slice(0, 5).map((program) => (
+                                    <div
+                                        key={program.id}
+                                        className="flex items-center justify-between text-xs font-semibold"
+                                    >
+                                        <span className="block font-bold text-arabic-bronze">
+                                            {program.name}
+                                        </span>
+                                        {program.is_hidden ? (
+                                            <Badge className="rounded-full border border-amber-500/25 bg-amber-500/10 px-2 py-0.5 text-[9px] font-bold text-amber-600">
+                                                Hidden
+                                            </Badge>
+                                        ) : (
+                                            <Badge className="rounded-full bg-arabic-emerald px-2 py-0.5 text-[9px] font-bold text-white">
+                                                Visible
+                                            </Badge>
+                                        )}
+                                    </div>
+                                ))}
+                                {programs.length === 0 && (
+                                    <p className="py-2 text-center text-xs font-bold text-arabic-bronze/50">
+                                        No programs defined.
+                                    </p>
+                                )}
+                            </div>
+                        </CardContent>
+                        <CardFooter className="p-5 pt-0">
+                            <Link href="/admin/programs" className="w-full">
+                                <Button className="mt-4 h-9 w-full gap-1 rounded-xl bg-arabic-bronze text-xs font-bold text-arabic-sand shadow-sm hover:bg-arabic-bronze/90">
+                                    Manage Programs{' '}
+                                    <ArrowRight className="h-3.5 w-3.5 text-arabic-gold" />
+                                </Button>
+                            </Link>
+                        </CardFooter>
+                    </Card>
+                );
+
+            case 'certificates_audit':
+                return (
+                    <Card className="overflow-hidden rounded-[1.5rem] border border-arabic-cream bg-arabic-sand shadow-sm">
+                        <CardHeader className="border-b border-arabic-cream/40 bg-arabic-cream/10 p-5 pb-2">
+                            <div className="flex cursor-grab items-center justify-between active:cursor-grabbing">
+                                <CardTitle className="flex items-center gap-2 text-sm font-black tracking-wider text-arabic-bronze uppercase">
+                                    <GripVertical className="h-4 w-4 shrink-0 text-arabic-gold/70" />
+                                    <Award className="h-4.5 w-4.5 text-arabic-gold" />{' '}
+                                    Certificates Audit Logs
+                                </CardTitle>
+                                <Badge className="bg-arabic-cream text-[9px] font-bold text-arabic-bronze">
+                                    Draggable
+                                </Badge>
+                            </div>
+                            <CardDescription className="mt-1 text-[11px] font-medium text-arabic-bronze/70">
+                                Historical log of officially awarded
+                                credentials.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-5">
+                            {certificates.length > 0 ? (
+                                <div className="relative max-h-[640px] space-y-5 overflow-y-auto border-l border-arabic-cream pr-1 pl-4">
+                                    {certificates.map((cert) => {
+                                        const issueDate = new Date(
+                                            cert.issued_at,
+                                        ).toLocaleDateString('en-US', {
+                                            month: 'short',
+                                            day: 'numeric',
+                                            year: 'numeric',
+                                        });
+
+                                        return (
+                                            <div
+                                                key={cert.id}
+                                                className="relative text-xs"
+                                            >
+                                                <div className="absolute top-1.5 -left-[21px] h-2 w-2 rounded-full border border-arabic-sand bg-arabic-gold" />
+
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <div>
+                                                        <span className="block text-[9px] font-bold tracking-wider text-arabic-bronze/60 uppercase">
+                                                            Recipient
+                                                        </span>
+                                                        <span className="block font-extrabold text-arabic-bronze">
+                                                            {cert.student.name}
+                                                        </span>
+                                                    </div>
+                                                    <span className="shrink-0 text-[10px] font-bold text-arabic-gold">
+                                                        {issueDate}
+                                                    </span>
+                                                </div>
+                                                <div className="mt-2 rounded-xl border border-arabic-cream/60 bg-arabic-cream/35 p-2.5">
+                                                    <span className="block font-extrabold text-arabic-bronze">
+                                                        {cert.program.name}
+                                                    </span>
+                                                    {cert.notes && (
+                                                        <p className="mt-1 text-[10px] leading-relaxed font-medium text-arabic-bronze/80">
+                                                            "{cert.notes}"
+                                                        </p>
+                                                    )}
+                                                    <span className="mt-1.5 block truncate font-mono text-[8px] leading-none text-arabic-bronze/55">
+                                                        Hash:{' '}
+                                                        {cert.verification_hash.substring(
+                                                            0,
+                                                            16,
+                                                        )}
+                                                        ...
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="rounded-xl border border-arabic-cream bg-arabic-sand/50 p-8 text-center text-xs font-bold text-arabic-bronze/50">
+                                    No credentials issued on the platform yet.
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                );
+
+            default:
+                return null;
+        }
     };
 
     return (
-        <AdminLteLayout breadcrumbs={breadcrumbs} metrics={metrics}>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Admin Dashboard" />
 
-            <div className="space-y-6">
-                
+            <div className="min-h-screen w-full space-y-8 bg-arabic-sand/20 p-6">
                 {/* Header Welcome Bar */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-[#dee2e6] rounded-xl p-5 shadow-sm select-none">
-                    <div className="space-y-1">
-                        <h3 className="text-lg font-bold text-[#343a40] flex items-center gap-1.5">
-                            Welcome Back, Administrator ✦
-                        </h3>
-                        <p className="text-xs text-[#6c757d] font-semibold">
-                            Review platform analytics metrics, manage teachers and students registry, and award credentials.
+                <div className="flex flex-col justify-between gap-4 border-b border-arabic-cream/60 pb-6 md:flex-row md:items-center">
+                    <div>
+                        <h1 className="font-serif text-3xl font-black text-arabic-bronze">
+                            Admin Control Panel
+                        </h1>
+                        <p className="mt-1 text-xs font-medium text-arabic-bronze/70">
+                            Review platform analytics, manage user registries,
+                            and award credentials.
                         </p>
                     </div>
-                    <Button
-                        onClick={() => setIsIssuing(true)}
-                        className="rounded-lg bg-[#d4af37] text-[#343a40] font-bold text-xs hover:bg-[#d4af37]/90 transition shadow-sm gap-1.5 h-9 shrink-0"
-                    >
-                        <Award className="h-4 w-4" /> Issue Official Certificate
-                    </Button>
+                    <div className="flex shrink-0 items-center gap-2">
+                        {JSON.stringify(layout) !==
+                            JSON.stringify(defaultLayout) && (
+                            <Button
+                                onClick={handleResetLayout}
+                                variant="outline"
+                                className="h-9 gap-1 rounded-full border-arabic-bronze/25 px-4 text-xs font-bold text-arabic-bronze shadow-sm hover:bg-arabic-cream"
+                            >
+                                <RefreshCw className="h-3.5 w-3.5 text-arabic-gold" />{' '}
+                                Reset Layout
+                            </Button>
+                        )}
+                        <Button
+                            onClick={() => setIsIssuing(true)}
+                            className="h-9 shrink-0 gap-1 rounded-full bg-arabic-gold px-4 text-xs font-black text-arabic-bronze shadow-md transition hover:bg-arabic-gold/90"
+                        >
+                            <Award className="h-4 w-4" /> Issue Official
+                            Certificate
+                        </Button>
+                    </div>
                 </div>
 
-                {/* Info Boxes / Small Boxes (Classic AdminLTE 4 Colored Widgets) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
-                    
-                    {/* Box 1: Info (Teal/Cyan) */}
-                    <div className="bg-[#17a2b8] text-white rounded-xl shadow-md overflow-hidden relative group h-28 flex flex-col justify-between select-none">
-                        <div className="p-4 flex justify-between items-start">
-                            <div className="space-y-1">
-                                <h3 className="text-2xl font-extrabold leading-none">{metrics.totalBookings}</h3>
-                                <p className="text-[10px] font-bold uppercase tracking-wider text-white/80">Total Bookings</p>
-                            </div>
-                            <BookOpen className="h-12 w-12 text-white/15 absolute right-3 top-3 group-hover:scale-110 transition duration-300" />
+                {/* Analytical Summary Metrics Grid */}
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-5">
+                    {/* Total Bookings */}
+                    <Card className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-arabic-cream bg-arabic-sand p-5 shadow-sm">
+                        <BookOpen className="mb-2 h-8 w-8 text-arabic-gold" />
+                        <div>
+                            <span className="text-2xl font-black text-arabic-bronze">
+                                {metrics.totalBookings}
+                            </span>
+                            <p className="text-[10px] font-bold tracking-wider text-arabic-bronze/60 uppercase">
+                                Total Bookings
+                            </p>
                         </div>
-                        <a href="#teachers-registry" className="bg-black/15 py-1 text-center text-[9px] font-extrabold flex items-center justify-center gap-1 hover:bg-black/25 transition">
-                            More info <ArrowRight className="h-3 w-3" />
-                        </a>
-                    </div>
+                    </Card>
 
-                    {/* Box 2: Success (Green) */}
-                    <div className="bg-[#28a745] text-white rounded-xl shadow-md overflow-hidden relative group h-28 flex flex-col justify-between select-none">
-                        <div className="p-4 flex justify-between items-start">
-                            <div className="space-y-1">
-                                <h3 className="text-2xl font-extrabold leading-none">{metrics.completedBookings}</h3>
-                                <p className="text-[10px] font-bold uppercase tracking-wider text-white/80">Completed Sessions</p>
-                            </div>
-                            <Check className="h-12 w-12 text-white/15 absolute right-3 top-3 group-hover:scale-110 transition duration-300" />
+                    {/* Completed Sessions */}
+                    <Card className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-arabic-cream bg-arabic-sand p-5 shadow-sm">
+                        <Check className="mb-2 h-8 w-8 text-arabic-emerald" />
+                        <div>
+                            <span className="text-2xl font-black text-arabic-bronze">
+                                {metrics.completedBookings}
+                            </span>
+                            <p className="text-[10px] font-bold tracking-wider text-arabic-bronze/60 uppercase">
+                                Completed Sessions
+                            </p>
                         </div>
-                        <a href="#teachers-registry" className="bg-black/15 py-1 text-center text-[9px] font-extrabold flex items-center justify-center gap-1 hover:bg-black/25 transition">
-                            More info <ArrowRight className="h-3 w-3" />
-                        </a>
-                    </div>
+                    </Card>
 
-                    {/* Box 3: Warning (Yellow/Amber) */}
-                    <div className="bg-[#ffc107] text-[#343a40] rounded-xl shadow-md overflow-hidden relative group h-28 flex flex-col justify-between select-none">
-                        <div className="p-4 flex justify-between items-start">
-                            <div className="space-y-1">
-                                <h3 className="text-2xl font-extrabold leading-none">{metrics.activeStudentsCount}</h3>
-                                <p className="text-[10px] font-bold uppercase tracking-wider text-[#343a40]/80">Active Students</p>
-                            </div>
-                            <Users className="h-12 w-12 text-[#343a40]/15 absolute right-3 top-3 group-hover:scale-110 transition duration-300" />
+                    {/* Active Students */}
+                    <Card className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-arabic-cream bg-arabic-sand p-5 shadow-sm">
+                        <Users className="mb-2 h-8 w-8 text-arabic-gold" />
+                        <div>
+                            <span className="text-2xl font-black text-arabic-bronze">
+                                {metrics.activeStudentsCount}
+                            </span>
+                            <p className="text-[10px] font-bold tracking-wider text-arabic-bronze/60 uppercase">
+                                Active Students
+                            </p>
                         </div>
-                        <a href="#students-registry" className="bg-black/10 py-1 text-center text-[9px] font-extrabold flex items-center justify-center gap-1 hover:bg-black/20 transition">
-                            More info <ArrowRight className="h-3 w-3" />
-                        </a>
-                    </div>
+                    </Card>
 
-                    {/* Box 4: Primary (Blue) */}
-                    <div className="bg-[#007bff] text-white rounded-xl shadow-md overflow-hidden relative group h-28 flex flex-col justify-between select-none">
-                        <div className="p-4 flex justify-between items-start">
-                            <div className="space-y-1">
-                                <h3 className="text-2xl font-extrabold leading-none">{metrics.activeTeachersCount}</h3>
-                                <p className="text-[10px] font-bold uppercase tracking-wider text-white/80">Native Teachers</p>
-                            </div>
-                            <Users className="h-12 w-12 text-white/15 absolute right-3 top-3 group-hover:scale-110 transition duration-300" />
+                    {/* Native Teachers */}
+                    <Card className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-arabic-cream bg-arabic-sand p-5 shadow-sm">
+                        <User className="mb-2 h-8 w-8 text-arabic-gold" />
+                        <div>
+                            <span className="text-2xl font-black text-arabic-bronze">
+                                {metrics.activeTeachersCount}
+                            </span>
+                            <p className="text-[10px] font-bold tracking-wider text-arabic-bronze/60 uppercase">
+                                Native Teachers
+                            </p>
                         </div>
-                        <a href="#teachers-registry" className="bg-black/15 py-1 text-center text-[9px] font-extrabold flex items-center justify-center gap-1 hover:bg-black/25 transition">
-                            More info <ArrowRight className="h-3 w-3" />
-                        </a>
-                    </div>
+                    </Card>
 
-                    {/* Box 5: Danger (Red/Bronze) */}
-                    <div className="bg-[#dc3545] text-white rounded-xl shadow-md overflow-hidden relative group h-28 flex flex-col justify-between select-none">
-                        <div className="p-4 flex justify-between items-start">
-                            <div className="space-y-1">
-                                <h3 className="text-2xl font-extrabold leading-none">{metrics.totalCertificatesCount}</h3>
-                                <p className="text-[10px] font-bold uppercase tracking-wider text-white/80">Credentials Issued</p>
-                            </div>
-                            <Award className="h-12 w-12 text-white/15 absolute right-3 top-3 group-hover:scale-110 transition duration-300" />
+                    {/* Credentials Issued */}
+                    <Card className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-arabic-cream bg-arabic-sand p-5 shadow-sm">
+                        <Award className="mb-2 h-8 w-8 text-arabic-gold" />
+                        <div>
+                            <span className="text-2xl font-black text-arabic-bronze">
+                                {metrics.totalCertificatesCount}
+                            </span>
+                            <p className="text-[10px] font-bold tracking-wider text-arabic-bronze/60 uppercase">
+                                Credentials Issued
+                            </p>
                         </div>
-                        <a href="#certificates-audits" className="bg-black/15 py-1 text-center text-[9px] font-extrabold flex items-center justify-center gap-1 hover:bg-black/25 transition">
-                            More info <ArrowRight className="h-3 w-3" />
-                        </a>
-                    </div>
-
+                    </Card>
                 </div>
 
                 {/* Main Content Layout Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    
-                    {/* Left Column: Management Tables */}
-                    <div className="lg:col-span-8 space-y-6">
-                        
-                        {/* 1. Teachers registry grid */}
-                        {isTeachersVisible && (
-                            <div id="teachers-registry" className="bg-white border border-[#dee2e6] rounded-xl shadow-sm overflow-hidden animate-in fade-in duration-300">
-                                {/* Header block with collapsible controls */}
-                                <div className="px-5 py-3 border-b border-[#dee2e6] bg-[#f8f9fa] flex items-center justify-between select-none">
-                                    <h3 className="font-bold text-xs text-[#343a40] flex items-center gap-2 uppercase tracking-wide">
-                                        <Users className="h-4.5 w-4.5 text-[#d4af37]" /> Moroccan Teachers Registry
-                                    </h3>
-                                    <div className="flex items-center gap-1">
-                                        <button 
-                                            onClick={() => triggerRefresh('Teachers')}
-                                            className="p-1 hover:bg-[#e9ecef] rounded text-[#6c757d] hover:text-[#343a40]"
-                                            title="Refresh"
-                                        >
-                                            <RefreshCw className="h-3.5 w-3.5" />
-                                        </button>
-                                        <button 
-                                            onClick={() => setIsTeachersCollapsed(!isTeachersCollapsed)}
-                                            className="p-1 hover:bg-[#e9ecef] rounded text-[#6c757d] hover:text-[#343a40]"
-                                            title="Collapse/Expand"
-                                        >
-                                            {isTeachersCollapsed ? <Plus className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
-                                        </button>
-                                        <button 
-                                            onClick={() => setIsTeachersVisible(false)}
-                                            className="p-1 hover:bg-[#e9ecef] rounded text-[#6c757d] hover:text-red-500"
-                                            title="Close"
-                                        >
-                                            <X className="h-3.5 w-3.5" />
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Table content */}
-                                {!isTeachersCollapsed && (
-                                    <div className="overflow-x-auto animate-in slide-in-from-top-1 duration-200">
-                                        <table className="w-full text-left text-xs border-collapse">
-                                            <thead>
-                                                <tr className="bg-[#f8f9fa] border-b border-[#dee2e6] text-[#495057] font-bold text-[10px] uppercase tracking-wider">
-                                                    <th className="p-4">Teacher Name</th>
-                                                    <th className="p-4">Contact Detail</th>
-                                                    <th className="p-4 text-center">Open Hours</th>
-                                                    <th className="p-4 text-right">Status</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-[#dee2e6] text-[#343a40] font-semibold">
-                                                {teachers.map((teacher) => (
-                                                    <tr key={teacher.id} className="hover:bg-[#f8f9fa] transition">
-                                                        <td className="p-4 flex items-center gap-2.5">
-                                                            <div className="w-8 h-8 rounded-full bg-[#f8f9fa] flex items-center justify-center text-xs shadow-inner">🇲🇦</div>
-                                                            <span className="font-extrabold text-[#343a40]">{teacher.name}</span>
-                                                        </td>
-                                                        <td className="p-4 font-mono text-[10px] text-[#6c757d]">
-                                                            {teacher.email} <br />
-                                                            <span className="text-[10px] text-[#d4af37] font-bold">{teacher.teacher_profile?.whatsapp_number}</span>
-                                                        </td>
-                                                        <td className="p-4 text-center text-[#d4af37] font-extrabold">{teacher.slots_count} slots</td>
-                                                        <td className="p-4 text-right">
-                                                            <Badge className="bg-emerald-500 text-white text-[9px] font-bold rounded-full py-0.5 px-2">Active</Badge>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                )}
+                <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+                    {/* Left Column */}
+                    <div className="min-h-[300px] space-y-8 lg:col-span-8">
+                        {layout.left.map((sectionId, index) => (
+                            <div
+                                key={sectionId}
+                                draggable
+                                onDragStart={(e) =>
+                                    handleDragStart(e, sectionId, 'left')
+                                }
+                                onDragOver={(e) => handleDragOver(e, sectionId)}
+                                onDragLeave={handleDragLeave}
+                                onDrop={(e) => handleDrop(e, index, 'left')}
+                                className={`transition-all duration-200 ${
+                                    dragOverId === sectionId
+                                        ? 'scale-[0.98] rounded-[1.5rem] border-2 border-dashed border-arabic-gold/80 p-1 opacity-50'
+                                        : ''
+                                }`}
+                            >
+                                {renderSection(sectionId)}
                             </div>
-                        )}
-
-                        {/* 2. Students registry grid */}
-                        {isStudentsVisible && (
-                            <div id="students-registry" className="bg-white border border-[#dee2e6] rounded-xl shadow-sm overflow-hidden animate-in fade-in duration-300">
-                                <div className="px-5 py-3 border-b border-[#dee2e6] bg-[#f8f9fa] flex items-center justify-between select-none">
-                                    <h3 className="font-bold text-xs text-[#343a40] flex items-center gap-2 uppercase tracking-wide">
-                                        <Users className="h-4.5 w-4.5 text-[#d4af37]" /> Active Students Registry
-                                    </h3>
-                                    <div className="flex items-center gap-1">
-                                        <button 
-                                            onClick={() => triggerRefresh('Students')}
-                                            className="p-1 hover:bg-[#e9ecef] rounded text-[#6c757d] hover:text-[#343a40]"
-                                            title="Refresh"
-                                        >
-                                            <RefreshCw className="h-3.5 w-3.5" />
-                                        </button>
-                                        <button 
-                                            onClick={() => setIsStudentsCollapsed(!isStudentsCollapsed)}
-                                            className="p-1 hover:bg-[#e9ecef] rounded text-[#6c757d] hover:text-[#343a40]"
-                                            title="Collapse/Expand"
-                                        >
-                                            {isStudentsCollapsed ? <Plus className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
-                                        </button>
-                                        <button 
-                                            onClick={() => setIsStudentsVisible(false)}
-                                            className="p-1 hover:bg-[#e9ecef] rounded text-[#6c757d] hover:text-red-500"
-                                            title="Close"
-                                        >
-                                            <X className="h-3.5 w-3.5" />
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {!isStudentsCollapsed && (
-                                    <div className="overflow-x-auto animate-in slide-in-from-top-1 duration-200">
-                                        <table className="w-full text-left text-xs border-collapse">
-                                            <thead>
-                                                <tr className="bg-[#f8f9fa] border-b border-[#dee2e6] text-[#495057] font-bold text-[10px] uppercase tracking-wider">
-                                                    <th className="p-4">Student Name & Account</th>
-                                                    <th className="p-4">Total Bookings</th>
-                                                    <th className="p-4 text-right">Status</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-[#dee2e6] text-[#343a40] font-semibold">
-                                                {students.map((student) => (
-                                                    <tr key={student.id} className="hover:bg-[#f8f9fa] transition">
-                                                        <td className="p-4">
-                                                            <span className="font-extrabold block text-[#343a40]">{student.name}</span>
-                                                            <span className="text-[10px] text-[#6c757d] font-mono mt-0.5 block">{student.email}</span>
-                                                        </td>
-                                                        <td className="p-4 text-[#6c757d] font-bold">{student.student_bookings_count} hours booked</td>
-                                                        <td className="p-4 text-right">
-                                                            <Badge className="bg-[#007bff] text-white text-[9px] font-bold rounded-full py-0.5 px-2">Enrolled</Badge>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
+                        ))}
                     </div>
 
-                    {/* Right Column: Certificates audit timeline */}
-                    <div className="lg:col-span-4 space-y-6">
-                        {isCertificatesVisible && (
-                            <div id="certificates-audits" className="bg-white border border-[#dee2e6] rounded-xl shadow-sm overflow-hidden animate-in fade-in duration-300">
-                                <div className="px-5 py-3 border-b border-[#dee2e6] bg-[#f8f9fa] flex items-center justify-between select-none">
-                                    <h3 className="font-bold text-xs text-[#343a40] flex items-center gap-2 uppercase tracking-wide">
-                                        <Award className="h-4.5 w-4.5 text-[#d4af37]" /> Certificates Audits
-                                    </h3>
-                                    <div className="flex items-center gap-1">
-                                        <button 
-                                            onClick={() => setIsCertificatesCollapsed(!isCertificatesCollapsed)}
-                                            className="p-1 hover:bg-[#e9ecef] rounded text-[#6c757d] hover:text-[#343a40]"
-                                            title="Collapse/Expand"
-                                        >
-                                            {isCertificatesCollapsed ? <Plus className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
-                                        </button>
-                                        <button 
-                                            onClick={() => setIsCertificatesVisible(false)}
-                                            className="p-1 hover:bg-[#e9ecef] rounded text-[#6c757d] hover:text-red-500"
-                                            title="Close"
-                                        >
-                                            <X className="h-3.5 w-3.5" />
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {!isCertificatesCollapsed && (
-                                    <div className="p-5 animate-in slide-in-from-top-1 duration-200 space-y-4">
-                                        {certificates.length > 0 ? (
-                                            <div className="relative border-l-2 border-[#dee2e6] pl-4 space-y-5 max-h-[480px] overflow-y-auto pr-1 select-none">
-                                                {certificates.map((cert) => {
-                                                    const issueDate = new Date(cert.issued_at).toLocaleDateString('en-US', {
-                                                        month: 'short',
-                                                        day: 'numeric',
-                                                    });
-
-                                                    return (
-                                                        <div key={cert.id} className="relative text-xs">
-                                                            {/* Custom timeline bullet point */}
-                                                            <div className="absolute -left-[23px] top-1.5 w-2.5 h-2.5 rounded-full bg-[#d4af37] border-2 border-white" />
-                                                            
-                                                            <div className="flex justify-between items-start gap-2">
-                                                                <div>
-                                                                    <span className="text-[9px] text-[#6c757d] font-bold block uppercase tracking-wider">Recipient</span>
-                                                                    <span className="font-extrabold text-[#343a40] block">{cert.student.name}</span>
-                                                                </div>
-                                                                <span className="text-[10px] text-[#d4af37] font-bold shrink-0">{issueDate}</span>
-                                                            </div>
-                                                            <div className="mt-2 p-2.5 bg-[#f8f9fa] border border-[#dee2e6] rounded-lg">
-                                                                <span className="font-extrabold text-[#343a40] block">{cert.program.name}</span>
-                                                                {cert.notes && (
-                                                                    <p className="text-[10px] text-[#6c757d] font-medium leading-relaxed mt-1">"{cert.notes}"</p>
-                                                                )}
-                                                                <span className="text-[9px] text-[#8c949c] font-mono mt-1.5 block leading-none">Hash: {cert.verification_hash.substring(0, 16)}...</span>
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        ) : (
-                                            <div className="p-8 bg-[#f8f9fa] border border-[#dee2e6] rounded-xl text-center text-xs font-bold text-[#6c757d]">
-                                                No credentials issued on the platform yet.
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
+                    {/* Right Column */}
+                    <div className="min-h-[300px] space-y-8 lg:col-span-4">
+                        {layout.right.map((sectionId, index) => (
+                            <div
+                                key={sectionId}
+                                draggable
+                                onDragStart={(e) =>
+                                    handleDragStart(e, sectionId, 'right')
+                                }
+                                onDragOver={(e) => handleDragOver(e, sectionId)}
+                                onDragLeave={handleDragLeave}
+                                onDrop={(e) => handleDrop(e, index, 'right')}
+                                className={`transition-all duration-200 ${
+                                    dragOverId === sectionId
+                                        ? 'scale-[0.98] rounded-[1.5rem] border-2 border-dashed border-arabic-gold/80 p-1 opacity-50'
+                                        : ''
+                                }`}
+                            >
+                                {renderSection(sectionId)}
                             </div>
-                        )}
+                        ))}
                     </div>
-
                 </div>
 
-                {/* Explicit Certificate Issue Modal Drawer */}
+                {/* Issue Certificate Modal */}
                 {isIssuing && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-sm p-4 animate-in fade-in duration-200 select-none">
-                        <div className="bg-white border border-[#dee2e6] w-full max-w-lg rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-                            <div className="bg-[#f8f9fa] px-6 py-4 flex items-center justify-between border-b border-[#dee2e6]">
+                    <div className="fixed inset-0 z-50 flex animate-in items-center justify-center bg-arabic-bronze/45 p-4 backdrop-blur-sm duration-200 fade-in">
+                        <div className="flex max-h-[90vh] w-full max-w-lg animate-in flex-col overflow-hidden rounded-[2rem] border-2 border-arabic-cream bg-arabic-sand shadow-2xl duration-200 zoom-in-95">
+                            <div className="flex shrink-0 items-center justify-between border-b border-arabic-cream bg-arabic-cream/60 px-6 py-4">
                                 <div>
-                                    <span className="text-[9px] uppercase font-bold tracking-widest text-[#d4af37] block">Credential Manager</span>
-                                    <h4 className="font-bold text-sm text-[#343a40]">Award Official Certificate</h4>
+                                    <span className="block text-[9px] font-bold tracking-widest text-arabic-gold uppercase">
+                                        Credential Manager
+                                    </span>
+                                    <h4 className="font-serif text-base font-black text-arabic-bronze">
+                                        Award Official Certificate
+                                    </h4>
                                 </div>
                                 <button
                                     onClick={() => setIsIssuing(false)}
-                                    className="p-2 hover:bg-[#e9ecef] rounded-full transition text-[#6c757d] hover:text-[#343a40]"
+                                    className="rounded-full p-2 text-arabic-bronze/60 transition hover:bg-arabic-cream hover:text-arabic-bronze"
                                 >
                                     <X className="h-5 w-5" />
                                 </button>
                             </div>
 
-                            <form onSubmit={handleIssueCertificateSubmit}>
-                                <div className="p-6 space-y-4">
-                                    
+                            <form
+                                onSubmit={handleIssueCertificateSubmit}
+                                className="flex flex-1 flex-col overflow-hidden"
+                            >
+                                <div className="flex-1 space-y-4 overflow-y-auto p-6">
                                     {/* Select Student */}
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] uppercase font-black text-[#6c757d] block">Select Student Recipient</label>
+                                        <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
+                                            Select Student Recipient
+                                        </label>
                                         <select
                                             value={certForm.data.student_id}
-                                            onChange={(e) => certForm.setData('student_id', e.target.value)}
-                                            className="w-full p-3 text-xs rounded-lg border border-[#dee2e6] bg-white text-[#343a40] font-bold focus:border-[#d4af37] outline-none shadow-sm"
+                                            onChange={(e) =>
+                                                certForm.setData(
+                                                    'student_id',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="w-full rounded-xl border border-arabic-cream bg-arabic-sand p-3 text-xs font-bold text-arabic-bronze shadow-sm outline-none focus:border-arabic-gold"
                                         >
-                                            <option value="">-- Choose student recipient --</option>
+                                            <option value="">
+                                                -- Choose student recipient --
+                                            </option>
                                             {students.map((student) => (
-                                                <option key={student.id} value={student.id}>
-                                                    {student.name} ({student.email})
+                                                <option
+                                                    key={student.id}
+                                                    value={student.id}
+                                                >
+                                                    {student.name} (
+                                                    {student.email})
                                                 </option>
                                             ))}
                                         </select>
@@ -482,15 +915,27 @@ export default function AdminDashboard({
 
                                     {/* Select Program */}
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] uppercase font-black text-[#6c757d] block">Select Quranic Program</label>
+                                        <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
+                                            Select Quranic Program
+                                        </label>
                                         <select
                                             value={certForm.data.program_id}
-                                            onChange={(e) => certForm.setData('program_id', e.target.value)}
-                                            className="w-full p-3 text-xs rounded-lg border border-[#dee2e6] bg-white text-[#343a40] font-bold focus:border-[#d4af37] outline-none shadow-sm"
+                                            onChange={(e) =>
+                                                certForm.setData(
+                                                    'program_id',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="w-full rounded-xl border border-arabic-cream bg-arabic-sand p-3 text-xs font-bold text-arabic-bronze shadow-sm outline-none focus:border-arabic-gold"
                                         >
-                                            <option value="">-- Choose Quranic program --</option>
+                                            <option value="">
+                                                -- Choose Quranic program --
+                                            </option>
                                             {programs.map((prog) => (
-                                                <option key={prog.id} value={prog.id}>
+                                                <option
+                                                    key={prog.id}
+                                                    value={prog.id}
+                                                >
                                                     {prog.name}
                                                 </option>
                                             ))}
@@ -499,39 +944,47 @@ export default function AdminDashboard({
 
                                     {/* Custom Notes */}
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] uppercase font-black text-[#6c757d] block">Audit/Issuance Notes</label>
+                                        <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
+                                            Audit/Issuance Notes
+                                        </label>
                                         <Textarea
                                             placeholder="Write special citation (e.g. Completed Tajweed recitation with excellent marks under teacher evaluation)..."
                                             value={certForm.data.notes}
-                                            onChange={(e) => certForm.setData('notes', e.target.value)}
-                                            className="text-xs min-h-[90px] rounded-lg border-[#dee2e6] bg-white placeholder:text-[#8c949c] focus:border-[#d4af37] shadow-sm font-semibold"
+                                            onChange={(e) =>
+                                                certForm.setData(
+                                                    'notes',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="min-h-[90px] rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
                                         />
                                     </div>
                                 </div>
 
-                                <div className="bg-[#f8f9fa] px-6 py-4 flex justify-end gap-2 border-t border-[#dee2e6]">
+                                <div className="flex shrink-0 justify-end gap-2 border-t border-arabic-cream bg-arabic-cream/30 px-6 py-4">
                                     <Button
                                         type="button"
                                         variant="outline"
                                         onClick={() => setIsIssuing(false)}
-                                        className="rounded-lg border-[#dee2e6] hover:bg-[#e9ecef] text-[#495057] text-xs font-bold h-9"
+                                        className="h-9 rounded-full border-arabic-bronze/25 text-xs font-bold text-arabic-bronze hover:bg-arabic-cream"
                                     >
                                         Cancel
                                     </Button>
                                     <Button
                                         type="submit"
                                         disabled={certForm.processing}
-                                        className="rounded-lg bg-[#343a40] text-white hover:bg-[#343a40]/90 text-xs font-bold px-6 shadow-sm h-9"
+                                        className="h-9 rounded-full bg-arabic-bronze px-6 text-xs font-bold text-arabic-sand shadow-sm hover:bg-arabic-bronze/90"
                                     >
-                                        {certForm.processing ? 'Issuing...' : 'Issue Certificate'}
+                                        {certForm.processing
+                                            ? 'Issuing...'
+                                            : 'Issue Certificate'}
                                     </Button>
                                 </div>
                             </form>
                         </div>
                     </div>
                 )}
-
             </div>
-        </AdminLteLayout>
+        </AppLayout>
     );
 }

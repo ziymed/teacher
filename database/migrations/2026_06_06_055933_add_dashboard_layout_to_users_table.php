@@ -12,9 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('subscription_plan')->nullable()->default('free');
-            $table->string('subscription_status')->default('inactive');
-            $table->timestamp('subscription_ends_at')->nullable();
+            $table->json('dashboard_layout')->nullable()->after('avatar');
         });
     }
 
@@ -24,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['subscription_plan', 'subscription_status', 'subscription_ends_at']);
+            $table->dropColumn('dashboard_layout');
         });
     }
 };

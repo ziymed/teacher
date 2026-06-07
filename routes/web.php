@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\Auth\SocialController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\HomeController;
@@ -13,23 +14,22 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/certificates/verify/{hash}', [CertificateController::class, 'verify'])->name('certificates.verify');
 
+// Social Authentication Routes
+Route::get('/auth/{provider}/redirect', [SocialController::class, 'redirectToProvider'])
+    ->name('auth.social.redirect');
+Route::get('/auth/{provider}/callback', [SocialController::class, 'handleProviderCallback'])
+    ->name('auth.social.callback');
+
 // Authenticated Routes
 Route::middleware(['auth', 'verified'])->group(function () {
     // Universal Dashboard Portal (redirects based on role)
     Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
+    Route::post('/dashboard/layout', [HomeController::class, 'updateLayout'])->name('dashboard.layout.update');
 
     // Student Dashboard & Booking Actions
     Route::middleware([HandleAppearance::class])->group(function () {
         Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])
             ->name('student.dashboard');
-
-        // Subscription Billing & Pricing Plans
-        Route::get('/subscription', [\App\Http\Controllers\SubscriptionController::class, 'index'])
-            ->name('subscription.index');
-        Route::post('/subscription/checkout', [\App\Http\Controllers\SubscriptionController::class, 'subscribe'])
-            ->name('subscription.checkout');
-        Route::post('/subscription/cancel', [\App\Http\Controllers\SubscriptionController::class, 'cancel'])
-            ->name('subscription.cancel');
 
         Route::post('/bookings', [BookingController::class, 'store'])
             ->name('bookings.store');
@@ -41,8 +41,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('teacher.dashboard');
         Route::post('/teacher/slots', [TeacherDashboardController::class, 'storeSlot'])
             ->name('teacher.slots.store');
+        Route::post('/teacher/slots/batch', [TeacherDashboardController::class, 'batchStoreSlots'])
+            ->name('teacher.slots.batch');
         Route::delete('/teacher/slots/{slot}', [TeacherDashboardController::class, 'destroySlot'])
             ->name('teacher.slots.destroy');
+        Route::put('/teacher/slots/{slot}', [TeacherDashboardController::class, 'updateSlot'])
+            ->name('teacher.slots.update');
         Route::post('/teacher/bookings/{booking}/complete', [TeacherDashboardController::class, 'completeBooking'])
             ->name('teacher.bookings.complete');
 
@@ -51,6 +55,42 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('admin.dashboard');
         Route::post('/admin/certificates', [AdminDashboardController::class, 'issueCertificate'])
             ->name('admin.certificates.store');
+
+        Route::get('/admin/programs', [AdminDashboardController::class, 'programsIndex'])
+            ->name('admin.programs.index');
+        Route::post('/admin/programs', [AdminDashboardController::class, 'storeProgram'])
+            ->name('admin.programs.store');
+        Route::put('/admin/programs/{program}', [AdminDashboardController::class, 'updateProgram'])
+            ->name('admin.programs.update');
+        Route::patch('/admin/programs/{program}/toggle-visibility', [AdminDashboardController::class, 'toggleProgramVisibility'])
+            ->name('admin.programs.toggle-visibility');
+        Route::delete('/admin/programs/{program}', [AdminDashboardController::class, 'destroyProgram'])
+            ->name('admin.programs.destroy');
+
+        Route::get('/admin/teachers', [AdminDashboardController::class, 'teachersIndex'])
+            ->name('admin.teachers.index');
+        Route::post('/admin/teachers', [AdminDashboardController::class, 'storeTeacher'])
+            ->name('admin.teachers.store');
+        Route::put('/admin/teachers/{teacher}', [AdminDashboardController::class, 'updateTeacher'])
+            ->name('admin.teachers.update');
+        Route::delete('/admin/teachers/{teacher}', [AdminDashboardController::class, 'destroyTeacher'])
+            ->name('admin.teachers.destroy');
+
+        Route::get('/admin/students', [AdminDashboardController::class, 'studentsIndex'])
+            ->name('admin.students.index');
+        Route::post('/admin/students', [AdminDashboardController::class, 'storeStudent'])
+            ->name('admin.students.store');
+        Route::put('/admin/students/{student}', [AdminDashboardController::class, 'updateStudent'])
+            ->name('admin.students.update');
+        Route::delete('/admin/students/{student}', [AdminDashboardController::class, 'destroyStudent'])
+            ->name('admin.students.destroy');
+
+        Route::post('/admin/slots', [AdminDashboardController::class, 'storeSlot'])
+            ->name('admin.slots.store');
+        Route::delete('/admin/slots/bulk', [AdminDashboardController::class, 'bulkDestroySlots'])
+            ->name('admin.slots.bulk-destroy');
+        Route::delete('/admin/slots/all', [AdminDashboardController::class, 'clearAllSlots'])
+            ->name('admin.slots.clear-all');
     });
 });
 

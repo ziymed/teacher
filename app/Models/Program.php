@@ -30,6 +30,7 @@ class Program extends Model
         'name',
         'description',
         'details_json',
+        'is_hidden',
     ];
 
     /**
@@ -41,6 +42,7 @@ class Program extends Model
     {
         return [
             'details_json' => 'array',
+            'is_hidden' => 'boolean',
         ];
     }
 
