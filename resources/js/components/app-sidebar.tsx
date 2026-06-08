@@ -23,8 +23,11 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { useTranslation } from '@/hooks/use-translation';
 
 export function AppSidebar() {
+    const { t, direction } = useTranslation();
     const { auth } = usePage<any>().props;
     const user = auth?.user;
 
@@ -32,7 +35,7 @@ export function AppSidebar() {
     const getNavItems = (): NavItem[] => {
         const baseItems: NavItem[] = [
             {
-                title: 'Dashboard',
+                title: t('Dashboard'),
                 href: dashboard(),
                 icon: LayoutGrid,
             },
@@ -46,17 +49,17 @@ export function AppSidebar() {
             return [
                 ...baseItems,
                 {
-                    title: 'Programs',
+                    title: t('Programs'),
                     href: '/admin/programs',
                     icon: BookOpen,
                 },
                 {
-                    title: 'Teachers',
+                    title: t('Teachers'),
                     href: '/admin/teachers',
                     icon: Users,
                 },
                 {
-                    title: 'Students',
+                    title: t('Students'),
                     href: '/admin/students',
                     icon: GraduationCap,
                 },
@@ -67,7 +70,7 @@ export function AppSidebar() {
             return [
                 ...baseItems,
                 {
-                    title: 'Schedule & Slots',
+                    title: t('Schedule & Slots'),
                     href: '/',
                     icon: Calendar,
                 },
@@ -78,7 +81,7 @@ export function AppSidebar() {
         return [
             ...baseItems,
             {
-                title: 'Book a Session',
+                title: t('Book a Session'),
                 href: '/student/dashboard#book-session',
                 icon: Calendar,
             },
@@ -87,14 +90,14 @@ export function AppSidebar() {
 
     const footerNavItems: NavItem[] = [
         {
-            title: 'Learning Portal',
+            title: t('Learning Portal'),
             href: '/',
             icon: BookOpen,
         },
     ];
 
     return (
-        <Sidebar collapsible="icon" variant="inset">
+        <Sidebar collapsible="icon" variant="inset" side={direction === 'rtl' ? 'right' : 'left'}>
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
@@ -112,6 +115,9 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
+                <div className="px-2 py-1 flex justify-center group-data-[collapsible=icon]:hidden">
+                    <LanguageSwitcher />
+                </div>
                 <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
             </SidebarFooter>

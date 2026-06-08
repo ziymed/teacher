@@ -27,6 +27,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { dashboard } from '@/routes';
 import { dashboard as adminDashboard } from '@/routes/admin';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface Student {
     id: number;
@@ -40,6 +41,7 @@ interface StudentsProps {
 }
 
 export default function Students({ students = [] }: StudentsProps) {
+    const { t } = useTranslation();
     const [isAddingStudent, setIsAddingStudent] = useState(false);
     const [editingStudent, setEditingStudent] = useState<Student | null>(null);
     const [searchFilter, setSearchFilter] = useState('');
@@ -72,18 +74,18 @@ export default function Students({ students = [] }: StudentsProps) {
         e.preventDefault();
 
         if (!newStudentForm.data.name) {
-            toast.error("Please provide the student's name.");
+            toast.error(t("Please provide the student's name."));
             return;
         }
         if (!newStudentForm.data.email) {
-            toast.error('Please provide a valid email address.');
+            toast.error(t('Please provide a valid email address.'));
             return;
         }
         if (
             !newStudentForm.data.password ||
             newStudentForm.data.password.length < 8
         ) {
-            toast.error('Password must be at least 8 characters long.');
+            toast.error(t('Password must be at least 8 characters long.'));
             return;
         }
 
@@ -92,11 +94,11 @@ export default function Students({ students = [] }: StudentsProps) {
                 setIsAddingStudent(false);
                 newStudentForm.reset();
                 toast.success(
-                    'Alhamdulillah! New Student account successfully created!',
+                    t('Alhamdulillah! New Student account successfully created!'),
                 );
             },
             onError: (err: any) => {
-                toast.error(err.error || 'Failed to add student.');
+                toast.error(err.error || t('Failed to add student.'));
             },
         });
     };
@@ -107,18 +109,18 @@ export default function Students({ students = [] }: StudentsProps) {
         if (!editingStudent) return;
 
         if (!editStudentForm.data.name) {
-            toast.error("Please provide the student's name.");
+            toast.error(t("Please provide the student's name."));
             return;
         }
         if (!editStudentForm.data.email) {
-            toast.error('Please provide a valid email address.');
+            toast.error(t('Please provide a valid email address.'));
             return;
         }
         if (
             editStudentForm.data.password &&
             editStudentForm.data.password.length < 8
         ) {
-            toast.error('Password must be at least 8 characters long.');
+            toast.error(t('Password must be at least 8 characters long.'));
             return;
         }
 
@@ -127,11 +129,11 @@ export default function Students({ students = [] }: StudentsProps) {
                 setEditingStudent(null);
                 editStudentForm.reset();
                 toast.success(
-                    'Alhamdulillah! Student account updated successfully!',
+                    t('Alhamdulillah! Student account updated successfully!'),
                 );
             },
             onError: (err: any) => {
-                toast.error(err.error || 'Failed to update student.');
+                toast.error(err.error || t('Failed to update student.'));
             },
         });
     };
@@ -148,31 +150,33 @@ export default function Students({ students = [] }: StudentsProps) {
     const handleDeleteStudent = (student: Student) => {
         if (
             confirm(
-                `Are you sure you want to delete the student "${student.name}"? This action cannot be undone.`,
+                t('Are you sure you want to delete the student ":name"? This action cannot be undone.', {
+                    name: student.name,
+                }),
             )
         ) {
             deleteStudentForm.delete(`/admin/students/${student.id}`, {
                 onSuccess: () => {
                     toast.success(
-                        'Alhamdulillah! Student successfully removed.',
+                        t('Alhamdulillah! Student successfully removed.'),
                     );
                 },
                 onError: (err: any) => {
-                    toast.error(err.error || 'Failed to delete student.');
+                    toast.error(err.error || t('Failed to delete student.'));
                 },
             });
         }
     };
 
     const breadcrumbs = [
-        { title: 'Dashboard', href: dashboard() },
-        { title: 'Admin Portal', href: adminDashboard() },
-        { title: 'Students', href: '/admin/students' },
+        { title: t('Dashboard'), href: dashboard() },
+        { title: t('Admin Portal'), href: adminDashboard() },
+        { title: t('Students'), href: '/admin/students' },
     ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Manage Students" />
+            <Head title={t('Manage Students')} />
 
             <div className="min-h-screen w-full space-y-8 bg-arabic-sand/20 p-6">
                 {/* Header Welcome Bar */}
@@ -180,11 +184,10 @@ export default function Students({ students = [] }: StudentsProps) {
                     <div>
                         <h1 className="flex items-center gap-3 font-serif text-3xl font-black text-arabic-bronze">
                             <GraduationCap className="h-9 w-9 text-arabic-gold" />{' '}
-                            Manage Students
+                            {t('Manage Students')}
                         </h1>
                         <p className="mt-1 text-xs font-medium text-arabic-bronze/70">
-                            Register new students, update profiles, and monitor
-                            private tutoring bookings.
+                            {t('Register new students, update profiles, and monitor private tutoring bookings.')}
                         </p>
                     </div>
                     <div>
@@ -192,7 +195,7 @@ export default function Students({ students = [] }: StudentsProps) {
                             onClick={() => setIsAddingStudent(true)}
                             className="h-9 cursor-pointer gap-1 rounded-full bg-arabic-bronze px-4 text-xs font-black text-arabic-sand shadow-md transition hover:bg-arabic-bronze/90"
                         >
-                            <Plus className="h-4 w-4" /> Add New Student
+                            <Plus className="h-4 w-4" /> {t('Add New Student')}
                         </Button>
                     </div>
                 </div>
@@ -204,11 +207,10 @@ export default function Students({ students = [] }: StudentsProps) {
                             <div>
                                 <CardTitle className="flex items-center gap-2 text-sm font-black tracking-wider text-arabic-bronze uppercase">
                                     <Users className="h-4.5 w-4.5 text-arabic-gold" />{' '}
-                                    Student Directory
+                                    {t('Student Directory')}
                                 </CardTitle>
                                 <CardDescription className="mt-1 text-[11px] font-medium text-arabic-bronze/70">
-                                    Registry list of all students enrolled in
-                                    the platform.
+                                    {t('Registry list of all students enrolled in the platform.')}
                                 </CardDescription>
                             </div>
 
@@ -217,7 +219,7 @@ export default function Students({ students = [] }: StudentsProps) {
                                 <Search className="absolute top-1/2 left-3.5 h-3.5 w-3.5 -translate-y-1/2 text-arabic-bronze/40" />
                                 <Input
                                     type="text"
-                                    placeholder="Search by Name or Email..."
+                                    placeholder={t('Search by Name or Email...')}
                                     value={searchFilter}
                                     onChange={(e) =>
                                         setSearchFilter(e.target.value)
@@ -232,13 +234,13 @@ export default function Students({ students = [] }: StudentsProps) {
                             <table className="w-full min-w-[600px] border-collapse text-left text-xs">
                                 <thead>
                                     <tr className="border-b border-arabic-cream/45 bg-arabic-cream/20 text-[10px] font-black tracking-wider text-arabic-bronze/80 uppercase">
-                                        <th className="p-4">Student Profile</th>
+                                        <th className="p-4">{t('Student Profile')}</th>
                                         <th className="p-4">
-                                            Total Booking Activity
+                                            {t('Total Booking Activity')}
                                         </th>
-                                        <th className="p-4">Status</th>
+                                        <th className="p-4">{t('Status')}</th>
                                         <th className="p-4 text-right">
-                                            Actions
+                                            {t('Actions')}
                                         </th>
                                     </tr>
                                 </thead>
@@ -267,15 +269,12 @@ export default function Students({ students = [] }: StudentsProps) {
                                             </td>
                                             <td className="p-4">
                                                 <span className="text-sm font-bold text-arabic-gold">
-                                                    {
-                                                        student.student_bookings_count
-                                                    }{' '}
-                                                    slots booked
+                                                    {t(':count slots booked', { count: String(student.student_bookings_count) })}
                                                 </span>
                                             </td>
                                             <td className="p-4">
                                                 <Badge className="rounded-full border border-arabic-bronze/25 bg-arabic-bronze/10 px-2 py-0.5 text-[9px] font-bold text-arabic-bronze">
-                                                    Enrolled
+                                                    {t('Enrolled')}
                                                 </Badge>
                                             </td>
                                             <td className="p-4 text-right">
@@ -287,7 +286,7 @@ export default function Students({ students = [] }: StudentsProps) {
                                                             )
                                                         }
                                                         className="cursor-pointer rounded-lg p-1.5 text-arabic-bronze/75 transition hover:bg-arabic-cream hover:text-arabic-bronze"
-                                                        title="Edit Student"
+                                                        title={t('Edit Student')}
                                                     >
                                                         <Edit2 className="h-3.5 w-3.5" />
                                                     </button>
@@ -298,7 +297,7 @@ export default function Students({ students = [] }: StudentsProps) {
                                                             )
                                                         }
                                                         className="cursor-pointer rounded-lg p-1.5 text-rose-500 transition hover:bg-rose-500/10 hover:text-rose-700"
-                                                        title="Delete Student"
+                                                        title={t('Delete Student')}
                                                     >
                                                         <Trash2 className="h-3.5 w-3.5" />
                                                     </button>
@@ -312,7 +311,7 @@ export default function Students({ students = [] }: StudentsProps) {
                                                 colSpan={4}
                                                 className="p-8 text-center text-xs font-bold text-arabic-bronze/50"
                                             >
-                                                No student accounts found.
+                                                {t('No student accounts found.')}
                                             </td>
                                         </tr>
                                     )}
@@ -329,10 +328,10 @@ export default function Students({ students = [] }: StudentsProps) {
                             <div className="flex shrink-0 items-center justify-between border-b border-arabic-cream bg-arabic-cream/60 px-6 py-4">
                                 <div>
                                     <span className="block text-[9px] font-bold tracking-widest text-arabic-gold uppercase">
-                                        Student Onboarding
+                                        {t('Student Onboarding')}
                                     </span>
                                     <h4 className="font-serif text-base font-black text-arabic-bronze">
-                                        Add New Student
+                                        {t('Add New Student')}
                                     </h4>
                                 </div>
                                 <button
@@ -350,7 +349,7 @@ export default function Students({ students = [] }: StudentsProps) {
                                 <div className="flex-1 space-y-4 overflow-y-auto p-6 text-xs">
                                     <div className="space-y-1.5">
                                         <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                            Full Name
+                                            {t('Full Name')}
                                         </label>
                                         <Input
                                             type="text"
@@ -367,7 +366,7 @@ export default function Students({ students = [] }: StudentsProps) {
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                            Email Address
+                                            {t('Email Address')}
                                         </label>
                                         <Input
                                             type="email"
@@ -384,7 +383,7 @@ export default function Students({ students = [] }: StudentsProps) {
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                            Account Password
+                                            {t('Account Password')}
                                         </label>
                                         <Input
                                             type="password"
@@ -410,7 +409,7 @@ export default function Students({ students = [] }: StudentsProps) {
                                         }
                                         className="h-9 cursor-pointer rounded-full border-arabic-bronze/25 text-xs font-bold text-arabic-bronze hover:bg-arabic-cream"
                                     >
-                                        Cancel
+                                        {t('Cancel')}
                                     </Button>
                                     <Button
                                         type="submit"
@@ -418,8 +417,8 @@ export default function Students({ students = [] }: StudentsProps) {
                                         className="h-9 cursor-pointer rounded-full bg-arabic-bronze px-6 text-xs font-bold text-arabic-sand shadow-sm hover:bg-arabic-bronze/90"
                                     >
                                         {newStudentForm.processing
-                                            ? 'Saving...'
-                                            : 'Add Student'}
+                                            ? t('Saving...')
+                                            : t('Add Student')}
                                     </Button>
                                 </div>
                             </form>
@@ -434,10 +433,10 @@ export default function Students({ students = [] }: StudentsProps) {
                             <div className="flex shrink-0 items-center justify-between border-b border-arabic-cream bg-arabic-cream/60 px-6 py-4">
                                 <div>
                                     <span className="block text-[9px] font-bold tracking-widest text-arabic-gold uppercase">
-                                        Profile Editor
+                                        {t('Profile Editor')}
                                     </span>
                                     <h4 className="font-serif text-base font-black text-arabic-bronze">
-                                        Edit Student Profile
+                                        {t('Edit Student Profile')}
                                     </h4>
                                 </div>
                                 <button
@@ -455,7 +454,7 @@ export default function Students({ students = [] }: StudentsProps) {
                                 <div className="flex-1 space-y-4 overflow-y-auto p-6 text-xs">
                                     <div className="space-y-1.5">
                                         <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                            Full Name
+                                            {t('Full Name')}
                                         </label>
                                         <Input
                                             type="text"
@@ -471,7 +470,7 @@ export default function Students({ students = [] }: StudentsProps) {
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                            Email Address
+                                            {t('Email Address')}
                                         </label>
                                         <Input
                                             type="email"
@@ -487,8 +486,7 @@ export default function Students({ students = [] }: StudentsProps) {
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                            New Password (Leave blank to keep
-                                            current)
+                                            {t('New Password (Leave blank to keep current)')}
                                         </label>
                                         <Input
                                             type="password"
@@ -514,7 +512,7 @@ export default function Students({ students = [] }: StudentsProps) {
                                         onClick={() => setEditingStudent(null)}
                                         className="h-9 cursor-pointer rounded-full border-arabic-bronze/25 text-xs font-bold text-arabic-bronze hover:bg-arabic-cream"
                                     >
-                                        Cancel
+                                        {t('Cancel')}
                                     </Button>
                                     <Button
                                         type="submit"
@@ -522,8 +520,8 @@ export default function Students({ students = [] }: StudentsProps) {
                                         className="h-9 cursor-pointer rounded-full bg-arabic-bronze px-6 text-xs font-bold text-arabic-sand shadow-sm hover:bg-arabic-bronze/90"
                                     >
                                         {editStudentForm.processing
-                                            ? 'Saving...'
-                                            : 'Save Changes'}
+                                            ? t('Saving...')
+                                            : t('Save Changes')}
                                     </Button>
                                 </div>
                             </form>

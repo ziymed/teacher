@@ -10,13 +10,14 @@ uses(RefreshDatabase::class);
 test('tuhfatul athfal program is seeded successfully', function () {
     $this->seed(DatabaseSeeder::class);
 
-    $program = Program::where('name', 'Tuhfatul Athfal Program')->first();
+    $program = Program::where('name->en', 'Tuhfatul Athfal Program')->first();
 
     expect($program)->not->toBeNull();
-    expect($program->description)->toContain('12 minggu');
-    expect($program->details_json)->toBeArray();
-    expect($program->details_json)->toContain('Menghafal matan Tuhfatul Athfal');
-    expect($program->details_json)->toContain('Memahami makna setiap bait');
+    app()->setLocale('id');
+    expect($program->description_translation)->toContain('12 minggu');
+    expect($program->details_translation)->toBeArray();
+    expect($program->details_translation)->toContain('Menghafal matan Tuhfatul Athfal');
+    expect($program->details_translation)->toContain('Memahami makna setiap bait');
 });
 
 test('tuhfatul athfal program is visible on the landing page', function () {
@@ -38,20 +39,30 @@ test('admin can create a program', function () {
 
     $response = $this->actingAs($admin)
         ->post(route('admin.programs.store'), [
-            'name' => 'New Qiraat Program',
-            'description' => 'Advanced reading rules',
-            'details_json' => 'Rule 1, Rule 2',
+            'name' => [
+                'id' => 'New Qiraat Program',
+                'ar' => 'برنامج القراءات الجديد',
+                'en' => 'New Qiraat Program',
+            ],
+            'description' => [
+                'id' => 'Advanced reading rules',
+                'ar' => 'قواعد القراءة المتقدمة',
+                'en' => 'Advanced reading rules',
+            ],
+            'details_json' => [
+                'id' => 'Rule 1, Rule 2',
+                'ar' => 'القاعدة 1, القاعدة 2',
+                'en' => 'Rule 1, Rule 2',
+            ],
         ]);
 
     $response->assertRedirect();
-    $this->assertDatabaseHas('programs', [
-        'name' => 'New Qiraat Program',
-        'description' => 'Advanced reading rules',
-        'is_hidden' => false,
-    ]);
 
-    $program = Program::where('name', 'New Qiraat Program')->first();
-    expect($program->details_json)->toBe(['Rule 1', 'Rule 2']);
+    $program = Program::where('name->en', 'New Qiraat Program')->first();
+    expect($program)->not->toBeNull();
+    expect($program->description['en'])->toBe('Advanced reading rules');
+    expect($program->is_hidden)->toBeFalse();
+    expect($program->details_json['en'])->toBe(['Rule 1', 'Rule 2']);
 });
 
 test('admin can update a program', function () {
@@ -63,23 +74,47 @@ test('admin can update a program', function () {
     ]);
 
     $program = Program::create([
-        'name' => 'Old Program',
-        'description' => 'Old description',
-        'details_json' => ['Old detail'],
+        'name' => [
+            'id' => 'Old Program',
+            'ar' => 'البرنامج القديم',
+            'en' => 'Old Program',
+        ],
+        'description' => [
+            'id' => 'Old description',
+            'ar' => 'الوصف القديم',
+            'en' => 'Old description',
+        ],
+        'details_json' => [
+            'id' => ['Old detail'],
+            'ar' => ['تفصيل قديم'],
+            'en' => ['Old detail'],
+        ],
     ]);
 
     $response = $this->actingAs($admin)
         ->put(route('admin.programs.update', $program), [
-            'name' => 'Updated Program',
-            'description' => 'Updated description',
-            'details_json' => 'New detail 1, New detail 2',
+            'name' => [
+                'id' => 'Updated Program',
+                'ar' => 'البرنامج المحدث',
+                'en' => 'Updated Program',
+            ],
+            'description' => [
+                'id' => 'Updated description',
+                'ar' => 'الوصف المحدث',
+                'en' => 'Updated description',
+            ],
+            'details_json' => [
+                'id' => 'New detail 1, New detail 2',
+                'ar' => 'تفصيل جديد 1, تفصيل جديد 2',
+                'en' => 'New detail 1, New detail 2',
+            ],
         ]);
 
     $response->assertRedirect();
     $program->refresh();
-    expect($program->name)->toBe('Updated Program');
-    expect($program->description)->toBe('Updated description');
-    expect($program->details_json)->toBe(['New detail 1', 'New detail 2']);
+    expect($program->name['en'])->toBe('Updated Program');
+    expect($program->description['en'])->toBe('Updated description');
+    expect($program->details_json['en'])->toBe(['New detail 1', 'New detail 2']);
 });
 
 test('admin can toggle program visibility', function () {
@@ -91,9 +126,21 @@ test('admin can toggle program visibility', function () {
     ]);
 
     $program = Program::create([
-        'name' => 'Test Program',
-        'description' => 'Description',
-        'details_json' => [],
+        'name' => [
+            'id' => 'Test Program',
+            'ar' => 'برنامج تجريبي',
+            'en' => 'Test Program',
+        ],
+        'description' => [
+            'id' => 'Description',
+            'ar' => 'وصف',
+            'en' => 'Description',
+        ],
+        'details_json' => [
+            'id' => [],
+            'ar' => [],
+            'en' => [],
+        ],
         'is_hidden' => false,
     ]);
 
@@ -119,9 +166,21 @@ test('admin can delete a program if no dependencies exist', function () {
     ]);
 
     $program = Program::create([
-        'name' => 'Delete Me',
-        'description' => 'Description',
-        'details_json' => [],
+        'name' => [
+            'id' => 'Delete Me',
+            'ar' => 'احذفني',
+            'en' => 'Delete Me',
+        ],
+        'description' => [
+            'id' => 'Description',
+            'ar' => 'وصف',
+            'en' => 'Description',
+        ],
+        'details_json' => [
+            'id' => [],
+            'ar' => [],
+            'en' => [],
+        ],
     ]);
 
     $response = $this->actingAs($admin)
@@ -141,12 +200,25 @@ test('non-admin cannot manage programs', function () {
 
     $response = $this->actingAs($student)
         ->post(route('admin.programs.store'), [
-            'name' => 'Fail Program',
-            'description' => 'Fail desc',
+            'name' => [
+                'id' => 'Fail Program',
+                'ar' => 'برنامج فاشl',
+                'en' => 'Fail Program',
+            ],
+            'description' => [
+                'id' => 'Fail desc',
+                'ar' => 'وصف فاشl',
+                'en' => 'Fail desc',
+            ],
+            'details_json' => [
+                'id' => '',
+                'ar' => '',
+                'en' => '',
+            ],
         ]);
 
     $response->assertSessionHasErrors();
-    $this->assertDatabaseMissing('programs', ['name' => 'Fail Program']);
+    $this->assertFalse(Program::where('name->en', 'Fail Program')->exists());
 });
 
 test('admin can access the programs index page', function () {
@@ -158,9 +230,21 @@ test('admin can access the programs index page', function () {
     ]);
 
     Program::create([
-        'name' => 'Index Test Program',
-        'description' => 'Test desc',
-        'details_json' => [],
+        'name' => [
+            'id' => 'Index Test Program',
+            'ar' => 'برنامج الفحص',
+            'en' => 'Index Test Program',
+        ],
+        'description' => [
+            'id' => 'Test desc',
+            'ar' => 'الوصف الفحص',
+            'en' => 'Test desc',
+        ],
+        'details_json' => [
+            'id' => [],
+            'ar' => [],
+            'en' => [],
+        ],
     ]);
 
     $response = $this->actingAs($admin)

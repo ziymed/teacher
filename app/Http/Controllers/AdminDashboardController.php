@@ -135,14 +135,26 @@ class AdminDashboardController extends Controller
         }
 
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['required', 'string'],
-            'details_json' => ['nullable', 'string'],
+            'name' => ['required', 'array'],
+            'name.id' => ['required', 'string', 'max:255'],
+            'name.ar' => ['required', 'string', 'max:255'],
+            'name.en' => ['required', 'string', 'max:255'],
+            'description' => ['required', 'array'],
+            'description.id' => ['required', 'string'],
+            'description.ar' => ['required', 'string'],
+            'description.en' => ['required', 'string'],
+            'details_json' => ['required', 'array'],
+            'details_json.id' => ['nullable', 'string'],
+            'details_json.ar' => ['nullable', 'string'],
+            'details_json.en' => ['nullable', 'string'],
         ]);
 
         $details = [];
-        if ($request->filled('details_json')) {
-            $details = array_filter(array_map('trim', explode(',', $request->details_json)));
+        foreach (['id', 'ar', 'en'] as $lang) {
+            $val = $request->input("details_json.{$lang}");
+            $details[$lang] = ! empty($val)
+                ? array_filter(array_map('trim', explode(',', $val)))
+                : [];
         }
 
         Program::create([
@@ -167,14 +179,26 @@ class AdminDashboardController extends Controller
         }
 
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['required', 'string'],
-            'details_json' => ['nullable', 'string'],
+            'name' => ['required', 'array'],
+            'name.id' => ['required', 'string', 'max:255'],
+            'name.ar' => ['required', 'string', 'max:255'],
+            'name.en' => ['required', 'string', 'max:255'],
+            'description' => ['required', 'array'],
+            'description.id' => ['required', 'string'],
+            'description.ar' => ['required', 'string'],
+            'description.en' => ['required', 'string'],
+            'details_json' => ['required', 'array'],
+            'details_json.id' => ['nullable', 'string'],
+            'details_json.ar' => ['nullable', 'string'],
+            'details_json.en' => ['nullable', 'string'],
         ]);
 
         $details = [];
-        if ($request->filled('details_json')) {
-            $details = array_filter(array_map('trim', explode(',', $request->details_json)));
+        foreach (['id', 'ar', 'en'] as $lang) {
+            $val = $request->input("details_json.{$lang}");
+            $details[$lang] = ! empty($val)
+                ? array_filter(array_map('trim', explode(',', $val)))
+                : [];
         }
 
         $program->update([
@@ -267,7 +291,10 @@ class AdminDashboardController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8'],
-            'bio' => ['required', 'string'],
+            'bio' => ['required', 'array'],
+            'bio.id' => ['required', 'string'],
+            'bio.ar' => ['required', 'string'],
+            'bio.en' => ['required', 'string'],
             'whatsapp_number' => ['required', 'string', 'max:255'],
             'zoom_link' => ['nullable', 'url', 'max:255'],
             'google_meet_link' => ['nullable', 'url', 'max:255'],
@@ -318,7 +345,10 @@ class AdminDashboardController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$teacher->id],
             'password' => ['nullable', 'string', 'min:8'],
-            'bio' => ['required', 'string'],
+            'bio' => ['required', 'array'],
+            'bio.id' => ['required', 'string'],
+            'bio.ar' => ['required', 'string'],
+            'bio.en' => ['required', 'string'],
             'whatsapp_number' => ['required', 'string', 'max:255'],
             'zoom_link' => ['nullable', 'url', 'max:255'],
             'google_meet_link' => ['nullable', 'url', 'max:255'],

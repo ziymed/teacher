@@ -36,6 +36,8 @@ import {
     store as storeBooking,
 } from '@/routes/bookings';
 import { verify as verifyCertificate } from '@/routes/certificates';
+import { useTranslation } from '@/hooks/use-translation';
+import { getTranslation } from '@/lib/translation-utils';
 
 interface Slot {
     id: number;
@@ -101,6 +103,7 @@ export default function StudentDashboard({
 }: StudentDashboardProps) {
     const { auth } = usePage<any>().props;
     const user = auth?.user;
+    const { t, locale } = useTranslation();
 
     const [selectedBooking, setSelectedBooking] = useState<Booking | null>(
         null,
@@ -198,12 +201,12 @@ export default function StudentDashboard({
         e.preventDefault();
 
         if (!selectedSlot) {
-            toast.error('Please choose a time slot.');
+            toast.error(t('Please choose a time slot.'));
             return;
         }
 
         if (!selectedProgramId) {
-            toast.error('Please select one of our Quranic programs.');
+            toast.error(t('Please select one of our Quranic programs.'));
             return;
         }
 
@@ -222,11 +225,11 @@ export default function StudentDashboard({
                 setSelectedProgramId(null);
                 setNotes('');
                 toast.success(
-                    'Alhamdulillah! Your private 1-to-1 session has been booked successfully.',
+                    t('Alhamdulillah! Your private 1-to-1 session has been booked successfully.'),
                 );
             },
             onError: (err: any) => {
-                toast.error(err.error || 'Failed to submit session booking.');
+                toast.error(err.error || t('Failed to submit session booking.'));
             },
         });
     };
@@ -340,7 +343,7 @@ export default function StudentDashboard({
                 preserveScroll: true,
                 onSuccess: () => {
                     toast.success(
-                        'Alhamdulillah! Dashboard layout updated successfully.',
+                        t('Alhamdulillah! Dashboard layout updated successfully.'),
                     );
                 },
             },
@@ -358,7 +361,7 @@ export default function StudentDashboard({
                 preserveScroll: true,
                 onSuccess: () => {
                     toast.success(
-                        'Alhamdulillah! Dashboard layout reset successfully.',
+                        t('Alhamdulillah! Dashboard layout reset successfully.'),
                     );
                 },
             },
@@ -368,25 +371,25 @@ export default function StudentDashboard({
     const handleCancelBooking = (bookingId: number) => {
         if (
             confirm(
-                'Are you sure you want to cancel this scheduled learning session?',
+                t('Are you sure you want to cancel this scheduled learning session?'),
             )
         ) {
             cancelForm.delete(destroyBooking.url(bookingId), {
                 onSuccess: () => {
                     toast.success(
-                        'Alhamdulillah! Your booking has been cancelled and the slot is open.',
+                        t('Alhamdulillah! Your booking has been cancelled and the slot is open.'),
                     );
                 },
                 onError: (err: any) => {
-                    toast.error(err.error || 'Failed to cancel session.');
+                    toast.error(err.error || t('Failed to cancel session.'));
                 },
             });
         }
     };
 
     const breadcrumbs = [
-        { title: 'Dashboard', href: dashboard() },
-        { title: 'Student Portal', href: studentDashboard() },
+        { title: t('Dashboard'), href: dashboard() },
+        { title: t('Student Portal'), href: studentDashboard() },
     ];
 
     const renderSection = (id: string) => {
@@ -403,15 +406,14 @@ export default function StudentDashboard({
                                 <CardTitle className="flex items-center gap-2 font-serif text-lg font-black text-arabic-bronze">
                                     <GripVertical className="h-4 w-4 shrink-0 text-arabic-gold/70" />
                                     <Calendar className="h-5 w-5 text-arabic-gold" />{' '}
-                                    Book a New Session
+                                    {t('Book a New Session')}
                                 </CardTitle>
                                 <CardDescription className="text-xs text-muted-foreground">
-                                    Choose an available slot with our Moroccan
-                                    teachers.
+                                    {t('Choose an available slot with our Moroccan teachers.')}
                                 </CardDescription>
                             </div>
                             <Badge className="bg-arabic-cream text-[9px] font-bold text-arabic-bronze">
-                                Draggable
+                                {t('Draggable')}
                             </Badge>
                         </CardHeader>
 
@@ -421,7 +423,7 @@ export default function StudentDashboard({
                                     {/* Step 1: Select Date */}
                                     <div className="space-y-2">
                                         <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                            Select Date
+                                            {t('Select Date')}
                                         </label>
                                         <div className="flex scrollbar-thin gap-2 overflow-x-auto pb-1.5">
                                             {availableDates.map((dateStr) => {
@@ -432,14 +434,14 @@ export default function StudentDashboard({
                                                     selectedDate === dateStr;
                                                 const dayName =
                                                     dateObj.toLocaleDateString(
-                                                        'en-US',
+                                                        locale === 'id' ? 'id-ID' : locale === 'ar' ? 'ar-EG' : 'en-US',
                                                         { weekday: 'short' },
                                                     );
                                                 const dayNum =
                                                     dateObj.getDate();
                                                 const monthName =
                                                     dateObj.toLocaleDateString(
-                                                        'en-US',
+                                                        locale === 'id' ? 'id-ID' : locale === 'ar' ? 'ar-EG' : 'en-US',
                                                         { month: 'short' },
                                                     );
 
@@ -477,7 +479,7 @@ export default function StudentDashboard({
                                     {selectedDate && (
                                         <div className="animate-in space-y-2 duration-200 fade-in">
                                             <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                Select Time Slot
+                                                {t('Select Time Slot')}
                                             </label>
                                             <div className="grid max-h-[140px] grid-cols-2 gap-2 overflow-y-auto pr-1">
                                                 {getSlotsForDate(
@@ -546,7 +548,7 @@ export default function StudentDashboard({
                                             {/* Select Program */}
                                             <div className="space-y-2">
                                                 <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                    Select Class Program
+                                                    {t('Select Class Program')}
                                                 </label>
                                                 <div className="grid grid-cols-2 gap-2">
                                                     {programs.map((prog) => (
@@ -565,8 +567,11 @@ export default function StudentDashboard({
                                                                     : 'border-arabic-cream bg-arabic-sand text-arabic-bronze hover:bg-arabic-cream'
                                                             }`}
                                                         >
-                                                            {prog.name.replace(
+                                                            {getTranslation(prog.name, locale).replace(
                                                                 ' Program',
+                                                                '',
+                                                            ).replace(
+                                                                'Program ',
                                                                 '',
                                                             )}
                                                         </button>
@@ -577,7 +582,7 @@ export default function StudentDashboard({
                                             {/* Select Platform */}
                                             <div className="space-y-2">
                                                 <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                    Select Meeting Platform
+                                                    {t('Select Meeting Platform')}
                                                 </label>
                                                 <div className="flex gap-2">
                                                     {(!selectedSlot.teacher
@@ -632,10 +637,10 @@ export default function StudentDashboard({
                                             {/* Notes */}
                                             <div className="space-y-2">
                                                 <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                    Study Notes (Optional)
+                                                    {t('Study Notes (Optional)')}
                                                 </label>
                                                 <Textarea
-                                                    placeholder="Focus areas (e.g. pronunciation, memorization)..."
+                                                    placeholder={t('Focus areas (e.g. pronunciation, memorization)...')}
                                                     value={notes}
                                                     onChange={(e) =>
                                                         setNotes(e.target.value)
@@ -650,8 +655,7 @@ export default function StudentDashboard({
                                 <div className="space-y-2 bg-arabic-sand p-4 text-center">
                                     <AlertCircle className="mx-auto h-6 w-6 text-arabic-bronze/30" />
                                     <p className="text-xs font-semibold text-arabic-bronze/60">
-                                        No available time slots. Please check
-                                        back later.
+                                        {t('No available time slots. Please check back later.')}
                                     </p>
                                 </div>
                             )}
@@ -667,10 +671,10 @@ export default function StudentDashboard({
                                     {bookingForm.processing ? (
                                         <>
                                             <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                            Booking...
+                                            {t('Booking...')}
                                         </>
                                     ) : (
-                                        'Confirm Booking'
+                                        t('Confirm Booking')
                                     )}
                                 </Button>
                             </CardFooter>
@@ -685,10 +689,10 @@ export default function StudentDashboard({
                             <h3 className="flex items-center gap-2 font-serif text-xl font-black text-arabic-bronze">
                                 <GripVertical className="h-4 w-4 shrink-0 text-arabic-gold/70" />
                                 <Calendar className="h-5 w-5 text-arabic-gold" />{' '}
-                                Upcoming Private Classes
+                                {t('Upcoming Private Classes')}
                             </h3>
                             <Badge className="bg-arabic-cream text-[9px] font-bold text-arabic-bronze">
-                                Draggable
+                                {t('Draggable')}
                             </Badge>
                         </div>
 
@@ -703,11 +707,14 @@ export default function StudentDashboard({
                                     );
 
                                     const formattedDate =
-                                        startTime.toLocaleDateString('en-US', {
-                                            weekday: 'short',
-                                            month: 'short',
-                                            day: 'numeric',
-                                        });
+                                        startTime.toLocaleDateString(
+                                            locale === 'id' ? 'id-ID' : locale === 'ar' ? 'ar-EG' : 'en-US',
+                                            {
+                                                weekday: 'short',
+                                                month: 'short',
+                                                day: 'numeric',
+                                            }
+                                        );
 
                                     const formattedTime =
                                         startTime.toLocaleTimeString([], {
@@ -733,19 +740,21 @@ export default function StudentDashboard({
                                                         variant="secondary"
                                                         className="rounded-full bg-arabic-cream text-[9px] font-bold text-arabic-bronze uppercase"
                                                     >
-                                                        {booking.program.name.replace(
+                                                        {getTranslation(booking.program.name, locale).replace(
                                                             ' Program',
+                                                            '',
+                                                        ).replace(
+                                                            'Program ',
                                                             '',
                                                         )}
                                                     </Badge>
                                                     <span className="flex items-center gap-1 text-[10px] font-black text-arabic-emerald">
                                                         <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-arabic-emerald" />{' '}
-                                                        Scheduled
+                                                        {t('Confirmed Bookings')}
                                                     </span>
                                                 </div>
                                                 <CardTitle className="mt-2 text-sm font-black text-arabic-bronze">
-                                                    Class with{' '}
-                                                    {booking.slot.teacher.name}
+                                                    {t('Class with')} {booking.slot.teacher.name}
                                                 </CardTitle>
                                                 <CardDescription className="mt-1 flex items-center gap-1 text-[11px] font-medium text-arabic-bronze/70">
                                                     <Clock className="h-3.5 w-3.5 text-arabic-gold" />{' '}
@@ -758,7 +767,7 @@ export default function StudentDashboard({
                                                 {booking.student_notes && (
                                                     <div className="rounded-xl border border-arabic-cream/60 bg-arabic-cream/35 p-3 text-[10px] font-medium text-arabic-bronze/80">
                                                         <span className="mb-0.5 block font-bold text-arabic-bronze">
-                                                            My Notes:
+                                                            {t('My Notes:')}
                                                         </span>
                                                         "{booking.student_notes}
                                                         "
@@ -775,7 +784,7 @@ export default function StudentDashboard({
                                                 >
                                                     <Button className="h-9 w-full gap-1.5 rounded-xl bg-arabic-bronze text-xs font-bold text-arabic-sand shadow-sm hover:bg-arabic-bronze/90">
                                                         <Video className="h-4 w-4 animate-bounce text-arabic-gold" />{' '}
-                                                        Join Video
+                                                        {t('Join Video')}
                                                     </Button>
                                                 </a>
                                                 <Button
@@ -787,7 +796,7 @@ export default function StudentDashboard({
                                                     }
                                                     className="h-9 rounded-xl border border-rose-500/25 text-xs text-rose-600 hover:bg-rose-500/10"
                                                 >
-                                                    Cancel
+                                                    {t('Cancel')}
                                                 </Button>
                                             </CardFooter>
                                         </Card>
@@ -798,15 +807,14 @@ export default function StudentDashboard({
                             <div className="space-y-3 rounded-[2rem] border border-arabic-cream bg-arabic-sand p-8 text-center">
                                 <AlertCircle className="mx-auto h-8 w-8 text-arabic-bronze/30" />
                                 <p className="text-xs font-bold text-arabic-bronze/60">
-                                    You have no upcoming private classes
-                                    scheduled.
+                                    {t('You have no upcoming private classes scheduled.')}
                                 </p>
                                 <Link href="/">
                                     <Button
                                         size="sm"
                                         className="mt-1 h-8 rounded-full bg-arabic-bronze text-[11px] text-arabic-sand"
                                     >
-                                        Book Class Now
+                                        {t('Book Class Now')}
                                     </Button>
                                 </Link>
                             </div>
@@ -821,10 +829,10 @@ export default function StudentDashboard({
                             <h3 className="flex items-center gap-2 font-serif text-xl font-black text-arabic-bronze">
                                 <GripVertical className="h-4 w-4 shrink-0 text-arabic-gold/70" />
                                 <BookOpen className="h-5 w-5 text-arabic-gold" />{' '}
-                                Previous Sessions & Progress History
+                                {t('Previous Sessions & Progress History')}
                             </h3>
                             <Badge className="bg-arabic-cream text-[9px] font-bold text-arabic-bronze">
-                                Draggable
+                                {t('Draggable')}
                             </Badge>
                         </div>
 
@@ -833,12 +841,15 @@ export default function StudentDashboard({
                                 {pastBookings.map((booking) => {
                                     const dateStr = new Date(
                                         booking.slot.start_time,
-                                    ).toLocaleDateString('en-US', {
-                                        weekday: 'short',
-                                        month: 'short',
-                                        day: 'numeric',
-                                        year: 'numeric',
-                                    });
+                                    ).toLocaleDateString(
+                                        locale === 'id' ? 'id-ID' : locale === 'ar' ? 'ar-EG' : 'en-US',
+                                        {
+                                            weekday: 'short',
+                                            month: 'short',
+                                            day: 'numeric',
+                                            year: 'numeric',
+                                        }
+                                    );
 
                                     return (
                                         <div
@@ -855,10 +866,7 @@ export default function StudentDashboard({
                                                 <div>
                                                     <div className="flex items-center gap-2">
                                                         <span className="text-xs font-black text-arabic-bronze">
-                                                            {
-                                                                booking.program
-                                                                    .name
-                                                            }
+                                                            {getTranslation(booking.program.name, locale)}
                                                         </span>
                                                         <Badge
                                                             variant="secondary"
@@ -880,14 +888,14 @@ export default function StudentDashboard({
                                             <div className="flex items-center gap-3 self-end sm:self-center">
                                                 {booking.teacher_feedback ? (
                                                     <Badge className="rounded-full bg-arabic-gold px-2 py-0.5 text-[9px] font-bold text-arabic-bronze">
-                                                        Feedback Available
+                                                        {t('Feedback Available')}
                                                     </Badge>
                                                 ) : (
                                                     <Badge
                                                         variant="outline"
                                                         className="rounded-full border-arabic-cream px-2 py-0.5 text-[9px] font-bold text-arabic-bronze/60"
                                                     >
-                                                        Finished
+                                                        {t('Finished')}
                                                     </Badge>
                                                 )}
                                                 <ChevronRight className="h-4 w-4 text-arabic-bronze/40" />
@@ -898,9 +906,7 @@ export default function StudentDashboard({
                             </div>
                         ) : (
                             <div className="rounded-[2rem] border border-arabic-cream bg-arabic-sand p-8 text-center text-xs font-bold text-arabic-bronze/60">
-                                No completed sessions yet. Once your teacher
-                                completes a class, progress details will appear
-                                here.
+                                {t('No completed sessions yet. Once your teacher completes a class, progress details will appear here.')}
                             </div>
                         )}
                     </div>
@@ -913,10 +919,10 @@ export default function StudentDashboard({
                             <h3 className="flex items-center gap-2 font-serif text-xl font-black text-arabic-bronze">
                                 <GripVertical className="h-4 w-4 shrink-0 text-arabic-gold/70" />
                                 <Award className="h-5 w-5 text-arabic-gold" />{' '}
-                                My Certificates
+                                {t('My Certificates')}
                             </h3>
                             <Badge className="bg-arabic-cream text-[9px] font-bold text-arabic-bronze">
-                                Draggable
+                                {t('Draggable')}
                             </Badge>
                         </div>
 
@@ -925,11 +931,14 @@ export default function StudentDashboard({
                                 {certificates.map((cert) => {
                                     const issueDate = new Date(
                                         cert.issued_at,
-                                    ).toLocaleDateString('en-US', {
-                                        month: 'long',
-                                        day: 'numeric',
-                                        year: 'numeric',
-                                    });
+                                    ).toLocaleDateString(
+                                        locale === 'id' ? 'id-ID' : locale === 'ar' ? 'ar-EG' : 'en-US',
+                                        {
+                                            month: 'long',
+                                            day: 'numeric',
+                                            year: 'numeric',
+                                        }
+                                    );
 
                                     return (
                                         <Card
@@ -940,16 +949,16 @@ export default function StudentDashboard({
                                             <CardHeader className="p-5 pb-2">
                                                 <Award className="mb-2 h-8 w-8 text-arabic-gold" />
                                                 <CardTitle className="text-xs font-black tracking-wider text-arabic-bronze uppercase">
-                                                    Certificate of Completion
+                                                    {t('Certificate of Completion')}
                                                 </CardTitle>
                                                 <CardDescription className="mt-1 text-xs font-bold text-arabic-gold">
-                                                    {cert.program.name}
+                                                    {getTranslation(cert.program.name, locale)}
                                                 </CardDescription>
                                             </CardHeader>
                                             <CardContent className="p-5 pt-2 pb-4 text-[10px] leading-relaxed font-medium text-arabic-bronze/70">
                                                 {cert.notes}
                                                 <span className="mt-2 block font-bold text-arabic-bronze">
-                                                    Issued on: {issueDate}
+                                                    {t('Issued on:')} {issueDate}
                                                 </span>
                                             </CardContent>
                                             <CardFooter className="border-t border-arabic-cream/45 bg-arabic-cream/15 p-5 pt-2">
@@ -960,7 +969,7 @@ export default function StudentDashboard({
                                                     className="w-full"
                                                 >
                                                     <Button className="h-9 w-full gap-1 rounded-xl bg-arabic-bronze text-xs font-bold text-arabic-sand shadow-sm hover:bg-arabic-bronze/90">
-                                                        View Credential{' '}
+                                                        {t('View Credential')}{' '}
                                                         <ArrowUpRight className="h-3.5 w-3.5 text-arabic-gold" />
                                                     </Button>
                                                 </Link>
@@ -973,12 +982,10 @@ export default function StudentDashboard({
                             <div className="space-y-2 rounded-[2rem] border border-arabic-cream bg-arabic-sand p-8 text-center">
                                 <Award className="mx-auto h-8 w-8 text-arabic-bronze/30" />
                                 <span className="block text-xs font-bold text-arabic-bronze/60">
-                                    No certificates earned yet.
+                                    {t('No certificates earned yet.')}
                                 </span>
                                 <p className="mx-auto max-w-[200px] text-[10px] leading-relaxed text-arabic-bronze/50">
-                                    Complete program levels and receive
-                                    recommendations from your teacher to earn
-                                    certificates.
+                                    {t('Complete program levels and receive recommendations from your teacher to earn certificates.')}
                                 </p>
                             </div>
                         )}
@@ -992,18 +999,17 @@ export default function StudentDashboard({
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Student Portal" />
+            <Head title={t('Student Portal')} />
 
             <div className="min-h-screen w-full space-y-8 bg-arabic-sand/20 p-6">
                 {/* Header Welcome Bar */}
                 <div className="flex flex-col justify-between gap-4 border-b border-arabic-cream/60 pb-6 md:flex-row md:items-center">
                     <div>
                         <h1 className="font-serif text-3xl font-black text-arabic-bronze">
-                            Ahlan wa Sahlan!
+                            {t('Ahlan wa Sahlan!')}
                         </h1>
                         <p className="mt-1 text-xs font-medium text-arabic-bronze/70">
-                            Manage your private Al-Quran sessions, review
-                            teacher feedback, and view earned certifications.
+                            {t('Manage your private Al-Quran sessions, review teacher feedback, and view earned certifications.')}
                         </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
@@ -1015,12 +1021,12 @@ export default function StudentDashboard({
                                 className="h-9 gap-1 rounded-full border-arabic-bronze/25 px-4 text-xs font-bold text-arabic-bronze shadow-sm hover:bg-arabic-cream"
                             >
                                 <RefreshCw className="h-3.5 w-3.5 text-arabic-gold" />{' '}
-                                Reset Layout
+                                {t('Reset Layout')}
                             </Button>
                         )}
                         <Link href="/student/dashboard#book-session">
                             <Button className="gap-1 rounded-full bg-arabic-gold text-xs font-black text-arabic-bronze shadow-md transition hover:bg-arabic-gold/90">
-                                Book Another Session{' '}
+                                {t('Book Another Session')}{' '}
                                 <ArrowUpRight className="h-3.5 w-3.5" />
                             </Button>
                         </Link>
@@ -1083,10 +1089,10 @@ export default function StudentDashboard({
                             <div className="flex shrink-0 items-center justify-between border-b border-arabic-cream bg-arabic-cream/60 px-6 py-4">
                                 <div>
                                     <span className="block text-[9px] font-bold tracking-widest text-arabic-gold uppercase">
-                                        Class Recap
+                                        {t('Class Recap')}
                                     </span>
                                     <h4 className="font-serif text-base font-black text-arabic-bronze">
-                                        {selectedBooking.program.name}
+                                        {getTranslation(selectedBooking.program.name, locale)}
                                     </h4>
                                 </div>
                                 <button
@@ -1101,7 +1107,7 @@ export default function StudentDashboard({
                                 <div className="flex items-center justify-between rounded-xl border border-arabic-cream bg-arabic-cream/20 p-3 text-[11px] font-bold">
                                     <div>
                                         <span className="block text-[9px] text-arabic-bronze/60">
-                                            Teacher
+                                            {t('Teacher')}
                                         </span>
                                         <span className="text-arabic-bronze">
                                             {selectedBooking.slot.teacher.name}
@@ -1109,34 +1115,37 @@ export default function StudentDashboard({
                                     </div>
                                     <div className="text-right">
                                         <span className="block text-[9px] text-arabic-bronze/60">
-                                            Date
+                                            {t('Date')}
                                         </span>
                                         <span className="text-arabic-bronze">
                                             {new Date(
                                                 selectedBooking.slot.start_time,
-                                            ).toLocaleDateString('en-US', {
-                                                month: 'short',
-                                                day: 'numeric',
-                                                year: 'numeric',
-                                            })}
+                                            ).toLocaleDateString(
+                                                locale === 'id' ? 'id-ID' : locale === 'ar' ? 'ar-EG' : 'en-US',
+                                                {
+                                                    month: 'short',
+                                                    day: 'numeric',
+                                                    year: 'numeric',
+                                                }
+                                            )}
                                         </span>
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
                                     <span className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                        Teacher Assessment & Feedback
+                                        {t('Teacher Assessment & Feedback')}
                                     </span>
                                     <div className="min-h-[120px] rounded-2xl border border-arabic-cream bg-arabic-cream/40 p-4 text-xs leading-relaxed font-medium whitespace-pre-line text-arabic-bronze/90">
                                         {selectedBooking.teacher_feedback ||
-                                            "The teacher hasn't logged the progress feedback for this session yet."}
+                                            t("The teacher hasn't logged the progress feedback for this session yet.")}
                                     </div>
                                 </div>
 
                                 {selectedBooking.student_notes && (
                                     <div className="space-y-1">
                                         <span className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                            My Study Intentions
+                                            {t('My Study Intentions')}
                                         </span>
                                         <p className="text-xs font-medium text-arabic-bronze/80 italic">
                                             "{selectedBooking.student_notes}"
@@ -1150,7 +1159,7 @@ export default function StudentDashboard({
                                     onClick={() => setSelectedBooking(null)}
                                     className="rounded-full bg-arabic-bronze px-6 text-xs font-bold text-arabic-sand hover:bg-arabic-bronze/90"
                                 >
-                                    Close
+                                    {t('Close')}
                                 </Button>
                             </div>
                         </div>

@@ -38,6 +38,8 @@ import {
     batch as batchSlots,
 } from '@/routes/teacher/slots';
 import { complete as completeBooking } from '@/routes/teacher/bookings';
+import { useTranslation } from '@/hooks/use-translation';
+import { getTranslation } from '@/lib/translation-utils';
 
 interface Slot {
     id: number;
@@ -82,6 +84,7 @@ export default function TeacherDashboard({
 }: TeacherDashboardProps) {
     const { auth } = usePage<any>().props;
     const user = auth?.user;
+    const { t, locale } = useTranslation();
 
     const [selectedBooking, setSelectedBooking] = useState<Booking | null>(
         null,
@@ -198,7 +201,7 @@ export default function TeacherDashboard({
                 preserveScroll: true,
                 onSuccess: () => {
                     toast.success(
-                        'Alhamdulillah! Dashboard layout updated successfully.',
+                        t('Alhamdulillah! Dashboard layout updated successfully.'),
                     );
                 },
             },
@@ -216,7 +219,7 @@ export default function TeacherDashboard({
                 preserveScroll: true,
                 onSuccess: () => {
                     toast.success(
-                        'Alhamdulillah! Dashboard layout reset successfully.',
+                        t('Alhamdulillah! Dashboard layout reset successfully.'),
                     );
                 },
             },
@@ -233,7 +236,7 @@ export default function TeacherDashboard({
         e.preventDefault();
 
         if (!slotForm.data.start_time) {
-            toast.error('Please choose a start date & time.');
+            toast.error(t('Please choose a start date & time.'));
             return;
         }
 
@@ -241,13 +244,13 @@ export default function TeacherDashboard({
             onSuccess: () => {
                 slotForm.reset();
                 toast.success(
-                    'Alhamdulillah! Teaching hour opened successfully!',
+                    t('Alhamdulillah! Teaching hour opened successfully!'),
                 );
             },
             onError: (err: any) => {
                 toast.error(
                     err.error ||
-                        'Failed to open slot. Check overlapping times.',
+                        t('Failed to open slot. Check overlapping times.'),
                 );
             },
         });
@@ -257,7 +260,7 @@ export default function TeacherDashboard({
         e.preventDefault();
 
         if (!batchForm.data.start_date || !batchForm.data.end_date) {
-            toast.error('Please choose a start date & end date.');
+            toast.error(t('Please choose a start date & end date.'));
             return;
         }
 
@@ -265,11 +268,11 @@ export default function TeacherDashboard({
             onSuccess: () => {
                 batchForm.reset();
                 toast.success(
-                    'Alhamdulillah! Weekend slots generated successfully!',
+                    t('Alhamdulillah! Weekend slots generated successfully!'),
                 );
             },
             onError: (err: any) => {
-                toast.error(err.error || 'Failed to generate batch slots.');
+                toast.error(err.error || t('Failed to generate batch slots.'));
             },
         });
     };
@@ -277,13 +280,13 @@ export default function TeacherDashboard({
     // Slot Delete Form
     const deleteSlotForm = useForm({});
     const handleDeleteSlot = (slotId: number) => {
-        if (confirm('Are you sure you want to close this teaching slot?')) {
+        if (confirm(t('Are you sure you want to close this teaching slot?'))) {
             deleteSlotForm.delete(destroySlot.url(slotId), {
                 onSuccess: () => {
-                    toast.success('Slot closed successfully.');
+                    toast.success(t('Slot closed successfully.'));
                 },
                 onError: (err: any) => {
-                    toast.error(err.error || 'Failed to close slot.');
+                    toast.error(err.error || t('Failed to close slot.'));
                 },
             });
         }
@@ -294,7 +297,7 @@ export default function TeacherDashboard({
         if (!editingSlot) return;
 
         if (!editSlotForm.data.start_time) {
-            toast.error('Please choose a start date & time.');
+            toast.error(t('Please choose a start date & time.'));
             return;
         }
 
@@ -303,11 +306,11 @@ export default function TeacherDashboard({
                 setEditingSlot(null);
                 editSlotForm.reset();
                 toast.success(
-                    'Alhamdulillah! Teaching hour updated successfully.',
+                    t('Alhamdulillah! Teaching hour updated successfully.'),
                 );
             },
             onError: (err: any) => {
-                toast.error(err.error || 'Failed to update slot.');
+                toast.error(err.error || t('Failed to update slot.'));
             },
         });
     };
@@ -323,7 +326,7 @@ export default function TeacherDashboard({
 
         if (!selectedBooking) return;
         if (completionForm.data.teacher_feedback.length < 10) {
-            toast.error('Feedback must be at least 10 characters long.');
+            toast.error(t('Feedback must be at least 10 characters long.'));
             return;
         }
 
@@ -332,18 +335,18 @@ export default function TeacherDashboard({
                 setSelectedBooking(null);
                 completionForm.reset();
                 toast.success(
-                    'Class marked as completed! Student progress report has been filed.',
+                    t('Class marked as completed! Student progress report has been filed.'),
                 );
             },
             onError: (err: any) => {
-                toast.error(err.error || 'Failed to complete session.');
+                toast.error(err.error || t('Failed to complete session.'));
             },
         });
     };
 
     const breadcrumbs = [
-        { title: 'Dashboard', href: dashboard() },
-        { title: 'Teacher Portal', href: teacherDashboard() },
+        { title: t('Dashboard'), href: dashboard() },
+        { title: t('Teacher Portal'), href: teacherDashboard() },
     ];
 
     // Filter upcoming booked sessions
@@ -372,10 +375,10 @@ export default function TeacherDashboard({
                             <h3 className="flex items-center gap-1.5 font-serif text-lg font-black text-arabic-bronze">
                                 <GripVertical className="h-4 w-4 shrink-0 text-arabic-gold/70" />
                                 <Plus className="h-4.5 w-4.5 text-arabic-gold" />{' '}
-                                Open Teaching Hour
+                                {t('Open Teaching Hour')}
                             </h3>
                             <Badge className="bg-arabic-cream text-[9px] font-bold text-arabic-bronze">
-                                Draggable
+                                {t('Draggable')}
                             </Badge>
                         </div>
                         <Card className="rounded-[1.5rem] border border-arabic-cream bg-arabic-sand shadow-sm">
@@ -390,7 +393,7 @@ export default function TeacherDashboard({
                                                 : 'text-arabic-bronze/40 hover:text-arabic-bronze/75'
                                         }`}
                                     >
-                                        Single Slot
+                                        {t('Single Slot')}
                                     </button>
                                     <button
                                         type="button"
@@ -401,19 +404,19 @@ export default function TeacherDashboard({
                                                 : 'text-arabic-bronze/40 hover:text-arabic-bronze/75'
                                         }`}
                                     >
-                                        Batch Weekends
+                                        {t('Batch Weekends')}
                                     </button>
                                 </div>
                                 <CardTitle className="flex items-center gap-1.5 text-sm font-black text-arabic-bronze">
                                     <Plus className="h-4 w-4 text-arabic-gold" />{' '}
                                     {activeTab === 'single'
-                                        ? 'Open Teaching Hour'
-                                        : 'Generate Weekend Slots'}
+                                        ? t('Open Teaching Hour')
+                                        : t('Generate Weekend Slots')}
                                 </CardTitle>
                                 <CardDescription className="text-[11px] font-medium text-arabic-bronze/70">
                                     {activeTab === 'single'
-                                        ? 'Create a custom private session slot for students to book.'
-                                        : 'Automatically generate slots for every Sat & Sun (8 AM - 6 PM) in a date range.'}
+                                        ? t('Create a custom private session slot for students to book.')
+                                        : t('Automatically generate slots for every Sat & Sun (8 AM - 6 PM) in a date range.')}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="p-5 pt-2">
@@ -424,7 +427,7 @@ export default function TeacherDashboard({
                                     >
                                         <div className="space-y-1.5">
                                             <label className="block text-[10px] font-bold text-arabic-bronze/60 uppercase">
-                                                Class Start Time
+                                                {t('Class Start Time')}
                                             </label>
                                             <Input
                                                 type="datetime-local"
@@ -440,7 +443,7 @@ export default function TeacherDashboard({
                                         </div>
                                         <div className="space-y-1.5">
                                             <label className="block text-[10px] font-bold text-arabic-bronze/60 uppercase">
-                                                Session Duration
+                                                {t('Session Duration')}
                                             </label>
                                             <select
                                                 value={slotForm.data.duration}
@@ -453,19 +456,19 @@ export default function TeacherDashboard({
                                                 className="w-full rounded-xl border border-arabic-cream bg-arabic-sand p-2.5 text-xs font-bold text-arabic-bronze shadow-sm outline-none focus:border-arabic-gold focus-visible:ring-0"
                                             >
                                                 <option value="30">
-                                                    30 minutes
+                                                    {t('30 minutes')}
                                                 </option>
                                                 <option value="45">
-                                                    45 minutes
+                                                    {t('45 minutes')}
                                                 </option>
                                                 <option value="60">
-                                                    60 minutes (1 hour)
+                                                    {t('60 minutes (1 hour)')}
                                                 </option>
                                                 <option value="90">
-                                                    90 minutes (1.5 hours)
+                                                    {t('90 minutes (1.5 hours)')}
                                                 </option>
                                                 <option value="120">
-                                                    120 minutes (2 hours)
+                                                    {t('120 minutes (2 hours)')}
                                                 </option>
                                             </select>
                                         </div>
@@ -475,8 +478,8 @@ export default function TeacherDashboard({
                                             className="h-10 w-full rounded-xl bg-arabic-bronze text-xs font-bold text-arabic-sand shadow-sm hover:bg-arabic-bronze/90"
                                         >
                                             {slotForm.processing
-                                                ? 'Opening...'
-                                                : 'Open Slot'}
+                                                ? t('Opening...')
+                                                : t('Open Slot')}
                                         </Button>
                                     </form>
                                 ) : (
@@ -486,7 +489,7 @@ export default function TeacherDashboard({
                                     >
                                         <div className="space-y-1.5">
                                             <label className="block text-[10px] font-bold text-arabic-bronze/60 uppercase">
-                                                Start Date
+                                                {t('Start Date')}
                                             </label>
                                             <Input
                                                 type="date"
@@ -504,7 +507,7 @@ export default function TeacherDashboard({
                                         </div>
                                         <div className="space-y-1.5">
                                             <label className="block text-[10px] font-bold text-arabic-bronze/60 uppercase">
-                                                End Date
+                                                {t('End Date')}
                                             </label>
                                             <Input
                                                 type="date"
@@ -520,7 +523,7 @@ export default function TeacherDashboard({
                                         </div>
                                         <div className="space-y-1.5">
                                             <label className="block text-[10px] font-bold text-arabic-bronze/60 uppercase">
-                                                Session Duration
+                                                {t('Session Duration')}
                                             </label>
                                             <select
                                                 value={batchForm.data.duration}
@@ -533,26 +536,24 @@ export default function TeacherDashboard({
                                                 className="w-full rounded-xl border border-arabic-cream bg-arabic-sand p-2.5 text-xs font-bold text-arabic-bronze shadow-sm outline-none focus:border-arabic-gold focus-visible:ring-0"
                                             >
                                                 <option value="30">
-                                                    30 minutes
+                                                    {t('30 minutes')}
                                                 </option>
                                                 <option value="45">
-                                                    45 minutes
+                                                    {t('45 minutes')}
                                                 </option>
                                                 <option value="60">
-                                                    60 minutes (1 hour)
+                                                    {t('60 minutes (1 hour)')}
                                                 </option>
                                                 <option value="90">
-                                                    90 minutes (1.5 hours)
+                                                    {t('90 minutes (1.5 hours)')}
                                                 </option>
                                                 <option value="120">
-                                                    120 minutes (2 hours)
+                                                    {t('120 minutes (2 hours)')}
                                                 </option>
                                             </select>
                                         </div>
                                         <div className="rounded-xl border border-arabic-cream bg-arabic-cream/30 p-3 text-[10px] leading-normal font-medium text-arabic-bronze/80">
-                                            💡 Generates non-overlapping slots
-                                            on **Saturdays & Sundays (8:00 AM to
-                                            6:00 PM)** within this range.
+                                            💡 {t('Generates non-overlapping slots on Saturdays & Sundays (8:00 AM to 6:00 PM) within this range.')}
                                         </div>
                                         <Button
                                             type="submit"
@@ -560,8 +561,8 @@ export default function TeacherDashboard({
                                             className="h-10 w-full rounded-xl bg-arabic-bronze text-xs font-bold text-arabic-sand shadow-sm hover:bg-arabic-bronze/90"
                                         >
                                             {batchForm.processing
-                                                ? 'Generating...'
-                                                : 'Generate Weekend Slots'}
+                                                ? t('Generating...')
+                                                : t('Generate Weekend Slots')}
                                         </Button>
                                     </form>
                                 )}
@@ -577,10 +578,10 @@ export default function TeacherDashboard({
                             <h3 className="flex items-center gap-2 font-serif text-lg font-black text-arabic-bronze">
                                 <GripVertical className="h-4 w-4 shrink-0 text-arabic-gold/70" />
                                 <Clock className="h-4.5 w-4.5 text-arabic-gold" />{' '}
-                                Hour Slots List
+                                {t('Hour Slots List')}
                             </h3>
                             <Badge className="bg-arabic-cream text-[9px] font-bold text-arabic-bronze">
-                                Draggable
+                                {t('Draggable')}
                             </Badge>
                         </div>
 
@@ -595,10 +596,13 @@ export default function TeacherDashboard({
                                             (1000 * 60),
                                     );
                                     const formattedTime =
-                                        startTime.toLocaleDateString('en-US', {
-                                            month: 'short',
-                                            day: 'numeric',
-                                        }) +
+                                        startTime.toLocaleDateString(
+                                            locale === 'id' ? 'id-ID' : locale === 'ar' ? 'ar-EG' : 'en-US',
+                                            {
+                                                month: 'short',
+                                                day: 'numeric',
+                                            }
+                                        ) +
                                         ' @ ' +
                                         startTime.toLocaleTimeString([], {
                                             hour: '2-digit',
@@ -622,7 +626,7 @@ export default function TeacherDashboard({
                                             <div className="flex items-center gap-2">
                                                 {slot.is_booked ? (
                                                     <Badge className="rounded-full bg-arabic-gold text-[9px] font-bold text-arabic-bronze">
-                                                        Booked
+                                                        {t('Booked')}
                                                     </Badge>
                                                 ) : (
                                                     <>
@@ -630,7 +634,7 @@ export default function TeacherDashboard({
                                                             variant="outline"
                                                             className="rounded-full border-arabic-cream text-[9px] font-bold text-arabic-bronze/60"
                                                         >
-                                                            Available
+                                                            {t('Available')}
                                                         </Badge>
                                                         <button
                                                             onClick={() => {
@@ -662,7 +666,7 @@ export default function TeacherDashboard({
                                                                 );
                                                             }}
                                                             className="cursor-pointer rounded-lg p-1 text-arabic-gold transition hover:bg-arabic-gold/10"
-                                                            title="Edit Slot Time"
+                                                            title={t('Edit Slot Time')}
                                                         >
                                                             <Pen className="h-3.5 w-3.5" />
                                                         </button>
@@ -673,7 +677,7 @@ export default function TeacherDashboard({
                                                                 )
                                                             }
                                                             className="cursor-pointer rounded-lg p-1 text-rose-500 transition hover:bg-rose-500/10"
-                                                            title="Delete Slot"
+                                                            title={t('Delete Slot')}
                                                         >
                                                             <X className="h-3.5 w-3.5" />
                                                         </button>
@@ -686,8 +690,7 @@ export default function TeacherDashboard({
                             </div>
                         ) : (
                             <div className="rounded-2xl border border-arabic-cream bg-arabic-sand p-6 text-center text-xs font-bold text-arabic-bronze/60">
-                                No teaching hour slots created yet. Use the card
-                                above to open hours.
+                                {t('No teaching hour slots created yet. Use the card above to open hours.')}
                             </div>
                         )}
                     </div>
@@ -700,10 +703,10 @@ export default function TeacherDashboard({
                             <h3 className="flex items-center gap-2 font-serif text-xl font-black text-rose-600">
                                 <GripVertical className="h-4 w-4 shrink-0 text-rose-500/70" />
                                 <MessageSquare className="h-5 w-5 animate-pulse text-rose-500" />{' '}
-                                Log Students Assessment Progress
+                                {t('Log Students Assessment Progress')}
                             </h3>
                             <Badge className="bg-arabic-cream text-[9px] font-bold text-arabic-bronze">
-                                Draggable
+                                {t('Draggable')}
                             </Badge>
                         </div>
 
@@ -714,10 +717,13 @@ export default function TeacherDashboard({
                                         booking.slot.start_time,
                                     );
                                     const formattedTime =
-                                        startTime.toLocaleDateString('en-US', {
-                                            month: 'short',
-                                            day: 'numeric',
-                                        }) +
+                                        startTime.toLocaleDateString(
+                                            locale === 'id' ? 'id-ID' : locale === 'ar' ? 'ar-EG' : 'en-US',
+                                            {
+                                                month: 'short',
+                                                day: 'numeric',
+                                            }
+                                        ) +
                                         ' @ ' +
                                         startTime.toLocaleTimeString([], {
                                             hour: '2-digit',
@@ -736,24 +742,24 @@ export default function TeacherDashboard({
                                                         variant="secondary"
                                                         className="rounded-full bg-rose-100 text-[9px] font-bold text-rose-700 uppercase"
                                                     >
-                                                        {booking.program.name}
+                                                        {getTranslation(booking.program.name, locale)}
                                                     </Badge>
                                                     <span className="text-[10px] font-black text-rose-600">
-                                                        Pending Feedback
+                                                        {t('Pending Feedback')}
                                                     </span>
                                                 </div>
                                                 <CardTitle className="mt-2 text-sm font-black text-arabic-bronze">
                                                     {booking.student.name}
                                                 </CardTitle>
                                                 <CardDescription className="mt-1 text-[11px] font-medium text-arabic-bronze/70">
-                                                    Session held on{' '}
+                                                    {t('Session held on')}{' '}
                                                     {formattedTime}
                                                 </CardDescription>
                                             </CardHeader>
                                             <CardContent className="p-5 pt-2 pb-4">
                                                 {booking.student_notes && (
                                                     <p className="text-[10px] font-medium text-arabic-bronze/70 italic">
-                                                        Student note: "
+                                                        {t('Student note:')} "
                                                         {booking.student_notes}"
                                                     </p>
                                                 )}
@@ -767,7 +773,7 @@ export default function TeacherDashboard({
                                                     }
                                                     className="h-9 w-full rounded-xl bg-rose-600 text-xs font-bold text-arabic-sand shadow-sm hover:bg-rose-700"
                                                 >
-                                                    Log Assessment report
+                                                    {t('Log Assessment report')}
                                                 </Button>
                                             </CardFooter>
                                         </Card>
@@ -776,8 +782,7 @@ export default function TeacherDashboard({
                             </div>
                         ) : (
                             <div className="rounded-[2rem] border border-arabic-cream bg-arabic-sand p-8 text-center text-xs font-bold text-arabic-bronze/60">
-                                Alhamdulillah! You have no pending progress
-                                reports to file.
+                                {t('Alhamdulillah! You have no pending progress reports to file.')}
                             </div>
                         )}
                     </div>
@@ -790,10 +795,10 @@ export default function TeacherDashboard({
                             <h3 className="flex items-center gap-2 font-serif text-xl font-black text-arabic-bronze">
                                 <GripVertical className="h-4 w-4 shrink-0 text-arabic-gold/70" />
                                 <Calendar className="h-5 w-5 text-arabic-gold" />{' '}
-                                Upcoming Booked Classes
+                                {t('Upcoming Booked Classes')}
                             </h3>
                             <Badge className="bg-arabic-cream text-[9px] font-bold text-arabic-bronze">
-                                Draggable
+                                {t('Draggable')}
                             </Badge>
                         </div>
 
@@ -804,11 +809,14 @@ export default function TeacherDashboard({
                                         booking.slot.start_time,
                                     );
                                     const formattedTime =
-                                        startTime.toLocaleDateString('en-US', {
-                                            weekday: 'short',
-                                            month: 'short',
-                                            day: 'numeric',
-                                        }) +
+                                        startTime.toLocaleDateString(
+                                            locale === 'id' ? 'id-ID' : locale === 'ar' ? 'ar-EG' : 'en-US',
+                                            {
+                                                weekday: 'short',
+                                                month: 'short',
+                                                day: 'numeric',
+                                            }
+                                        ) +
                                         ' @ ' +
                                         startTime.toLocaleTimeString([], {
                                             hour: '2-digit',
@@ -827,21 +835,24 @@ export default function TeacherDashboard({
                                                         variant="secondary"
                                                         className="rounded-full bg-arabic-cream text-[9px] font-bold text-arabic-bronze uppercase"
                                                     >
-                                                        {booking.program.name.replace(
+                                                        {getTranslation(booking.program.name, locale).replace(
                                                             ' Program',
+                                                            '',
+                                                        ).replace(
+                                                            'Program ',
                                                             '',
                                                         )}
                                                     </Badge>
                                                     <span className="text-[10px] font-black text-arabic-emerald">
-                                                        Booked
+                                                        {t('Booked')}
                                                     </span>
                                                 </div>
                                                 <CardTitle className="mt-2 text-sm font-black text-arabic-bronze">
-                                                    Student:{' '}
+                                                    {t('Student:')}{' '}
                                                     {booking.student.name}
                                                 </CardTitle>
                                                 <CardDescription className="mt-1 text-[11px] font-medium text-arabic-bronze/70">
-                                                    Scheduled for{' '}
+                                                    {t('Scheduled for')}{' '}
                                                     {formattedTime}
                                                 </CardDescription>
                                             </CardHeader>
@@ -849,7 +860,7 @@ export default function TeacherDashboard({
                                                 {booking.student_notes && (
                                                     <div className="rounded-xl border border-arabic-cream/60 bg-arabic-cream/30 p-3 text-[10px] font-medium text-arabic-bronze/80">
                                                         <span className="mb-0.5 block font-bold text-arabic-bronze">
-                                                            Intentions:
+                                                            {t('Intentions:')}
                                                         </span>
                                                         "{booking.student_notes}
                                                         "
@@ -865,7 +876,7 @@ export default function TeacherDashboard({
                                                 >
                                                     <Button className="h-9 w-full gap-1.5 rounded-xl bg-arabic-bronze text-xs font-bold text-arabic-sand shadow-sm hover:bg-arabic-bronze/90">
                                                         <Video className="h-4 w-4 animate-bounce text-arabic-gold" />{' '}
-                                                        Open Meeting link
+                                                        {t('Open Meeting link')}
                                                     </Button>
                                                 </a>
                                             </CardFooter>
@@ -875,9 +886,7 @@ export default function TeacherDashboard({
                             </div>
                         ) : (
                             <div className="rounded-[2rem] border border-arabic-cream bg-arabic-sand p-8 text-center text-xs font-bold text-arabic-bronze/60">
-                                No upcoming sessions have been booked yet.
-                                Opened slots will appear on the calendar for
-                                students.
+                                {t('No upcoming sessions have been booked yet. Opened slots will appear on the calendar for students.')}
                             </div>
                         )}
                     </div>
@@ -890,10 +899,10 @@ export default function TeacherDashboard({
                             <h3 className="flex items-center gap-2 font-serif text-xl font-black text-arabic-bronze">
                                 <GripVertical className="h-4 w-4 shrink-0 text-arabic-gold/70" />
                                 <CheckCircle2 className="h-5 w-5 text-arabic-gold" />{' '}
-                                Finished Class Logs
+                                {t('Finished Class Logs')}
                             </h3>
                             <Badge className="bg-arabic-cream text-[9px] font-bold text-arabic-bronze">
-                                Draggable
+                                {t('Draggable')}
                             </Badge>
                         </div>
 
@@ -902,11 +911,14 @@ export default function TeacherDashboard({
                                 {completedBookings.map((booking) => {
                                     const dateStr = new Date(
                                         booking.slot.start_time,
-                                    ).toLocaleDateString('en-US', {
-                                        month: 'short',
-                                        day: 'numeric',
-                                        year: 'numeric',
-                                    });
+                                    ).toLocaleDateString(
+                                        locale === 'id' ? 'id-ID' : locale === 'ar' ? 'ar-EG' : 'en-US',
+                                        {
+                                            month: 'short',
+                                            day: 'numeric',
+                                            year: 'numeric',
+                                        }
+                                    );
 
                                     return (
                                         <div
@@ -919,19 +931,19 @@ export default function TeacherDashboard({
                                                 </div>
                                                 <div>
                                                     <span className="block text-xs font-black text-arabic-bronze">
-                                                        Student:{' '}
+                                                        {t('Student:')}{' '}
                                                         {booking.student.name}
                                                     </span>
                                                     <span className="mt-1 block text-[10px] font-medium text-arabic-bronze/60">
-                                                        Program:{' '}
-                                                        {booking.program.name} •
-                                                        Completed on {dateStr}
+                                                        {t('Class Program')}:{' '}
+                                                        {getTranslation(booking.program.name, locale)} •
+                                                        {t('Completed on')} {dateStr}
                                                     </span>
                                                 </div>
                                             </div>
                                             <div className="max-w-sm rounded-xl border border-arabic-cream/60 bg-arabic-cream/35 p-3 text-[10px] leading-normal text-arabic-bronze/70">
                                                 <span className="mb-0.5 block font-bold text-arabic-bronze">
-                                                    My Logged Feedback:
+                                                    {t('My Logged Feedback:')}
                                                 </span>
                                                 "{booking.teacher_feedback}"
                                             </div>
@@ -941,8 +953,7 @@ export default function TeacherDashboard({
                             </div>
                         ) : (
                             <div className="rounded-[2rem] border border-arabic-cream bg-arabic-sand p-8 text-center text-xs font-bold text-arabic-bronze/60">
-                                No completed lessons recorded in your system
-                                yet.
+                                {t('No completed lessons recorded in your system yet.')}
                             </div>
                         )}
                     </div>
@@ -962,12 +973,10 @@ export default function TeacherDashboard({
                 <div className="flex flex-col justify-between gap-4 border-b border-arabic-cream/60 pb-6 md:flex-row md:items-center">
                     <div>
                         <h1 className="font-serif text-3xl font-black text-arabic-bronze">
-                            Teacher Portal
+                            {t('Teacher Portal')}
                         </h1>
                         <p className="mt-1 text-xs font-medium text-arabic-bronze/70">
-                            Manage your available hours, connect with private
-                            students on Zoom/Meet, and submit progress feedback
-                            reports.
+                            {t('Manage your available hours, connect with private students on Zoom/Meet, and submit progress feedback reports.')}
                         </p>
                     </div>
                     {JSON.stringify(layout) !==
@@ -979,7 +988,7 @@ export default function TeacherDashboard({
                                 className="h-9 gap-1 rounded-full border-arabic-bronze/25 px-4 text-xs font-bold text-arabic-bronze shadow-sm hover:bg-arabic-cream"
                             >
                                 <RefreshCw className="h-3.5 w-3.5 text-arabic-gold" />{' '}
-                                Reset Layout
+                                {t('Reset Layout')}
                             </Button>
                         </div>
                     )}
@@ -1040,10 +1049,10 @@ export default function TeacherDashboard({
                             <div className="flex shrink-0 items-center justify-between border-b border-arabic-cream bg-arabic-cream/60 px-6 py-4">
                                 <div>
                                     <span className="block text-[9px] font-bold tracking-widest text-arabic-gold uppercase">
-                                        Log Progress Report
+                                        {t('Log Progress Report')}
                                     </span>
                                     <h4 className="font-serif text-base font-black text-arabic-bronze">
-                                        Recap for {selectedBooking.student.name}
+                                        {t('Recap for')} {selectedBooking.student.name}
                                     </h4>
                                 </div>
                                 <button
@@ -1061,19 +1070,19 @@ export default function TeacherDashboard({
                                 <div className="flex-1 space-y-6 overflow-y-auto p-6">
                                     <div className="space-y-1.5">
                                         <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                            Class Program
+                                            {t('Class Program')}
                                         </label>
                                         <span className="block text-xs font-bold text-arabic-bronze">
-                                            {selectedBooking.program.name}
+                                            {getTranslation(selectedBooking.program.name, locale)}
                                         </span>
                                     </div>
 
                                     <div className="space-y-1.5">
                                         <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                            Detailed Performance Feedback
+                                            {t('Detailed Performance Feedback')}
                                         </label>
                                         <Textarea
-                                            placeholder="Write constructive progress comments on student pronunciation accuracy, surah mastery, tajweed rules learned, etc..."
+                                            placeholder={t('Write constructive progress comments on student pronunciation accuracy, surah mastery, tajweed rules learned, etc...')}
                                             value={
                                                 completionForm.data
                                                     .teacher_feedback
@@ -1087,8 +1096,7 @@ export default function TeacherDashboard({
                                             className="min-h-[120px] rounded-xl border-arabic-cream bg-arabic-sand text-xs placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
                                         />
                                         <span className="block text-[10px] leading-relaxed text-arabic-bronze/50">
-                                            Student will immediately view these
-                                            notes on their portal.
+                                            {t('Student will immediately view these notes on their portal.')}
                                         </span>
                                     </div>
 
@@ -1112,16 +1120,10 @@ export default function TeacherDashboard({
                                                 htmlFor="issue_cert"
                                                 className="block cursor-pointer text-xs font-black text-arabic-bronze"
                                             >
-                                                Award Program Completion
-                                                Certificate
+                                                {t('Award Program Completion Certificate')}
                                             </label>
                                             <p className="mt-0.5 text-[10px] leading-normal font-medium text-arabic-bronze/80">
-                                                If the student has fully
-                                                completed all rules, lessons,
-                                                and surahs required for **
-                                                {selectedBooking.program.name}
-                                                **, award their official
-                                                platform credentials.
+                                                {t("If the student has fully completed all rules, lessons, and surahs required for :program, award their official platform credentials.", { program: getTranslation(selectedBooking.program.name, locale) })}
                                             </p>
                                         </div>
                                     </div>
@@ -1134,7 +1136,7 @@ export default function TeacherDashboard({
                                         onClick={() => setSelectedBooking(null)}
                                         className="rounded-full border-arabic-bronze/25 text-xs font-bold text-arabic-bronze hover:bg-arabic-cream"
                                     >
-                                        Cancel
+                                        {t('Cancel')}
                                     </Button>
                                     <Button
                                         type="submit"
@@ -1142,8 +1144,8 @@ export default function TeacherDashboard({
                                         className="rounded-full bg-arabic-bronze px-6 text-xs font-bold text-arabic-sand shadow-sm hover:bg-arabic-bronze/90"
                                     >
                                         {completionForm.processing
-                                            ? 'Submitting...'
-                                            : 'Mark as Completed'}
+                                            ? t('Submitting...')
+                                            : t('Mark as Completed')}
                                     </Button>
                                 </div>
                             </form>
@@ -1157,10 +1159,10 @@ export default function TeacherDashboard({
                             <div className="flex shrink-0 items-center justify-between border-b border-arabic-cream bg-arabic-cream/60 px-6 py-4">
                                 <div>
                                     <span className="block text-[9px] font-bold tracking-widest text-arabic-gold uppercase">
-                                        Slot Manager
+                                        {t('Slot Manager')}
                                     </span>
                                     <h4 className="font-serif text-base font-black text-arabic-bronze">
-                                        Edit Teaching Hour
+                                        {t('Edit Teaching Hour')}
                                     </h4>
                                 </div>
                                 <button
@@ -1178,7 +1180,7 @@ export default function TeacherDashboard({
                                 <div className="flex-1 space-y-4 overflow-y-auto p-6">
                                     <div className="space-y-1.5">
                                         <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                            Class Start Time
+                                            {t('Class Start Time')}
                                         </label>
                                         <Input
                                             type="datetime-local"
@@ -1194,7 +1196,7 @@ export default function TeacherDashboard({
                                     </div>
                                     <div className="mt-4 space-y-1.5">
                                         <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                            Session Duration
+                                            {t('Session Duration')}
                                         </label>
                                         <select
                                             value={editSlotForm.data.duration}
@@ -1207,19 +1209,19 @@ export default function TeacherDashboard({
                                             className="w-full rounded-xl border border-arabic-cream bg-arabic-sand p-2.5 text-xs font-bold text-arabic-bronze shadow-sm outline-none focus:border-arabic-gold focus-visible:ring-0"
                                         >
                                             <option value="30">
-                                                30 minutes
+                                                {t('30 minutes')}
                                             </option>
                                             <option value="45">
-                                                45 minutes
+                                                {t('45 minutes')}
                                             </option>
                                             <option value="60">
-                                                60 minutes (1 hour)
+                                                {t('60 minutes (1 hour)')}
                                             </option>
                                             <option value="90">
-                                                90 minutes (1.5 hours)
+                                                {t('90 minutes (1.5 hours)')}
                                             </option>
                                             <option value="120">
-                                                120 minutes (2 hours)
+                                                {t('120 minutes (2 hours)')}
                                             </option>
                                         </select>
                                     </div>
@@ -1232,7 +1234,7 @@ export default function TeacherDashboard({
                                         onClick={() => setEditingSlot(null)}
                                         className="h-9 rounded-full border-arabic-bronze/25 text-xs font-bold text-arabic-bronze hover:bg-arabic-cream"
                                     >
-                                        Cancel
+                                        {t('Cancel')}
                                     </Button>
                                     <Button
                                         type="submit"
@@ -1240,8 +1242,8 @@ export default function TeacherDashboard({
                                         className="h-9 rounded-full bg-arabic-bronze px-6 text-xs font-bold text-arabic-sand shadow-sm hover:bg-arabic-bronze/90"
                                     >
                                         {editSlotForm.processing
-                                            ? 'Saving...'
-                                            : 'Save Changes'}
+                                            ? t('Saving...')
+                                            : t('Save Changes')}
                                     </Button>
                                 </div>
                             </form>

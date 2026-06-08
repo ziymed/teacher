@@ -29,6 +29,8 @@ import { toast } from 'sonner';
 import { dashboard } from '@/routes';
 import { dashboard as adminDashboard } from '@/routes/admin';
 import { store as storeCertificate } from '@/routes/admin/certificates';
+import { useTranslation } from '@/hooks/use-translation';
+import { getTranslation } from '@/lib/translation-utils';
 
 interface Student {
     id: number;
@@ -110,6 +112,7 @@ export default function AdminDashboard({
     programs = [],
 }: AdminDashboardProps) {
     const [isIssuing, setIsIssuing] = useState(false);
+    const { t, locale } = useTranslation();
 
     const { auth } = usePage<any>().props;
     const user = auth?.user;
@@ -517,8 +520,11 @@ export default function AdminDashboard({
                                                     </td>
                                                     <td className="p-4">
                                                         <span className="rounded-full border border-arabic-cream/80 bg-arabic-cream px-2 py-0.5 text-[10px] font-bold text-arabic-bronze">
-                                                            {booking.program.name.replace(
+                                                            {getTranslation(booking.program.name, locale).replace(
                                                                 ' Program',
+                                                                '',
+                                                            ).replace(
+                                                                'Program ',
                                                                 '',
                                                             )}
                                                         </span>
@@ -584,7 +590,7 @@ export default function AdminDashboard({
                                         className="flex items-center justify-between text-xs font-semibold"
                                     >
                                         <span className="block font-bold text-arabic-bronze">
-                                            {program.name}
+                                            {getTranslation(program.name, locale)}
                                         </span>
                                         {program.is_hidden ? (
                                             <Badge className="rounded-full border border-amber-500/25 bg-amber-500/10 px-2 py-0.5 text-[9px] font-bold text-amber-600">
@@ -668,7 +674,7 @@ export default function AdminDashboard({
                                                 </div>
                                                 <div className="mt-2 rounded-xl border border-arabic-cream/60 bg-arabic-cream/35 p-2.5">
                                                     <span className="block font-extrabold text-arabic-bronze">
-                                                        {cert.program.name}
+                                                        {getTranslation(cert.program.name, locale)}
                                                     </span>
                                                     {cert.notes && (
                                                         <p className="mt-1 text-[10px] leading-relaxed font-medium text-arabic-bronze/80">
@@ -750,7 +756,7 @@ export default function AdminDashboard({
                                 {metrics.totalBookings}
                             </span>
                             <p className="text-[10px] font-bold tracking-wider text-arabic-bronze/60 uppercase">
-                                Total Bookings
+                                {t('Total Bookings')}
                             </p>
                         </div>
                     </Card>
@@ -763,7 +769,7 @@ export default function AdminDashboard({
                                 {metrics.completedBookings}
                             </span>
                             <p className="text-[10px] font-bold tracking-wider text-arabic-bronze/60 uppercase">
-                                Completed Sessions
+                                {t('Completed Sessions')}
                             </p>
                         </div>
                     </Card>
@@ -776,7 +782,7 @@ export default function AdminDashboard({
                                 {metrics.activeStudentsCount}
                             </span>
                             <p className="text-[10px] font-bold tracking-wider text-arabic-bronze/60 uppercase">
-                                Active Students
+                                {t('Active Students')}
                             </p>
                         </div>
                     </Card>
@@ -789,7 +795,7 @@ export default function AdminDashboard({
                                 {metrics.activeTeachersCount}
                             </span>
                             <p className="text-[10px] font-bold tracking-wider text-arabic-bronze/60 uppercase">
-                                Native Teachers
+                                {t('Active Teachers')}
                             </p>
                         </div>
                     </Card>
@@ -802,7 +808,7 @@ export default function AdminDashboard({
                                 {metrics.totalCertificatesCount}
                             </span>
                             <p className="text-[10px] font-bold tracking-wider text-arabic-bronze/60 uppercase">
-                                Credentials Issued
+                                {t('Issued Certificates')}
                             </p>
                         </div>
                     </Card>
@@ -936,7 +942,7 @@ export default function AdminDashboard({
                                                     key={prog.id}
                                                     value={prog.id}
                                                 >
-                                                    {prog.name}
+                                                    {getTranslation(prog.name, locale)}
                                                 </option>
                                             ))}
                                         </select>

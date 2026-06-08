@@ -8,11 +8,20 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\TeacherDashboardController;
 use App\Http\Middleware\HandleAppearance;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // Public Routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/certificates/verify/{hash}', [CertificateController::class, 'verify'])->name('certificates.verify');
+Route::post('/locale', function (Request $request) {
+    $request->validate([
+        'locale' => ['required', 'string', 'in:id,ar,en'],
+    ]);
+    $request->session()->put('locale', $request->locale);
+
+    return back();
+})->name('locale.update');
 
 // Social Authentication Routes
 Route::get('/auth/{provider}/redirect', [SocialController::class, 'redirectToProvider'])

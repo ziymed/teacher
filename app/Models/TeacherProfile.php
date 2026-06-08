@@ -25,6 +25,15 @@ class TeacherProfile extends Model
     use HasFactory;
 
     /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array<int, string>
+     */
+    protected $appends = [
+        'bio_translation',
+    ];
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
@@ -46,8 +55,24 @@ class TeacherProfile extends Model
     protected function casts(): array
     {
         return [
+            'bio' => 'array',
             'specializations_json' => 'array',
         ];
+    }
+
+    /**
+     * Get the translated bio based on current locale.
+     */
+    public function getBioTranslationAttribute(): string
+    {
+        $value = $this->bio;
+        if (is_array($value)) {
+            $locale = app()->getLocale();
+
+            return $value[$locale] ?? $value['id'] ?? $value['en'] ?? array_values($value)[0] ?? '';
+        }
+
+        return (string) ($value ?? '');
     }
 
     /**

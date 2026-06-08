@@ -55,7 +55,11 @@ test('admin can create a teacher and profile is initialized', function () {
             'name' => 'Ustaz Anas',
             'email' => 'anas-new@example.com',
             'password' => 'password123',
-            'bio' => 'An expert tajweed teacher from Morocco.',
+            'bio' => [
+                'id' => 'An expert tajweed teacher from Morocco.',
+                'ar' => 'معلم تجويد خبير من المغرب.',
+                'en' => 'An expert tajweed teacher from Morocco.',
+            ],
             'whatsapp_number' => '+212612345678',
             'zoom_link' => 'https://zoom.us/j/anas-class',
             'google_meet_link' => 'https://meet.google.com/anas-meet',
@@ -72,7 +76,7 @@ test('admin can create a teacher and profile is initialized', function () {
 
     $teacher = User::where('email', 'anas-new@example.com')->first();
     expect($teacher->teacherProfile)->not->toBeNull();
-    expect($teacher->teacherProfile->bio)->toBe('An expert tajweed teacher from Morocco.');
+    expect($teacher->teacherProfile->bio['en'])->toBe('An expert tajweed teacher from Morocco.');
     expect($teacher->teacherProfile->specializations_json)->toBe(['Tajweed', 'Makhraj']);
 });
 
@@ -93,7 +97,11 @@ test('admin can update a teacher profile', function () {
 
     $profile = TeacherProfile::create([
         'user_id' => $teacher->id,
-        'bio' => 'Old bio',
+        'bio' => [
+            'id' => 'Old bio',
+            'ar' => 'السيرة القديمة',
+            'en' => 'Old bio',
+        ],
         'whatsapp_number' => '+212612345678',
         'zoom_link' => 'https://zoom.us/old',
         'specializations_json' => ['Tajweed'],
@@ -103,7 +111,11 @@ test('admin can update a teacher profile', function () {
         ->put(route('admin.teachers.update', $teacher), [
             'name' => 'Ustaz Anas Updated',
             'email' => 'anas-edit@example.com', // same email
-            'bio' => 'Brand new biography',
+            'bio' => [
+                'id' => 'Brand new biography',
+                'ar' => 'سيرة ذاتية جديدة تماما',
+                'en' => 'Brand new biography',
+            ],
             'whatsapp_number' => '+212699999999',
             'zoom_link' => 'https://zoom.us/new',
             'google_meet_link' => 'https://meet.google.com/new',
@@ -114,7 +126,7 @@ test('admin can update a teacher profile', function () {
 
     $teacher->refresh();
     expect($teacher->name)->toBe('Ustaz Anas Updated');
-    expect($teacher->teacherProfile->bio)->toBe('Brand new biography');
+    expect($teacher->teacherProfile->bio['en'])->toBe('Brand new biography');
     expect($teacher->teacherProfile->whatsapp_number)->toBe('+212699999999');
     expect($teacher->teacherProfile->zoom_link)->toBe('https://zoom.us/new');
     expect($teacher->teacherProfile->google_meet_link)->toBe('https://meet.google.com/new');

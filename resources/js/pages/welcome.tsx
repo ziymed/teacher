@@ -1,4 +1,7 @@
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { useTranslation } from '@/hooks/use-translation';
+import { getTranslation, getTranslationList } from '@/lib/translation-utils';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import {
     ArrowRight,
     BookOpen,
@@ -62,6 +65,12 @@ export default function Welcome({
 }: WelcomeProps) {
     const { auth } = usePage<any>().props;
     const user = auth?.user;
+    const { t, locale, direction } = useTranslation();
+
+    React.useEffect(() => {
+        document.documentElement.dir = direction;
+        document.documentElement.lang = locale;
+    }, [locale, direction]);
 
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
     const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
@@ -168,7 +177,7 @@ export default function Welcome({
     return (
         <>
             <Head>
-                <title>Program Talqin, Tahseen Dan Tajweed Al-Quran</title>
+                <title>{t('Program Talqin, Tahseen Dan Tajweed Al-Quran')}</title>
                 <meta
                     name="description"
                     content="Master Al-Quran recitation with native Moroccan teachers. Custom private 1-to-1 programs in Talqin, Tahseen, and Tajweed."
@@ -226,13 +235,14 @@ export default function Welcome({
                     </div>
 
                     <nav className="flex items-center gap-4">
+                        <LanguageSwitcher />
                         {user ? (
                             <Link
                                 href={dashboard()}
                                 className="inline-flex items-center gap-2 rounded-full bg-arabic-bronze px-5 py-2 text-xs font-bold text-arabic-sand shadow-md transition hover:bg-arabic-bronze/90 hover:shadow-lg"
                             >
                                 <Globe className="h-3.5 w-3.5 text-arabic-gold" />{' '}
-                                Dashboard
+                                {t('Dashboard')}
                             </Link>
                         ) : (
                             <>
@@ -240,13 +250,13 @@ export default function Welcome({
                                     href={login()}
                                     className="px-3 text-xs font-bold transition hover:text-arabic-gold"
                                 >
-                                    Log In
+                                    {t('Log In')}
                                 </Link>
                                 <Link
                                     href={register()}
                                     className="rounded-full bg-arabic-bronze px-5 py-2 text-xs font-bold text-arabic-sand shadow-md transition hover:bg-arabic-bronze/90"
                                 >
-                                    Register
+                                    {t('Register')}
                                 </Link>
                             </>
                         )}
@@ -257,24 +267,15 @@ export default function Welcome({
                 <section className="mx-auto max-w-7xl animate-fade-in-up px-6 pt-12 pb-16 lg:py-20">
                     <div className="grid items-center gap-12 lg:grid-cols-12">
                         {/* Left Side: Typography and Call to Action */}
-                        <div className="flex flex-col justify-center space-y-8 text-center lg:col-span-7 lg:text-left">
+                        <div className="flex flex-col justify-center space-y-8 text-center lg:col-span-7 lg:text-start">
                             <div className="mx-auto inline-flex items-center gap-2 text-xs font-black tracking-[0.2em] text-arabic-gold uppercase lg:mx-0">
                                 <span>✦</span>
-                                <span>Program Belajar Qur'an</span>
+                                <span>{t("Program Belajar Qur'an")}</span>
                                 <span>✦</span>
                             </div>
 
                             <h1 className="font-serif text-4xl leading-tight font-black tracking-wide text-arabic-bronze sm:text-5xl md:text-6xl">
-                                Program{' '}
-                                <span className="font-serif font-normal text-arabic-gold italic">
-                                    Talqin, Tahseen
-                                </span>{' '}
-                                <br />
-                                Dan{' '}
-                                <span className="font-serif font-normal text-arabic-gold italic underline decoration-arabic-gold/30 decoration-wavy underline-offset-8">
-                                    Tajweed
-                                </span>{' '}
-                                Al-Quran
+                                {t('Program Talqin, Tahseen Dan Tajweed Al-Quran')}
                             </h1>
 
                             {/* Beautiful Arabic Calligraphy Verse Quote */}
@@ -283,8 +284,7 @@ export default function Welcome({
                                     وَرَتِّلِ الْقُرْآنَ تَرْتِيلًا
                                 </p>
                                 <p className="mt-1.5 text-[10px] leading-relaxed font-bold font-semibold tracking-widest text-arabic-bronze/60 uppercase">
-                                    "Dan bacalah Al-Quran itu dengan
-                                    perlahan-lahan." (QS. Al-Muzzammil: 4)
+                                    "{t('Arabic letters verse quote')}" ({t('QS. Al-Muzzammil: 4')})
                                 </p>
                             </div>
 
@@ -293,13 +293,12 @@ export default function Welcome({
                                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-arabic-bronze text-lg shadow-md">
                                     🇲🇦
                                 </div>
-                                <div className="text-left">
+                                <div className="text-start">
                                     <span className="block text-xs font-black text-arabic-bronze">
-                                        Belajar Langsung Dengan Penutur Asli
+                                        {t('Belajar Langsung Dengan Penutur Asli')}
                                     </span>
                                     <span className="mt-0.5 block text-[10px] font-medium text-arabic-bronze/70">
-                                        Ustaz berpengalaman & penutur asli dari
-                                        Maroko untuk makhraj yang sempurna.
+                                        {t('Moroccan Native Teacher description')}
                                     </span>
                                 </div>
                             </div>
@@ -312,7 +311,7 @@ export default function Welcome({
                                 >
                                     <Button className="h-11 w-full gap-1.5 rounded-full bg-arabic-bronze px-8 text-xs font-bold text-arabic-sand shadow-md transition hover:bg-arabic-bronze/90 hover:shadow-lg">
                                         <Calendar className="h-4 w-4 text-arabic-gold" />{' '}
-                                        Book Private Session
+                                        {t('Book Private Session')}
                                     </Button>
                                 </a>
                                 <a
@@ -323,7 +322,7 @@ export default function Welcome({
                                         variant="outline"
                                         className="h-11 w-full rounded-full border-arabic-bronze/25 px-8 text-xs font-bold text-arabic-bronze hover:bg-arabic-cream"
                                     >
-                                        Explore Programs
+                                        {t('Explore Programs')}
                                     </Button>
                                 </a>
                             </div>
@@ -351,12 +350,12 @@ export default function Welcome({
                                                     Ustaz Zouhir
                                                 </span>
                                                 <span className="mt-0.5 block text-[9px] font-bold tracking-widest text-arabic-sand/75 uppercase">
-                                                    Native Moroccan Teacher
+                                                    {t('Native Moroccan Teacher')}
                                                 </span>
                                             </div>
                                             <span
                                                 className="h-2.5 w-2.5 flex-shrink-0 animate-pulse rounded-full bg-arabic-emerald"
-                                                title="Online now"
+                                                title={t('Online now')}
                                             />
                                         </div>
                                     </div>
@@ -369,278 +368,87 @@ export default function Welcome({
                 {/* 3. Domed Arched Program Cards (EXACT shape and list matching the flyer) */}
                 <section id="programs" className="mx-auto max-w-7xl px-6 py-12">
                     <div className="mx-auto grid max-w-7xl gap-8 md:grid-cols-2 lg:grid-cols-4">
-                        {/* CARD 1: TALQIN */}
-                        <div className="group relative flex flex-col justify-between overflow-hidden rounded-t-[10rem] rounded-b-[2rem] border-2 border-arabic-cream bg-arabic-sand shadow-xl transition duration-300 hover:-translate-y-1 hover:border-arabic-gold/40">
-                            <div className="absolute top-0 right-0 left-0 h-20 bg-gradient-to-b from-arabic-cream/35 to-transparent" />
+                        {programs.map((program) => {
+                            // Find matching letter emblem
+                            let letter = 'ق';
+                            const progName = getTranslation(program.name, 'en').toLowerCase();
+                            if (progName.includes('tahseen')) {
+                                letter = 'ح';
+                            } else if (progName.includes('tajweed')) {
+                                letter = 'ت';
+                            } else if (progName.includes('athfal')) {
+                                letter = 'ط';
+                            }
+                            
+                            // Find matching duration footer or use dynamic values if present
+                            let sessionsText = t('2 Sesi per minggu');
+                            let timingText = t('Sabtu & Minggu');
+                            let durationText = t('Durasi 1 jam per sesi');
+                            if (progName.includes('athfal')) {
+                                sessionsText = t('Durasi 12 minggu');
+                                timingText = t('60 menit per pertemuan');
+                                durationText = t('Bimbingan intensif & hafalan');
+                            }
 
-                            <div className="flex flex-grow flex-col items-center space-y-6 p-8 pt-12">
-                                {/* Circular golden emblem with animated Arabic letter */}
-                                <div className="group/emblem relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-4 border-arabic-gold/60 bg-arabic-cream shadow-md transition duration-300 group-hover:scale-105">
-                                    <div className="absolute inset-0 bg-arabic-gold/5 transition duration-500 group-hover/emblem:scale-110" />
-                                    <span
-                                        className="z-10 font-serif-ar text-4xl leading-none font-bold text-arabic-gold select-none group-hover:animate-float"
-                                        style={{ animationDuration: '4s' }}
-                                    >
-                                        ق
-                                    </span>
-                                </div>
-                                <div className="space-y-1 text-center">
-                                    <h3 className="font-serif text-2xl font-black text-arabic-bronze">
-                                        Talqin
-                                    </h3>
-                                    <span className="text-[10px] font-black tracking-widest text-arabic-gold uppercase">
-                                        • Program •
-                                    </span>
-                                </div>
-                                <ul className="w-full space-y-3.5 pl-2 text-left text-xs font-semibold text-arabic-bronze/85">
-                                    <li className="flex items-start gap-2.5">
-                                        <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-arabic-gold" />
-                                        <span>
-                                            Mendengar dan mengulang bacaan
-                                            Al-Quran
-                                        </span>
-                                    </li>
-                                    <li className="flex items-start gap-2.5">
-                                        <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-arabic-gold" />
-                                        <span>Untuk pemula dan anak-anak</span>
-                                    </li>
-                                    <li className="flex items-start gap-2.5">
-                                        <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-arabic-gold" />
-                                        <span>
-                                            Membantu memperbaiki pelafalan dan
-                                            kelancaran
-                                        </span>
-                                    </li>
-                                    <li className="flex items-start gap-2.5">
-                                        <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-arabic-gold" />
-                                        <span>
-                                            Membaca surat pendek dan doa harian
-                                        </span>
-                                    </li>
-                                </ul>
-                            </div>
+                            const details = getTranslationList(program.details_json, locale);
 
-                            {/* Flyer-style brown details card footer */}
-                            <div className="flex flex-col gap-2 rounded-t-[1.5rem] border-t-2 border-arabic-gold bg-arabic-bronze p-6 text-arabic-sand">
-                                <div className="flex items-center gap-2 text-[11px] font-bold">
-                                    <Calendar className="h-4 w-4 text-arabic-gold" />
-                                    <span>2 Sesi per minggu</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-[11px] font-bold">
-                                    <Clock className="h-4 w-4 text-arabic-gold" />
-                                    <span>Sabtu & Minggu</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-[11px] font-bold">
-                                    <Sparkles className="h-4 w-4 text-arabic-gold" />
-                                    <span>Durasi 1 jam per sesi</span>
-                                </div>
-                            </div>
-                        </div>
+                            return (
+                                <div key={program.id} className="group relative flex flex-col justify-between overflow-hidden rounded-t-[10rem] rounded-b-[2rem] border-2 border-arabic-cream bg-arabic-sand shadow-xl transition duration-300 hover:-translate-y-1 hover:border-arabic-gold/40">
+                                    <div className="absolute top-0 right-0 left-0 h-20 bg-gradient-to-b from-arabic-cream/35 to-transparent" />
 
-                        {/* CARD 2: TAHSEEN */}
-                        <div className="group relative flex flex-col justify-between overflow-hidden rounded-t-[10rem] rounded-b-[2rem] border-2 border-arabic-cream bg-arabic-sand shadow-xl transition duration-300 hover:-translate-y-1 hover:border-arabic-gold/40">
-                            <div className="absolute top-0 right-0 left-0 h-20 bg-gradient-to-b from-arabic-cream/35 to-transparent" />
+                                    <div className="flex flex-grow flex-col items-center space-y-6 p-8 pt-12">
+                                        {/* Circular golden emblem with animated Arabic letter */}
+                                        <div className="group/emblem relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-4 border-arabic-gold/60 bg-arabic-cream shadow-md transition duration-300 group-hover:scale-105">
+                                            <div className="absolute inset-0 bg-arabic-gold/5 transition duration-500 group-hover/emblem:scale-110" />
+                                            <span
+                                                className="z-10 font-serif-ar text-4xl leading-none font-bold text-arabic-gold select-none group-hover:animate-float"
+                                                style={{ animationDuration: '4s' }}
+                                            >
+                                                {letter}
+                                            </span>
+                                        </div>
+                                        <div className="space-y-1 text-center">
+                                            <h3 className="font-serif text-2xl font-black text-arabic-bronze">
+                                                {getTranslation(program.name, locale)}
+                                            </h3>
+                                            <span className="text-[10px] font-black tracking-widest text-arabic-gold uppercase">
+                                                • {t('Programs')} •
+                                            </span>
+                                        </div>
+                                        <ul className="w-full space-y-3.5 ps-2 text-start text-xs font-semibold text-arabic-bronze/85">
+                                            {details.map((detail, idx) => (
+                                                <li key={idx} className="flex items-start gap-2.5">
+                                                    <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-arabic-gold" />
+                                                    <span>{detail}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
 
-                            <div className="flex flex-grow flex-col items-center space-y-6 p-8 pt-12">
-                                {/* Circular golden emblem with animated Arabic letter */}
-                                <div className="group/emblem relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-4 border-arabic-gold/60 bg-arabic-cream shadow-md transition duration-300 group-hover:scale-105">
-                                    <div className="absolute inset-0 bg-arabic-gold/5 transition duration-500 group-hover/emblem:scale-110" />
-                                    <span
-                                        className="z-10 font-serif-ar text-4xl leading-none font-bold text-arabic-gold select-none group-hover:animate-float"
-                                        style={{ animationDuration: '5s' }}
-                                    >
-                                        ح
-                                    </span>
+                                    {/* Flyer-style brown details card footer */}
+                                    <div className="flex flex-col gap-2 rounded-t-[1.5rem] border-t-2 border-arabic-gold bg-arabic-bronze p-6 text-arabic-sand">
+                                        <div className="flex items-center gap-2 text-[11px] font-bold">
+                                            <Calendar className="h-4 w-4 text-arabic-gold" />
+                                            <span>{sessionsText}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-[11px] font-bold">
+                                            <Clock className="h-4 w-4 text-arabic-gold" />
+                                            <span>{timingText}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-[11px] font-bold">
+                                            <Sparkles className="h-4 w-4 text-arabic-gold" />
+                                            <span>{durationText}</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="space-y-1 text-center">
-                                    <h3 className="font-serif text-2xl font-black text-arabic-bronze">
-                                        Tahseen
-                                    </h3>
-                                    <span className="text-[10px] font-black tracking-widest text-arabic-gold uppercase">
-                                        • Program •
-                                    </span>
-                                </div>
-                                <ul className="w-full space-y-3.5 pl-2 text-left text-xs font-semibold text-arabic-bronze/85">
-                                    <li className="flex items-start gap-2.5">
-                                        <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-arabic-gold" />
-                                        <span>Memperbaiki bacaan Al-Quran</span>
-                                    </li>
-                                    <li className="flex items-start gap-2.5">
-                                        <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-arabic-gold" />
-                                        <span>
-                                            Fokus pada makhraj dan pelafalan
-                                        </span>
-                                    </li>
-                                    <li className="flex items-start gap-2.5">
-                                        <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-arabic-gold" />
-                                        <span>
-                                            Meningkatkan kelancaran dan
-                                            kepercayaan diri
-                                        </span>
-                                    </li>
-                                    <li className="flex items-start gap-2.5">
-                                        <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-arabic-gold" />
-                                        <span>
-                                            Bimbingan dan koreksi oleh guru
-                                        </span>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <div className="flex flex-col gap-2 rounded-t-[1.5rem] border-t-2 border-arabic-gold bg-arabic-bronze p-6 text-arabic-sand">
-                                <div className="flex items-center gap-2 text-[11px] font-bold">
-                                    <Calendar className="h-4 w-4 text-arabic-gold" />
-                                    <span>2 Sesi per minggu</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-[11px] font-bold">
-                                    <Clock className="h-4 w-4 text-arabic-gold" />
-                                    <span>Sabtu & Minggu</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-[11px] font-bold">
-                                    <Sparkles className="h-4 w-4 text-arabic-gold" />
-                                    <span>Durasi 1 jam per sesi</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* CARD 3: TAJWEED */}
-                        <div className="group relative flex flex-col justify-between overflow-hidden rounded-t-[10rem] rounded-b-[2rem] border-2 border-arabic-cream bg-arabic-sand shadow-xl transition duration-300 hover:-translate-y-1 hover:border-arabic-gold/40">
-                            <div className="absolute top-0 right-0 left-0 h-20 bg-gradient-to-b from-arabic-cream/35 to-transparent" />
-
-                            <div className="flex flex-grow flex-col items-center space-y-6 p-8 pt-12">
-                                {/* Circular golden emblem with animated Arabic letter */}
-                                <div className="group/emblem relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-4 border-arabic-gold/60 bg-arabic-cream shadow-md transition duration-300 group-hover:scale-105">
-                                    <div className="absolute inset-0 bg-arabic-gold/5 transition duration-500 group-hover/emblem:scale-110" />
-                                    <span
-                                        className="z-10 font-serif-ar text-4xl leading-none font-bold text-arabic-gold select-none group-hover:animate-float"
-                                        style={{ animationDuration: '6s' }}
-                                    >
-                                        ت
-                                    </span>
-                                </div>
-                                <div className="space-y-1 text-center">
-                                    <h3 className="font-serif text-2xl font-black text-arabic-bronze">
-                                        Tajweed
-                                    </h3>
-                                    <span className="text-[10px] font-black tracking-widest text-arabic-gold uppercase">
-                                        • Program •
-                                    </span>
-                                </div>
-                                <ul className="w-full space-y-3.5 pl-2 text-left text-xs font-semibold text-arabic-bronze/85">
-                                    <li className="flex items-start gap-2.5">
-                                        <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-arabic-gold" />
-                                        <span>Mempelajari aturan tajweed</span>
-                                    </li>
-                                    <li className="flex items-start gap-2.5">
-                                        <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-arabic-gold" />
-                                        <span>
-                                            Seperti Nun Sakinah, Madd, Qalqalah,
-                                            Ghunnah
-                                        </span>
-                                    </li>
-                                    <li className="flex items-start gap-2.5">
-                                        <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-arabic-gold" />
-                                        <span>
-                                            Menerapkan tajweed saat membaca
-                                            Al-Quran
-                                        </span>
-                                    </li>
-                                    <li className="flex items-start gap-2.5">
-                                        <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-arabic-gold" />
-                                        <span>
-                                            Membaca dengan benar sesuai kaidah
-                                        </span>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <div className="flex flex-col gap-2 rounded-t-[1.5rem] border-t-2 border-arabic-gold bg-arabic-bronze p-6 text-arabic-sand">
-                                <div className="flex items-center gap-2 text-[11px] font-bold">
-                                    <Calendar className="h-4 w-4 text-arabic-gold" />
-                                    <span>2 Sesi per minggu</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-[11px] font-bold">
-                                    <Clock className="h-4 w-4 text-arabic-gold" />
-                                    <span>Sabtu & Minggu</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-[11px] font-bold">
-                                    <Sparkles className="h-4 w-4 text-arabic-gold" />
-                                    <span>Durasi 1 jam per sesi</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* CARD 4: TUHFATUL ATFAL */}
-                        <div className="group relative flex flex-col justify-between overflow-hidden rounded-t-[10rem] rounded-b-[2rem] border-2 border-arabic-cream bg-arabic-sand shadow-xl transition duration-300 hover:-translate-y-1 hover:border-arabic-gold/40">
-                            <div className="absolute top-0 right-0 left-0 h-20 bg-gradient-to-b from-arabic-cream/35 to-transparent" />
-
-                            <div className="flex flex-grow flex-col items-center space-y-6 p-8 pt-12">
-                                {/* Circular golden emblem with animated Arabic letter */}
-                                <div className="group/emblem relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-4 border-arabic-gold/60 bg-arabic-cream shadow-md transition duration-300 group-hover:scale-105">
-                                    <div className="absolute inset-0 bg-arabic-gold/5 transition duration-500 group-hover/emblem:scale-110" />
-                                    <span
-                                        className="z-10 font-serif-ar text-4xl leading-none font-bold text-arabic-gold select-none group-hover:animate-float"
-                                        style={{ animationDuration: '6s' }}
-                                    >
-                                        ط
-                                    </span>
-                                </div>
-                                <div className="space-y-1 text-center">
-                                    <h3 className="text-center font-serif text-2xl leading-none font-black text-arabic-bronze">
-                                        Tuhfatul Athfal
-                                    </h3>
-                                    <span className="text-[10px] font-black tracking-widest text-arabic-gold uppercase">
-                                        • Program •
-                                    </span>
-                                </div>
-                                <ul className="w-full space-y-3.5 pl-2 text-left text-xs font-semibold text-arabic-bronze/85">
-                                    <li className="flex items-start gap-2.5">
-                                        <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-arabic-gold" />
-                                        <span>
-                                            Menghafal matan Tuhfatul Athfal
-                                        </span>
-                                    </li>
-                                    <li className="flex items-start gap-2.5">
-                                        <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-arabic-gold" />
-                                        <span>Memahami makna setiap bait</span>
-                                    </li>
-                                    <li className="flex items-start gap-2.5">
-                                        <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-arabic-gold" />
-                                        <span>
-                                            Mengetahui hukum tajwid dalam matan
-                                        </span>
-                                    </li>
-                                    <li className="flex items-start gap-2.5">
-                                        <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-arabic-gold" />
-                                        <span>
-                                            Menerapkan hukum tajwid dalam
-                                            Al-Qur'an
-                                        </span>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <div className="flex flex-col gap-2 rounded-t-[1.5rem] border-t-2 border-arabic-gold bg-arabic-bronze p-6 text-arabic-sand">
-                                <div className="flex items-center gap-2 text-[11px] font-bold">
-                                    <Calendar className="h-4 w-4 text-arabic-gold" />
-                                    <span>Durasi 12 minggu</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-[11px] font-bold">
-                                    <Clock className="h-4 w-4 text-arabic-gold" />
-                                    <span>60 menit per pertemuan</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-[11px] font-bold">
-                                    <Sparkles className="h-4 w-4 text-arabic-gold" />
-                                    <span>Bimbingan intensif & hafalan</span>
-                                </div>
-                            </div>
-                        </div>
+                            );
+                        })}
                     </div>
                 </section>
 
                 {/* 4. Beautiful Bottom flyer-Banner Section */}
                 <section className="mx-auto max-w-5xl px-6 py-8">
-                    <div className="grid items-center gap-6 rounded-[2.2rem] border-2 border-arabic-cream bg-arabic-cream/65 p-6 text-center shadow-md md:grid-cols-3 md:text-left">
+                    <div className="grid items-center gap-6 rounded-[2.2rem] border-2 border-arabic-cream bg-arabic-cream/65 p-6 text-center shadow-md md:grid-cols-3 md:text-start">
                         {/* Left Column: Online Class */}
                         <div className="flex flex-col items-center gap-3.5 md:flex-row">
                             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-arabic-bronze text-center shadow-sm">
@@ -763,7 +571,7 @@ export default function Welcome({
                                                             dateStr,
                                                         )
                                                     }
-                                                    className={`flex w-full items-center justify-between rounded-2xl border p-4 text-left text-xs font-bold transition ${
+                                                    className={`flex w-full items-center justify-between rounded-2xl border p-4 text-start text-xs font-bold transition ${
                                                         isSelected
                                                             ? 'scale-[1.01] border-arabic-gold bg-arabic-gold/10 text-arabic-bronze'
                                                             : 'border-arabic-cream bg-arabic-sand text-arabic-bronze hover:border-arabic-gold hover:bg-arabic-cream'
@@ -799,17 +607,17 @@ export default function Welcome({
                                             Step 2
                                         </span>
                                         <h4 className="font-serif text-lg font-black text-arabic-bronze">
-                                            Choose Hour & Details
+                                            {t('Choose Hour & Details') || 'Choose Hour & Details'}
                                         </h4>
                                     </div>
 
                                     {selectedDate ? (
                                         <div className="space-y-4">
                                             <span className="block text-[11px] font-bold tracking-wider text-arabic-bronze/60 uppercase">
-                                                Available slots for{' '}
+                                                {t('Available slots on this day') || 'Available slots'}{' '}
                                                 {new Date(
                                                     selectedDate,
-                                                ).toLocaleDateString('en-US', {
+                                                ).toLocaleDateString(locale === 'id' ? 'id-ID' : locale === 'ar' ? 'ar-EG' : 'en-US', {
                                                     month: 'long',
                                                     day: 'numeric',
                                                     year: 'numeric',
@@ -857,7 +665,7 @@ export default function Welcome({
                                                     {/* Select Program */}
                                                     <div className="space-y-2">
                                                         <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                            Select Class Program
+                                                            {t('Select Program')}
                                                         </label>
                                                         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                                                             {programs.map(
@@ -879,8 +687,11 @@ export default function Welcome({
                                                                                 : 'border-arabic-cream bg-arabic-sand text-arabic-bronze hover:bg-arabic-cream'
                                                                         }`}
                                                                     >
-                                                                        {prog.name.replace(
+                                                                        {getTranslation(prog.name, locale).replace(
                                                                             ' Program',
+                                                                            '',
+                                                                        ).replace(
+                                                                            'Program ',
                                                                             '',
                                                                         )}
                                                                     </button>
@@ -892,8 +703,7 @@ export default function Welcome({
                                                     {/* Select Meeting Platform */}
                                                     <div className="animate-in space-y-2 duration-200 fade-in">
                                                         <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                            Select Meeting
-                                                            Platform
+                                                            {t('Choose Platform')}
                                                         </label>
                                                         <div className="flex gap-3">
                                                             {(!selectedSlot
@@ -952,11 +762,10 @@ export default function Welcome({
                                                     {/* Student Notes */}
                                                     <div className="space-y-2">
                                                         <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                            Study Notes
-                                                            (Optional)
+                                                            {t('Additional Notes (Optional)')}
                                                         </label>
                                                         <Textarea
-                                                            placeholder="Mention specific areas you'd like to work on (e.g. makhraj, letter pronunciation, vocabulary)..."
+                                                            placeholder={t('Share topics, questions, or specific surahs you want to focus on...')}
                                                             value={notes}
                                                             onChange={(e) =>
                                                                 setNotes(
@@ -974,9 +783,7 @@ export default function Welcome({
                                         <div className="space-y-3 rounded-2xl border-2 border-dashed border-arabic-cream p-8 text-center">
                                             <Clock className="mx-auto h-8 w-8 animate-pulse text-arabic-bronze/30" />
                                             <p className="text-xs font-bold text-arabic-bronze/60">
-                                                Please select a calendar date on
-                                                the left to see available
-                                                classes.
+                                                {t('Choose one of the highlighted dates from the list to view open hour slots.')}
                                             </p>
                                         </div>
                                     )}
@@ -990,13 +797,13 @@ export default function Welcome({
                                                 onSubmit={handleConfirmBooking}
                                                 className="flex items-center justify-between gap-4"
                                             >
-                                                <div className="text-left">
+                                                <div className="text-start">
                                                     <span className="block text-[9px] font-bold text-arabic-bronze/60 uppercase">
-                                                        Class Meeting URL
+                                                        {t('Choose Platform') || 'Platform'}
                                                     </span>
                                                     <span className="mt-0.5 flex items-center gap-1 text-xs font-black text-arabic-gold">
                                                         <Video className="h-3.5 w-3.5 animate-pulse text-arabic-emerald" />{' '}
-                                                        Free Video Slot
+                                                        {t('Online Learning')}
                                                     </span>
                                                 </div>
                                                 <Button
@@ -1008,19 +815,17 @@ export default function Welcome({
                                                 >
                                                     {bookingForm.processing
                                                         ? 'Booking...'
-                                                        : 'Confirm Booking'}
+                                                        : t('Book Session Now')}
                                                 </Button>
                                             </form>
                                         ) : (
-                                            <div className="flex flex-col items-center justify-between gap-4 rounded-2xl border border-arabic-cream bg-arabic-sand p-4 text-center sm:flex-row sm:text-left">
+                                            <div className="flex flex-col items-center justify-between gap-4 rounded-2xl border border-arabic-cream bg-arabic-sand p-4 text-center sm:flex-row sm:text-start">
                                                 <div>
                                                     <span className="block text-[10px] font-black text-arabic-bronze uppercase">
-                                                        Sign In Required
+                                                        {t('Log In')}
                                                     </span>
                                                     <p className="mt-0.5 text-[11px] leading-normal text-arabic-bronze/70">
-                                                        Please login or register
-                                                        to reserve this private
-                                                        slot.
+                                                        {t('Please login or register to reserve this private slot.') || 'Please login or register.'}
                                                     </p>
                                                 </div>
                                                 <div className="flex gap-2">
@@ -1030,7 +835,7 @@ export default function Welcome({
                                                             variant="outline"
                                                             className="h-9 rounded-xl border-arabic-bronze/25 text-xs text-arabic-bronze hover:bg-arabic-cream"
                                                         >
-                                                            Log In
+                                                            {t('Log In')}
                                                         </Button>
                                                     </Link>
                                                     <Link href={register()}>
@@ -1038,7 +843,7 @@ export default function Welcome({
                                                             size="sm"
                                                             className="h-9 rounded-xl bg-arabic-bronze text-xs text-arabic-sand hover:bg-arabic-bronze/90"
                                                         >
-                                                            Sign Up
+                                                            {t('Register')}
                                                         </Button>
                                                     </Link>
                                                 </div>
@@ -1072,25 +877,25 @@ export default function Welcome({
                                 href="#programs"
                                 className="transition hover:text-arabic-gold"
                             >
-                                Programs
+                                {t('Programs')}
                             </a>
                             <a
                                 href="#booking-calendar"
                                 className="transition hover:text-arabic-gold"
                             >
-                                Book Session
+                                {t('Book Private Session')}
                             </a>
                             <Link
                                 href="/login"
                                 className="transition hover:text-arabic-gold"
                             >
-                                Login
+                                {t('Log In')}
                             </Link>
                             <Link
                                 href="/register"
                                 className="transition hover:text-arabic-gold"
                             >
-                                Register
+                                {t('Register')}
                             </Link>
                         </div>
                     </div>

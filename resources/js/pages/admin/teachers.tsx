@@ -32,6 +32,8 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { dashboard } from '@/routes';
 import { dashboard as adminDashboard } from '@/routes/admin';
+import { getTranslation } from '@/lib/translation-utils';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface Teacher {
     id: number;
@@ -39,7 +41,8 @@ interface Teacher {
     email: string;
     slots_count: number;
     teacher_profile?: {
-        bio: string;
+        bio: string | Record<string, string>;
+        bio_translation?: string;
         whatsapp_number: string;
         zoom_link?: string;
         google_meet_link?: string;
@@ -68,7 +71,11 @@ interface TeacherFormState {
     name: string;
     email: string;
     password?: string;
-    bio: string;
+    bio: {
+        id: string;
+        ar: string;
+        en: string;
+    };
     whatsapp_number: string;
     zoom_link: string;
     google_meet_link: string;
@@ -76,6 +83,7 @@ interface TeacherFormState {
 }
 
 export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
+    const { t, locale } = useTranslation();
     const [isAddingTeacher, setIsAddingTeacher] = useState(false);
     const [isAddingSlot, setIsAddingSlot] = useState(false);
     const [editingTeacher, setEditingTeacher] = useState<Teacher | null>(null);
@@ -141,13 +149,15 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
         });
 
         if (unbookedSelectedIds.length === 0) {
-            toast.error('No available/unbooked slots selected.');
+            toast.error(t('No available/unbooked slots selected.'));
             return;
         }
 
         if (
             confirm(
-                `Are you sure you want to delete the ${unbookedSelectedIds.length} selected unbooked slots?`,
+                t('Are you sure you want to delete the :count selected unbooked slots?', {
+                    count: String(unbookedSelectedIds.length),
+                }),
             )
         ) {
             router.delete('/admin/slots/bulk', {
@@ -155,12 +165,12 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                 onSuccess: () => {
                     setSelectedSlotIds([]);
                     toast.success(
-                        'Selected teaching slots deleted successfully.',
+                        t('Selected teaching slots deleted successfully.'),
                     );
                 },
                 onError: (err: any) => {
                     toast.error(
-                        err.error || 'Failed to delete selected slots.',
+                        err.error || t('Failed to delete selected slots.'),
                     );
                 },
             });
@@ -170,34 +180,34 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
     const handleDeleteAllUnbooked = () => {
         if (
             confirm(
-                'Are you sure you want to delete ALL available (unbooked) teaching slots across the entire platform? This action cannot be undone.',
+                t('Are you sure you want to delete ALL available (unbooked) teaching slots across the entire platform? This action cannot be undone.'),
             )
         ) {
             router.delete('/admin/slots/all', {
                 onSuccess: () => {
                     setSelectedSlotIds([]);
                     toast.success(
-                        'All unbooked teaching slots cleared successfully.',
+                        t('All unbooked teaching slots cleared successfully.'),
                     );
                 },
                 onError: (err: any) => {
-                    toast.error(err.error || 'Failed to clear slots.');
+                    toast.error(err.error || t('Failed to clear slots.'));
                 },
             });
         }
     };
 
     const handleDeleteSingleSlot = (slotId: number) => {
-        if (confirm('Are you sure you want to delete this teaching slot?')) {
+        if (confirm(t('Are you sure you want to delete this teaching slot?'))) {
             router.delete(`/teacher/slots/${slotId}`, {
                 onSuccess: () => {
                     setSelectedSlotIds((prev) =>
                         prev.filter((id) => id !== slotId),
                     );
-                    toast.success('Teaching slot deleted successfully.');
+                    toast.success(t('Teaching slot deleted successfully.'));
                 },
                 onError: (err: any) => {
-                    toast.error(err.error || 'Failed to delete slot.');
+                    toast.error(err.error || t('Failed to delete slot.'));
                 },
             });
         }
@@ -207,7 +217,11 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
         name: '',
         email: '',
         password: '',
-        bio: '',
+        bio: {
+            id: '',
+            ar: '',
+            en: '',
+        },
         whatsapp_number: '',
         zoom_link: '',
         google_meet_link: '',
@@ -218,7 +232,11 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
         name: '',
         email: '',
         password: '',
-        bio: '',
+        bio: {
+            id: '',
+            ar: '',
+            en: '',
+        },
         whatsapp_number: '',
         zoom_link: '',
         google_meet_link: '',
@@ -237,11 +255,11 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
         e.preventDefault();
 
         if (!newSlotForm.data.teacher_id) {
-            toast.error('Please select a teacher.');
+            toast.error(t('Please select a teacher.'));
             return;
         }
         if (!newSlotForm.data.start_time) {
-            toast.error('Please select a start date & time.');
+            toast.error(t('Please select a start date & time.'));
             return;
         }
 
@@ -250,11 +268,11 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                 setIsAddingSlot(false);
                 newSlotForm.reset();
                 toast.success(
-                    'Alhamdulillah! Teaching slot successfully created.',
+                    t('Alhamdulillah! Teaching slot successfully created.'),
                 );
             },
             onError: (err: any) => {
-                toast.error(err.error || 'Failed to create slot.');
+                toast.error(err.error || t('Failed to create slot.'));
             },
         });
     };
@@ -263,26 +281,34 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
         e.preventDefault();
 
         if (!newTeacherForm.data.name) {
-            toast.error("Please provide the teacher's name.");
+            toast.error(t("Please provide the teacher's name."));
             return;
         }
         if (!newTeacherForm.data.email) {
-            toast.error('Please provide a valid email address.');
+            toast.error(t('Please provide a valid email address.'));
             return;
         }
         if (
             !newTeacherForm.data.password ||
             newTeacherForm.data.password.length < 8
         ) {
-            toast.error('Password must be at least 8 characters long.');
+            toast.error(t('Password must be at least 8 characters long.'));
             return;
         }
-        if (!newTeacherForm.data.bio) {
-            toast.error('Please provide a brief teacher biography.');
+        if (!newTeacherForm.data.bio.id) {
+            toast.error(t('Please provide the biography in Indonesian.'));
+            return;
+        }
+        if (!newTeacherForm.data.bio.ar) {
+            toast.error(t('Please provide the biography in Arabic.'));
+            return;
+        }
+        if (!newTeacherForm.data.bio.en) {
+            toast.error(t('Please provide the biography in English.'));
             return;
         }
         if (!newTeacherForm.data.whatsapp_number) {
-            toast.error('Please provide a WhatsApp contact number.');
+            toast.error(t('Please provide a WhatsApp contact number.'));
             return;
         }
 
@@ -291,11 +317,11 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                 setIsAddingTeacher(false);
                 newTeacherForm.reset();
                 toast.success(
-                    'Alhamdulillah! New Teacher account successfully created!',
+                    t('Alhamdulillah! New Teacher account successfully created!'),
                 );
             },
             onError: (err: any) => {
-                toast.error(err.error || 'Failed to add teacher.');
+                toast.error(err.error || t('Failed to add teacher.'));
             },
         });
     };
@@ -306,26 +332,34 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
         if (!editingTeacher) return;
 
         if (!editTeacherForm.data.name) {
-            toast.error("Please provide the teacher's name.");
+            toast.error(t("Please provide the teacher's name."));
             return;
         }
         if (!editTeacherForm.data.email) {
-            toast.error('Please provide a valid email address.');
+            toast.error(t('Please provide a valid email address.'));
             return;
         }
         if (
             editTeacherForm.data.password &&
             editTeacherForm.data.password.length < 8
         ) {
-            toast.error('Password must be at least 8 characters long.');
+            toast.error(t('Password must be at least 8 characters long.'));
             return;
         }
-        if (!editTeacherForm.data.bio) {
-            toast.error('Please provide a brief teacher biography.');
+        if (!editTeacherForm.data.bio.id) {
+            toast.error(t('Please provide the biography in Indonesian.'));
+            return;
+        }
+        if (!editTeacherForm.data.bio.ar) {
+            toast.error(t('Please provide the biography in Arabic.'));
+            return;
+        }
+        if (!editTeacherForm.data.bio.en) {
+            toast.error(t('Please provide the biography in English.'));
             return;
         }
         if (!editTeacherForm.data.whatsapp_number) {
-            toast.error('Please provide a WhatsApp contact number.');
+            toast.error(t('Please provide a WhatsApp contact number.'));
             return;
         }
 
@@ -334,11 +368,11 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                 setEditingTeacher(null);
                 editTeacherForm.reset();
                 toast.success(
-                    'Alhamdulillah! Teacher account updated successfully!',
+                    t('Alhamdulillah! Teacher account updated successfully!'),
                 );
             },
             onError: (err: any) => {
-                toast.error(err.error || 'Failed to update teacher.');
+                toast.error(err.error || t('Failed to update teacher.'));
             },
         });
     };
@@ -349,7 +383,11 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
             name: teacher.name,
             email: teacher.email,
             password: '',
-            bio: teacher.teacher_profile?.bio || '',
+            bio: {
+                id: getTranslation(teacher.teacher_profile?.bio, 'id'),
+                ar: getTranslation(teacher.teacher_profile?.bio, 'ar'),
+                en: getTranslation(teacher.teacher_profile?.bio, 'en'),
+            },
             whatsapp_number: teacher.teacher_profile?.whatsapp_number || '',
             zoom_link: teacher.teacher_profile?.zoom_link || '',
             google_meet_link: teacher.teacher_profile?.google_meet_link || '',
@@ -364,42 +402,43 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
     const handleDeleteTeacher = (teacher: Teacher) => {
         if (
             confirm(
-                `Are you sure you want to delete the teacher "${teacher.name}"? This action cannot be undone.`,
+                t('Are you sure you want to delete the teacher ":name"? This action cannot be undone.', {
+                    name: teacher.name,
+                }),
             )
         ) {
             deleteTeacherForm.delete(`/admin/teachers/${teacher.id}`, {
                 onSuccess: () => {
                     toast.success(
-                        'Alhamdulillah! Teacher successfully removed.',
+                        t('Alhamdulillah! Teacher successfully removed.'),
                     );
                 },
                 onError: (err: any) => {
-                    toast.error(err.error || 'Failed to delete teacher.');
+                    toast.error(err.error || t('Failed to delete teacher.'));
                 },
             });
         }
     };
 
     const breadcrumbs = [
-        { title: 'Dashboard', href: dashboard() },
-        { title: 'Admin Portal', href: adminDashboard() },
-        { title: 'Teachers', href: '/admin/teachers' },
+        { title: t('Dashboard'), href: dashboard() },
+        { title: t('Admin Portal'), href: adminDashboard() },
+        { title: t('Teachers'), href: '/admin/teachers' },
     ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Manage Teachers" />
+            <Head title={t('Manage Teachers')} />
 
             <div className="min-h-screen w-full space-y-8 bg-arabic-sand/20 p-6">
                 {/* Header Welcome Bar */}
                 <div className="flex flex-col justify-between gap-4 border-b border-arabic-cream/60 pb-6 md:flex-row md:items-center">
                     <div>
                         <h1 className="font-serif text-3xl font-black text-arabic-bronze">
-                            Manage Native Teachers
+                            {t('Manage Teachers')}
                         </h1>
                         <p className="mt-1 text-xs font-medium text-arabic-bronze/70">
-                            Add approved Moroccan educators, configure contact
-                            credentials, and audit active teaching capacities.
+                            {t('Add approved Moroccan educators, configure contact credentials, and audit active teaching capacities.')}
                         </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -407,14 +446,13 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                             onClick={() => setIsAddingSlot(true)}
                             className="h-9 cursor-pointer gap-1 rounded-full border border-arabic-bronze/35 bg-arabic-cream px-4 text-xs font-black text-arabic-bronze shadow-md transition hover:bg-arabic-cream/80"
                         >
-                            <Clock className="h-4 w-4 text-arabic-gold" /> Open
-                            Teaching Hour
+                            <Clock className="h-4 w-4 text-arabic-gold" /> {t('Open Teaching Hour')}
                         </Button>
                         <Button
                             onClick={() => setIsAddingTeacher(true)}
                             className="h-9 cursor-pointer gap-1 rounded-full bg-arabic-bronze px-4 text-xs font-black text-arabic-sand shadow-md transition hover:bg-arabic-bronze/90"
                         >
-                            <Plus className="h-4 w-4" /> Add New Teacher
+                            <Plus className="h-4 w-4" /> {t('Add New Teacher')}
                         </Button>
                     </div>
                 </div>
@@ -425,11 +463,10 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                         <div>
                             <CardTitle className="flex items-center gap-2 text-sm font-black tracking-wider text-arabic-bronze uppercase">
                                 <Users className="h-4.5 w-4.5 text-arabic-gold" />{' '}
-                                Teacher Directory
+                                {t('Teacher Directory')}
                             </CardTitle>
                             <CardDescription className="mt-1 text-[11px] font-medium text-arabic-bronze/70">
-                                Complete registry list of all platform
-                                educators.
+                                {t('Complete registry list of all platform educators.')}
                             </CardDescription>
                         </div>
                     </CardHeader>
@@ -438,16 +475,16 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                             <table className="w-full min-w-[700px] border-collapse text-left text-xs">
                                 <thead>
                                     <tr className="border-b border-arabic-cream/45 bg-arabic-cream/20 text-[10px] font-black tracking-wider text-arabic-bronze/80 uppercase">
-                                        <th className="p-4">Teacher Profile</th>
-                                        <th className="p-4">Biography</th>
+                                        <th className="p-4">{t('Teacher Profile')}</th>
+                                        <th className="p-4">{t('Biography')}</th>
                                         <th className="p-4">
-                                            Classrooms (Zoom/Meet)
+                                            {t('Classrooms (Zoom/Meet)')}
                                         </th>
                                         <th className="p-4 text-center">
-                                            Open Hours
+                                            {t('Open Hours')}
                                         </th>
                                         <th className="p-4 text-right">
-                                            Actions
+                                            {t('Actions')}
                                         </th>
                                     </tr>
                                 </thead>
@@ -492,14 +529,14 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                             <td className="max-w-sm p-4">
                                                 <p className="line-clamp-3 text-[10px] leading-relaxed font-medium text-arabic-bronze/80">
                                                     {teacher.teacher_profile
-                                                        ?.bio ||
-                                                        'No biography details logged.'}
+                                                        ?.bio_translation ||
+                                                        t('No biography details logged.')}
                                                 </p>
                                                 <div className="mt-2 flex items-center gap-1.5 text-[10px] font-bold text-arabic-gold">
                                                     <Phone className="h-3.5 w-3.5" />{' '}
                                                     {teacher.teacher_profile
                                                         ?.whatsapp_number ||
-                                                        'No number'}
+                                                        t('No number')}
                                                 </div>
                                             </td>
                                             <td className="max-w-xs space-y-1 p-4 text-[10px]">
@@ -516,7 +553,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                                         className="flex items-center gap-1.5 text-blue-600 hover:underline"
                                                     >
                                                         <Video className="h-3.5 w-3.5 text-blue-500" />{' '}
-                                                        Zoom Room
+                                                        {t('Zoom Room')}
                                                     </a>
                                                 )}
                                                 {teacher.teacher_profile
@@ -532,7 +569,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                                         className="flex items-center gap-1.5 text-emerald-600 hover:underline"
                                                     >
                                                         <Video className="h-3.5 w-3.5 text-emerald-500" />{' '}
-                                                        Google Meet
+                                                        {t('Google Meet')}
                                                     </a>
                                                 )}
                                                 {!teacher.teacher_profile
@@ -540,13 +577,12 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                                     !teacher.teacher_profile
                                                         ?.google_meet_link && (
                                                         <span className="text-arabic-bronze/50">
-                                                            No meeting links
-                                                            set.
+                                                            {t('No meeting links set.')}
                                                         </span>
                                                     )}
                                             </td>
                                             <td className="p-4 text-center font-extrabold text-arabic-gold">
-                                                {teacher.slots_count} slots
+                                                {teacher.slots_count} {t('slots')}
                                             </td>
                                             <td className="p-4 text-right">
                                                 <div className="flex items-center justify-end gap-1">
@@ -557,7 +593,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                                             )
                                                         }
                                                         className="rounded-lg p-1.5 text-arabic-bronze/75 transition hover:bg-arabic-cream hover:text-arabic-bronze"
-                                                        title="Edit Teacher Profile"
+                                                        title={t('Edit Teacher Profile')}
                                                     >
                                                         <Edit2 className="h-3.5 w-3.5" />
                                                     </button>
@@ -568,7 +604,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                                             )
                                                         }
                                                         className="rounded-lg p-1.5 text-rose-500 transition hover:bg-rose-500/10 hover:text-rose-700"
-                                                        title="Delete Teacher"
+                                                        title={t('Delete Teacher')}
                                                     >
                                                         <Trash2 className="h-3.5 w-3.5" />
                                                     </button>
@@ -582,8 +618,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                                 colSpan={5}
                                                 className="p-8 text-center text-xs font-bold text-arabic-bronze/50"
                                             >
-                                                No teacher accounts defined in
-                                                the database yet.
+                                                {t('No teacher accounts defined in the database yet.')}
                                             </td>
                                         </tr>
                                     )}
@@ -600,11 +635,10 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                             <div>
                                 <CardTitle className="flex items-center gap-2 text-sm font-black tracking-wider text-arabic-bronze uppercase">
                                     <Clock className="h-4.5 w-4.5 text-arabic-gold" />{' '}
-                                    All Open Teaching Slots
+                                    {t('All Open Teaching Slots')}
                                 </CardTitle>
                                 <CardDescription className="mt-1 text-[11px] font-medium text-arabic-bronze/70">
-                                    Manage, search, and bulk delete teaching
-                                    availability slots across the platform.
+                                    {t('Manage, search, and bulk delete teaching availability slots across the platform.')}
                                 </CardDescription>
                             </div>
                             <div className="flex flex-wrap items-center gap-2">
@@ -613,16 +647,14 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                     variant="outline"
                                     className="h-8 gap-1.5 rounded-full border-rose-500/30 px-3.5 text-[10px] font-bold text-rose-600 shadow-sm hover:bg-rose-500/10"
                                 >
-                                    <Trash className="h-3.5 w-3.5" /> Delete All
-                                    Available
+                                    <Trash className="h-3.5 w-3.5" /> {t('Delete All Available')}
                                 </Button>
                                 <Button
                                     onClick={handleDeleteSelected}
                                     disabled={selectedSlotIds.length === 0}
                                     className="h-8 gap-1.5 rounded-full bg-rose-600 px-3.5 text-[10px] font-bold text-white shadow-sm hover:bg-rose-700 disabled:bg-arabic-bronze/10 disabled:text-arabic-bronze/40"
                                 >
-                                    <Trash2 className="h-3.5 w-3.5" /> Delete
-                                    Selected ({selectedSlotIds.length})
+                                    <Trash2 className="h-3.5 w-3.5" /> {t('Delete Selected')} ({selectedSlotIds.length})
                                 </Button>
                             </div>
                         </div>
@@ -633,7 +665,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                 <Search className="absolute top-1/2 left-3.5 h-3.5 w-3.5 -translate-y-1/2 text-arabic-bronze/40" />
                                 <Input
                                     type="text"
-                                    placeholder="Filter by Teacher Name..."
+                                    placeholder={t('Filter by Teacher Name...')}
                                     value={teacherFilter}
                                     onChange={(e) =>
                                         setTeacherFilter(e.target.value)
@@ -656,7 +688,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                         onClick={() => setDateFilter('')}
                                         className="absolute top-1/2 right-3.5 -translate-y-1/2 text-xs font-bold text-rose-500 hover:underline"
                                     >
-                                        Clear
+                                        {t('Clear')}
                                     </button>
                                 )}
                             </div>
@@ -683,11 +715,11 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                                 className="cursor-pointer rounded border-arabic-cream text-arabic-gold focus:ring-arabic-gold disabled:cursor-not-allowed disabled:opacity-40"
                                             />
                                         </th>
-                                        <th className="p-4">Teacher</th>
-                                        <th className="p-4">Slot Time</th>
-                                        <th className="p-4">Status</th>
+                                        <th className="p-4">{t('Teacher')}</th>
+                                        <th className="p-4">{t('Slot Time')}</th>
+                                        <th className="p-4">{t('Status')}</th>
                                         <th className="p-4 text-right">
-                                            Actions
+                                            {t('Actions')}
                                         </th>
                                     </tr>
                                 </thead>
@@ -795,8 +827,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                                 colSpan={5}
                                                 className="p-8 text-center text-xs font-bold text-arabic-bronze/50"
                                             >
-                                                No teaching slots found matching
-                                                filters.
+                                                {t('No teaching slots found matching filters.')}
                                             </td>
                                         </tr>
                                     )}
@@ -813,10 +844,10 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                             <div className="flex shrink-0 items-center justify-between border-b border-arabic-cream bg-arabic-cream/60 px-6 py-4">
                                 <div>
                                     <span className="block text-[9px] font-bold tracking-widest text-arabic-gold uppercase">
-                                        Slot Configurator
+                                        {t('Slot Configurator')}
                                     </span>
                                     <h4 className="font-serif text-base font-black text-arabic-bronze">
-                                        Open Teaching Hour
+                                        {t('Open Teaching Hour')}
                                     </h4>
                                 </div>
                                 <button
@@ -834,7 +865,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                 <div className="flex-1 space-y-4 overflow-y-auto p-6 text-xs">
                                     <div className="space-y-1.5">
                                         <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                            Select Teacher
+                                            {t('Select Teacher')}
                                         </label>
                                         <select
                                             value={newSlotForm.data.teacher_id}
@@ -847,7 +878,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                             className="w-full cursor-pointer rounded-xl border border-arabic-cream bg-arabic-sand p-2.5 text-xs font-bold text-arabic-bronze shadow-sm outline-none focus:border-arabic-gold focus-visible:ring-0"
                                         >
                                             <option value="">
-                                                -- Select a Teacher --
+                                                {t('-- Select a Teacher --')}
                                             </option>
                                             {teachers.map((t) => (
                                                 <option key={t.id} value={t.id}>
@@ -859,7 +890,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
 
                                     <div className="space-y-1.5">
                                         <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                            Class Start Time
+                                            {t('Class Start Time')}
                                         </label>
                                         <Input
                                             type="datetime-local"
@@ -876,7 +907,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
 
                                     <div className="space-y-1.5">
                                         <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                            Session Duration
+                                            {t('Session Duration')}
                                         </label>
                                         <select
                                             value={newSlotForm.data.duration}
@@ -889,19 +920,19 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                             className="w-full cursor-pointer rounded-xl border border-arabic-cream bg-arabic-sand p-2.5 text-xs font-bold text-arabic-bronze shadow-sm outline-none focus:border-arabic-gold focus-visible:ring-0"
                                         >
                                             <option value="30">
-                                                30 minutes
+                                                {t('30 minutes')}
                                             </option>
                                             <option value="45">
-                                                45 minutes
+                                                {t('45 minutes')}
                                             </option>
                                             <option value="60">
-                                                60 minutes (1 hour)
+                                                {t('60 minutes (1 hour)')}
                                             </option>
                                             <option value="90">
-                                                90 minutes (1.5 hours)
+                                                {t('90 minutes (1.5 hours)')}
                                             </option>
                                             <option value="120">
-                                                120 minutes (2 hours)
+                                                {t('120 minutes (2 hours)')}
                                             </option>
                                         </select>
                                     </div>
@@ -914,7 +945,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                         onClick={() => setIsAddingSlot(false)}
                                         className="h-9 rounded-full border-arabic-bronze/25 text-xs font-bold text-arabic-bronze hover:bg-arabic-cream"
                                     >
-                                        Cancel
+                                        {t('Cancel')}
                                     </Button>
                                     <Button
                                         type="submit"
@@ -922,8 +953,8 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                         className="h-9 rounded-full bg-arabic-bronze px-6 text-xs font-bold text-arabic-sand shadow-sm hover:bg-arabic-bronze/90"
                                     >
                                         {newSlotForm.processing
-                                            ? 'Opening...'
-                                            : 'Open Slot'}
+                                            ? t('Opening...')
+                                            : t('Open Slot')}
                                     </Button>
                                 </div>
                             </form>
@@ -938,10 +969,10 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                             <div className="flex shrink-0 items-center justify-between border-b border-arabic-cream bg-arabic-cream/60 px-6 py-4">
                                 <div>
                                     <span className="block text-[9px] font-bold tracking-widest text-arabic-gold uppercase">
-                                        Teacher Onboarding
+                                        {t('Teacher Onboarding')}
                                     </span>
                                     <h4 className="font-serif text-base font-black text-arabic-bronze">
-                                        Add Native Moroccan Teacher
+                                        {t('Add Native Moroccan Teacher')}
                                     </h4>
                                 </div>
                                 <button
@@ -961,7 +992,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-1.5">
                                             <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                Full Name
+                                                {t('Full Name')}
                                             </label>
                                             <Input
                                                 type="text"
@@ -978,7 +1009,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                         </div>
                                         <div className="space-y-1.5">
                                             <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                Email Address
+                                                {t('Email Address')}
                                             </label>
                                             <Input
                                                 type="email"
@@ -999,7 +1030,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
 
                                     <div className="space-y-1.5">
                                         <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                            Temporary Password
+                                            {t('Temporary Password')}
                                         </label>
                                         <Input
                                             type="password"
@@ -1019,7 +1050,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-1.5">
                                             <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                WhatsApp Number
+                                                {t('WhatsApp Number')}
                                             </label>
                                             <Input
                                                 type="text"
@@ -1039,8 +1070,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                         </div>
                                         <div className="space-y-1.5">
                                             <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                Specializations
-                                                (comma-separated)
+                                                {t('Specializations (comma-separated)')}
                                             </label>
                                             <Input
                                                 type="text"
@@ -1060,27 +1090,60 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                         </div>
                                     </div>
 
-                                    <div className="space-y-1.5">
+                                    <div className="space-y-2 border-l-2 border-arabic-gold/30 pl-3">
                                         <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                            Biography
+                                            {t('Biography (Multi-language)')}
                                         </label>
-                                        <Textarea
-                                            placeholder="Write brief description of teaching history, credentials, educational backgrounds..."
-                                            value={newTeacherForm.data.bio}
-                                            onChange={(e) =>
-                                                newTeacherForm.setData(
-                                                    'bio',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            className="min-h-[90px] rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
-                                        />
+                                        <div className="space-y-1.5">
+                                            <div className="flex items-start gap-2">
+                                                <span className="text-sm w-5 text-center pt-2">🇮🇩</span>
+                                                <Textarea
+                                                    placeholder={t('Biography (Indonesian)...')}
+                                                    value={newTeacherForm.data.bio.id}
+                                                    onChange={(e) =>
+                                                        newTeacherForm.setData('bio', {
+                                                            ...newTeacherForm.data.bio,
+                                                            id: e.target.value,
+                                                        })
+                                                    }
+                                                    className="min-h-[70px] rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
+                                                />
+                                            </div>
+                                            <div className="flex items-start gap-2">
+                                                <span className="text-sm w-5 text-center pt-2">🇲🇦</span>
+                                                <Textarea
+                                                    placeholder={t('Biography (Arabic)...')}
+                                                    value={newTeacherForm.data.bio.ar}
+                                                    onChange={(e) =>
+                                                        newTeacherForm.setData('bio', {
+                                                            ...newTeacherForm.data.bio,
+                                                            ar: e.target.value,
+                                                        })
+                                                    }
+                                                    className="min-h-[70px] rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
+                                                />
+                                            </div>
+                                            <div className="flex items-start gap-2">
+                                                <span className="text-sm w-5 text-center pt-2">🇬🇧</span>
+                                                <Textarea
+                                                    placeholder={t('Biography (English)...')}
+                                                    value={newTeacherForm.data.bio.en}
+                                                    onChange={(e) =>
+                                                        newTeacherForm.setData('bio', {
+                                                            ...newTeacherForm.data.bio,
+                                                            en: e.target.value,
+                                                        })
+                                                    }
+                                                    className="min-h-[70px] rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-1.5">
                                             <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                Personal Zoom Link
+                                                {t('Personal Zoom Link')}
                                             </label>
                                             <Input
                                                 type="url"
@@ -1100,7 +1163,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                         </div>
                                         <div className="space-y-1.5">
                                             <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                Google Meet Room Link
+                                                {t('Google Meet Room Link')}
                                             </label>
                                             <Input
                                                 type="url"
@@ -1130,7 +1193,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                         }
                                         className="h-9 rounded-full border-arabic-bronze/25 text-xs font-bold text-arabic-bronze hover:bg-arabic-cream"
                                     >
-                                        Cancel
+                                        {t('Cancel')}
                                     </Button>
                                     <Button
                                         type="submit"
@@ -1138,8 +1201,8 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                         className="h-9 rounded-full bg-arabic-bronze px-6 text-xs font-bold text-arabic-sand shadow-sm hover:bg-arabic-bronze/90"
                                     >
                                         {newTeacherForm.processing
-                                            ? 'Saving...'
-                                            : 'Add Teacher'}
+                                            ? t('Saving...')
+                                            : t('Add Teacher')}
                                     </Button>
                                 </div>
                             </form>
@@ -1154,10 +1217,10 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                             <div className="flex shrink-0 items-center justify-between border-b border-arabic-cream bg-arabic-cream/60 px-6 py-4">
                                 <div>
                                     <span className="block text-[9px] font-bold tracking-widest text-arabic-gold uppercase">
-                                        Teacher Profile Editor
+                                        {t('Teacher Profile Editor')}
                                     </span>
                                     <h4 className="font-serif text-base font-black text-arabic-bronze">
-                                        Modify Teacher: {editingTeacher.name}
+                                        {t('Modify Teacher: :name', { name: editingTeacher.name })}
                                     </h4>
                                 </div>
                                 <button
@@ -1176,7 +1239,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-1.5">
                                             <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                Full Name
+                                                {t('Full Name')}
                                             </label>
                                             <Input
                                                 type="text"
@@ -1195,7 +1258,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                         </div>
                                         <div className="space-y-1.5">
                                             <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                Email Address
+                                                {t('Email Address')}
                                             </label>
                                             <Input
                                                 type="email"
@@ -1216,8 +1279,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
 
                                     <div className="space-y-1.5">
                                         <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                            Reset Password (leave empty to keep
-                                            current)
+                                            {t('Reset Password (leave empty to keep current)')}
                                         </label>
                                         <Input
                                             type="password"
@@ -1238,7 +1300,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-1.5">
                                             <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                WhatsApp Number
+                                                {t('WhatsApp Number')}
                                             </label>
                                             <Input
                                                 type="text"
@@ -1258,8 +1320,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                         </div>
                                         <div className="space-y-1.5">
                                             <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                Specializations
-                                                (comma-separated)
+                                                {t('Specializations (comma-separated)')}
                                             </label>
                                             <Input
                                                 type="text"
@@ -1279,27 +1340,60 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                         </div>
                                     </div>
 
-                                    <div className="space-y-1.5">
+                                    <div className="space-y-2 border-l-2 border-arabic-gold/30 pl-3">
                                         <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                            Biography
+                                            {t('Biography (Multi-language)')}
                                         </label>
-                                        <Textarea
-                                            placeholder="Write brief description of teaching history, credentials, educational backgrounds..."
-                                            value={editTeacherForm.data.bio}
-                                            onChange={(e) =>
-                                                editTeacherForm.setData(
-                                                    'bio',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            className="min-h-[90px] rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
-                                        />
+                                        <div className="space-y-1.5">
+                                            <div className="flex items-start gap-2">
+                                                <span className="text-sm w-5 text-center pt-2">🇮🇩</span>
+                                                <Textarea
+                                                    placeholder={t('Biography (Indonesian)...')}
+                                                    value={editTeacherForm.data.bio.id}
+                                                    onChange={(e) =>
+                                                        editTeacherForm.setData('bio', {
+                                                            ...editTeacherForm.data.bio,
+                                                            id: e.target.value,
+                                                        })
+                                                    }
+                                                    className="min-h-[70px] rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
+                                                />
+                                            </div>
+                                            <div className="flex items-start gap-2">
+                                                <span className="text-sm w-5 text-center pt-2">🇲🇦</span>
+                                                <Textarea
+                                                    placeholder={t('Biography (Arabic)...')}
+                                                    value={editTeacherForm.data.bio.ar}
+                                                    onChange={(e) =>
+                                                        editTeacherForm.setData('bio', {
+                                                            ...editTeacherForm.data.bio,
+                                                            ar: e.target.value,
+                                                        })
+                                                    }
+                                                    className="min-h-[70px] rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
+                                                />
+                                            </div>
+                                            <div className="flex items-start gap-2">
+                                                <span className="text-sm w-5 text-center pt-2">🇬🇧</span>
+                                                <Textarea
+                                                    placeholder={t('Biography (English)...')}
+                                                    value={editTeacherForm.data.bio.en}
+                                                    onChange={(e) =>
+                                                        editTeacherForm.setData('bio', {
+                                                            ...editTeacherForm.data.bio,
+                                                            en: e.target.value,
+                                                        })
+                                                    }
+                                                    className="min-h-[70px] rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-1.5">
                                             <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                Personal Zoom Link
+                                                {t('Personal Zoom Link')}
                                             </label>
                                             <Input
                                                 type="url"
@@ -1319,7 +1413,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                         </div>
                                         <div className="space-y-1.5">
                                             <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                Google Meet Room Link
+                                                {t('Google Meet Room Link')}
                                             </label>
                                             <Input
                                                 type="url"
@@ -1347,7 +1441,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                         onClick={() => setEditingTeacher(null)}
                                         className="h-9 rounded-full border-arabic-bronze/25 text-xs font-bold text-arabic-bronze hover:bg-arabic-cream"
                                     >
-                                        Cancel
+                                        {t('Cancel')}
                                     </Button>
                                     <Button
                                         type="submit"
@@ -1355,8 +1449,8 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                         className="h-9 rounded-full bg-arabic-bronze px-6 text-xs font-bold text-arabic-sand shadow-sm hover:bg-arabic-bronze/90"
                                     >
                                         {editTeacherForm.processing
-                                            ? 'Saving...'
-                                            : 'Save Changes'}
+                                            ? t('Saving...')
+                                            : t('Save Changes')}
                                     </Button>
                                 </div>
                             </form>
