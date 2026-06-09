@@ -63,6 +63,11 @@ export function AppSidebar() {
                     href: '/admin/students',
                     icon: GraduationCap,
                 },
+                {
+                    title: t('Certificates'),
+                    href: '/admin/certificates',
+                    icon: Award,
+                },
             ];
         }
 

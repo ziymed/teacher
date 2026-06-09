@@ -44,7 +44,66 @@ export default function Students({ students = [] }: StudentsProps) {
     const { t } = useTranslation();
     const [isAddingStudent, setIsAddingStudent] = useState(false);
     const [editingStudent, setEditingStudent] = useState<Student | null>(null);
+    const [promotingStudent, setPromotingStudent] = useState<Student | null>(null);
     const [searchFilter, setSearchFilter] = useState('');
+
+    const promoteForm = useForm({
+        whatsapp_number: '',
+        specializations_json: '',
+        bio: {
+            id: '',
+            en: '',
+            ar: '',
+        },
+        zoom_link: '',
+        google_meet_link: '',
+    });
+
+    const startPromoting = (student: Student) => {
+        setPromotingStudent(student);
+        promoteForm.setData({
+            whatsapp_number: '',
+            specializations_json: '',
+            bio: {
+                id: '',
+                en: '',
+                ar: '',
+            },
+            zoom_link: '',
+            google_meet_link: '',
+        });
+    };
+
+    const handlePromoteSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!promotingStudent) {
+            return;
+        }
+
+        if (!promoteForm.data.whatsapp_number) {
+            toast.error(t('Please provide a WhatsApp number.'));
+            return;
+        }
+
+        if (!promoteForm.data.bio.id || !promoteForm.data.bio.en || !promoteForm.data.bio.ar) {
+            toast.error(t('Please fill out the biography in all languages.'));
+            return;
+        }
+
+        promoteForm.post(`/admin/students/${promotingStudent.id}/promote`, {
+            onSuccess: () => {
+                setPromotingStudent(null);
+                promoteForm.reset();
+                toast.success(
+                    t('Alhamdulillah! Student promoted to Teacher successfully!'),
+                );
+            },
+            onError: (err: any) => {
+                toast.error(err.error || t('Failed to promote student.'));
+            },
+        });
+    };
 
     const filteredStudents = students.filter((student) => {
         const matchesName = student.name
@@ -311,6 +370,19 @@ export default function Students({ students = [] }: StudentsProps) {
                                                 <div className="flex items-center justify-end gap-1">
                                                     <button
                                                         onClick={() =>
+                                                            startPromoting(
+                                                                student,
+                                                            )
+                                                        }
+                                                        className="cursor-pointer rounded-lg p-1.5 text-arabic-gold transition hover:bg-arabic-cream hover:text-arabic-gold"
+                                                        title={t(
+                                                            'Promote to Teacher',
+                                                        )}
+                                                    >
+                                                        <GraduationCap className="h-3.5 w-3.5" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() =>
                                                             startEditing(
                                                                 student,
                                                             )
@@ -560,6 +632,187 @@ export default function Students({ students = [] }: StudentsProps) {
                                         {editStudentForm.processing
                                             ? t('Saving...')
                                             : t('Save Changes')}
+                                    </Button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
+
+                {/* Promote Student Modal */}
+                {promotingStudent && (
+                    <div className="fixed inset-0 z-50 flex animate-in items-center justify-center bg-arabic-bronze/45 p-4 backdrop-blur-sm duration-200 fade-in">
+                        <div className="flex max-h-[90vh] w-full max-w-lg animate-in flex-col overflow-hidden rounded-[2rem] border-2 border-arabic-cream bg-arabic-sand shadow-2xl duration-200 zoom-in-95">
+                            <div className="flex shrink-0 items-center justify-between border-b border-arabic-cream bg-arabic-cream/60 px-6 py-4">
+                                <div>
+                                    <span className="block text-[9px] font-bold tracking-widest text-arabic-gold uppercase">
+                                        {t('Promote Account')}
+                                    </span>
+                                    <h4 className="font-serif text-base font-black text-arabic-bronze">
+                                        {t('Promote student ":name" to Teacher', { name: promotingStudent.name })}
+                                    </h4>
+                                </div>
+                                <button
+                                    onClick={() => setPromotingStudent(null)}
+                                    className="cursor-pointer rounded-full p-2 text-arabic-bronze/60 transition hover:bg-arabic-cream hover:text-arabic-bronze"
+                                >
+                                    <X className="h-5 w-5" />
+                                </button>
+                            </div>
+
+                            <form
+                                onSubmit={handlePromoteSubmit}
+                                className="flex flex-1 flex-col overflow-hidden"
+                            >
+                                <div className="flex-1 space-y-4 overflow-y-auto p-6 text-xs">
+                                    <div className="space-y-1.5">
+                                        <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
+                                            {t('WhatsApp Number')}
+                                        </label>
+                                        <Input
+                                            type="text"
+                                            placeholder="e.g. +62812345678"
+                                            value={promoteForm.data.whatsapp_number}
+                                            onChange={(e) =>
+                                                promoteForm.setData(
+                                                    'whatsapp_number',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm focus:border-arabic-gold"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
+                                            {t('Specializations (comma-separated)')}
+                                        </label>
+                                        <Input
+                                            type="text"
+                                            placeholder="e.g. Talqin, Tahseen, Tajweed"
+                                            value={promoteForm.data.specializations_json}
+                                            onChange={(e) =>
+                                                promoteForm.setData(
+                                                    'specializations_json',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm focus:border-arabic-gold"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
+                                            {t('Indonesian Bio')}
+                                        </label>
+                                        <textarea
+                                            rows={2}
+                                            placeholder={t('Guru Al-Quran berpengalaman...')}
+                                            value={promoteForm.data.bio.id}
+                                            onChange={(e) =>
+                                                promoteForm.setData('bio', {
+                                                    ...promoteForm.data.bio,
+                                                    id: e.target.value,
+                                                })
+                                            }
+                                            className="w-full rounded-xl border border-arabic-cream bg-arabic-sand p-3 text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold focus:outline-none"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
+                                            {t('English Bio')}
+                                        </label>
+                                        <textarea
+                                            rows={2}
+                                            placeholder={t('Experienced Quran teacher...')}
+                                            value={promoteForm.data.bio.en}
+                                            onChange={(e) =>
+                                                promoteForm.setData('bio', {
+                                                    ...promoteForm.data.bio,
+                                                    en: e.target.value,
+                                                })
+                                            }
+                                            className="w-full rounded-xl border border-arabic-cream bg-arabic-sand p-3 text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold focus:outline-none"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
+                                            {t('Arabic Bio')}
+                                        </label>
+                                        <textarea
+                                            rows={2}
+                                            placeholder={t('مدرس قرآن خبير...')}
+                                            value={promoteForm.data.bio.ar}
+                                            onChange={(e) =>
+                                                promoteForm.setData('bio', {
+                                                    ...promoteForm.data.bio,
+                                                    ar: e.target.value,
+                                                })
+                                            }
+                                            className="w-full rounded-xl border border-arabic-cream bg-arabic-sand p-3 text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold focus:outline-none"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
+                                            {t('Zoom Link (Optional)')}
+                                        </label>
+                                        <Input
+                                            type="text"
+                                            placeholder="https://zoom.us/..."
+                                            value={promoteForm.data.zoom_link}
+                                            onChange={(e) =>
+                                                promoteForm.setData(
+                                                    'zoom_link',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm focus:border-arabic-gold"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
+                                            {t('Google Meet Link (Optional)')}
+                                        </label>
+                                        <Input
+                                            type="text"
+                                            placeholder="https://meet.google.com/..."
+                                            value={promoteForm.data.google_meet_link}
+                                            onChange={(e) =>
+                                                promoteForm.setData(
+                                                    'google_meet_link',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm focus:border-arabic-gold"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex shrink-0 justify-end gap-2 border-t border-arabic-cream bg-arabic-cream/30 px-6 py-4">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => setPromotingStudent(null)}
+                                        className="h-9 cursor-pointer rounded-full border-arabic-bronze/25 text-xs font-bold text-arabic-bronze hover:bg-arabic-cream"
+                                    >
+                                        {t('Cancel')}
+                                    </Button>
+                                    <Button
+                                        type="submit"
+                                        disabled={promoteForm.processing}
+                                        className="h-9 cursor-pointer rounded-full bg-arabic-bronze px-6 text-xs font-bold text-arabic-sand shadow-sm hover:bg-arabic-bronze/90"
+                                    >
+                                        {promoteForm.processing
+                                            ? t('Promoting...')
+                                            : t('Promote to Teacher')}
                                     </Button>
                                 </div>
                             </form>

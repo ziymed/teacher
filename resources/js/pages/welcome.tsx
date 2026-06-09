@@ -483,10 +483,10 @@ export default function Welcome({
                             </div>
                             <div>
                                 <span className="block text-[10px] font-bold text-arabic-bronze/60 uppercase">
-                                    Pembelajaran Online
+                                    {t('Pembelajaran Online')}
                                 </span>
                                 <span className="mt-0.5 block text-xs font-black text-arabic-bronze">
-                                    via Zoom atau Google Meet
+                                    {t('via Zoom atau Google Meet')}
                                 </span>
                                 <div className="mt-1.5 flex items-center justify-center gap-2 md:justify-start">
                                     <Badge className="flex items-center gap-1 rounded-full bg-[#2D8CFF] py-0.5 text-[8px] font-bold text-white">
@@ -507,7 +507,7 @@ export default function Welcome({
                             </div>
                             <div>
                                 <span className="block text-[10px] font-bold text-arabic-bronze/60 uppercase">
-                                    Informasi & Pendaftaran
+                                    {t('Informasi & Pendaftaran')}
                                 </span>
                                 <a
                                     href="https://wa.me/6282251985570"
@@ -527,11 +527,10 @@ export default function Welcome({
                             </div>
                             <div>
                                 <span className="block text-[10px] font-bold text-arabic-bronze/60 uppercase">
-                                    Sertifikat Resmi
+                                    {t('Sertifikat Resmi')}
                                 </span>
                                 <span className="mt-0.5 block text-xs font-black text-arabic-bronze">
-                                    Diberikan setelah mencapai tujuan
-                                    pembelajaran
+                                    {t('Diberikan setelah mencapai tujuan pembelajaran')}
                                 </span>
                             </div>
                         </div>
@@ -545,14 +544,13 @@ export default function Welcome({
                 >
                     <div className="mx-auto mb-12 max-w-2xl space-y-3 text-center">
                         <div className="flex items-center justify-center gap-1.5 text-xs font-black tracking-widest text-arabic-gold uppercase">
-                            <span>Daftar Sekarang!</span>
+                                    <span>{t('Daftar Sekarang!')}</span>
                         </div>
                         <h2 className="font-serif text-3xl font-black text-arabic-bronze md:text-4xl">
-                            Interactive Session Scheduler
+                            {t('Interactive Session Scheduler')}
                         </h2>
                         <p className="text-sm font-medium text-arabic-bronze/70">
-                            Check available teaching slots below and book your
-                            private 1-to-1 session in real time.
+                            {t('Check available teaching slots below and book your private 1-to-1 session in real time.')}
                         </p>
                     </div>
 
@@ -562,14 +560,13 @@ export default function Welcome({
                             <div className="space-y-6 p-8 md:col-span-5">
                                 <div className="space-y-2">
                                     <span className="block text-[10px] font-bold tracking-widest text-arabic-gold uppercase">
-                                        Step 1
+                                        {t('Step 1')}
                                     </span>
                                     <h4 className="font-serif text-lg font-black text-arabic-bronze">
-                                        Select Learning Date
+                                        {t('Select Learning Date')}
                                     </h4>
                                     <p className="text-xs leading-relaxed font-medium text-arabic-bronze/70">
-                                        Choose one of the highlighted dates from
-                                        the list to view open hour slots.
+                                        {t('Choose one of the highlighted dates from the list to view open hour slots.')}
                                     </p>
                                 </div>
 
@@ -583,7 +580,7 @@ export default function Welcome({
 
                                             const formattedDate = new Date(
                                                 dateStr,
-                                            ).toLocaleDateString('en-US', {
+                                            ).toLocaleDateString(locale === 'id' ? 'id-ID' : locale === 'ar' ? 'ar-EG' : 'en-US', {
                                                 weekday: 'short',
                                                 month: 'short',
                                                 day: 'numeric',
@@ -619,8 +616,7 @@ export default function Welcome({
                                     <div className="rounded-2xl border-2 border-dashed border-arabic-cream p-6 text-center">
                                         <Calendar className="mx-auto mb-2 h-8 w-8 animate-bounce text-arabic-bronze/30" />
                                         <span className="text-xs font-bold text-arabic-bronze/60">
-                                            No available slots at this time.
-                                            Please check back later.
+                                            {t('No available time slots. Please check back later.')}
                                         </span>
                                     </div>
                                 )}
@@ -631,7 +627,7 @@ export default function Welcome({
                                 <div className="space-y-6">
                                     <div className="space-y-2">
                                         <span className="block text-[10px] font-bold tracking-widest text-arabic-gold uppercase">
-                                            Step 2
+                                            {t('Step 2')}
                                         </span>
                                         <h4 className="font-serif text-lg font-black text-arabic-bronze">
                                             {t('Choose Hour & Details') ||
@@ -690,8 +686,7 @@ export default function Welcome({
                                                                     : 'border-arabic-cream bg-arabic-sand text-arabic-bronze hover:border-arabic-gold'
                                                             }`}
                                                         >
-                                                            {startStr} with{' '}
-                                                            {slot.teacher?.name}
+                                                            {t(':time with :teacher', { time: startStr, teacher: slot.teacher?.name || '' })}
                                                         </button>
                                                     );
                                                 })}
@@ -774,7 +769,7 @@ export default function Welcome({
                                                                             : 'border-arabic-cream bg-arabic-sand text-arabic-bronze hover:bg-arabic-cream'
                                                                     }`}
                                                                 >
-                                                                    Google Meet
+                                                                    {t('Google Meet')}
                                                                 </button>
                                                             )}
                                                             {(!selectedSlot
@@ -799,7 +794,7 @@ export default function Welcome({
                                                                             : 'border-arabic-cream bg-arabic-sand text-arabic-bronze hover:bg-arabic-cream'
                                                                     }`}
                                                                 >
-                                                                    Zoom
+                                                                    {t('Zoom')}
                                                                 </button>
                                                             )}
                                                         </div>
@@ -867,7 +862,7 @@ export default function Welcome({
                                                     className="flex items-center gap-1.5 rounded-full bg-arabic-bronze px-6 py-5 text-xs font-black text-arabic-sand shadow-md transition hover:bg-arabic-bronze/90"
                                                 >
                                                     {bookingForm.processing
-                                                        ? 'Booking...'
+                                                        ? t('Booking...')
                                                         : t('Book Session Now')}
                                                 </Button>
                                             </form>
@@ -947,11 +942,11 @@ export default function Welcome({
                     </div>
                     <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 text-[10px] font-bold tracking-wider text-arabic-sand/50 uppercase sm:flex-row">
                         <span>
-                            © 2026 Al-Quran Arabic Academy. All rights reserved.
+                            {t('© 2026 Tahseen. All rights reserved.')}
                         </span>
                         <div className="flex items-center gap-1.5 text-arabic-gold">
                             <MessageSquare className="h-4 w-4" />
-                            <span>WhatsApp: +62 822-5198-5570</span>
+                            <span>{t('WhatsApp: +62 822-5198-5570')}</span>
                         </div>
                     </div>
                 </footer>

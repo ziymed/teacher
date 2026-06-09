@@ -1,6 +1,7 @@
 import { Form, Head, usePage, router } from '@inertiajs/react';
 import { Link } from '@inertiajs/react';
 import { Camera, Trash2, Upload, Loader2 } from 'lucide-react';
+import { useTranslation } from '@/hooks/use-translation';
 import { useState, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
@@ -34,6 +35,7 @@ export default function Profile({
     status?: string;
 }) {
     const { auth } = usePage<PageProps>().props;
+    const { t } = useTranslation();
 
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -296,15 +298,15 @@ export default function Profile({
 
     return (
         <>
-            <Head title="Profile settings" />
+            <Head title={t('Profile settings')} />
 
-            <h1 className="sr-only">Profile settings</h1>
+            <h1 className="sr-only">{t('Profile settings')}</h1>
 
             <div className="space-y-6">
                 <Heading
                     variant="small"
-                    title="Profile"
-                    description="Update your name and email address"
+                    title={t('Profile')}
+                    description={t('Update your name and email address')}
                 />
 
                 {/* Profile Picture Uploader */}
@@ -331,11 +333,10 @@ export default function Profile({
 
                     <div className="flex flex-col items-center gap-2 sm:items-start">
                         <h3 className="font-serif text-lg font-bold text-arabic-bronze dark:text-arabic-sand">
-                            Profile Picture
+                            {t('Profile Picture')}
                         </h3>
                         <p className="text-center text-xs text-muted-foreground sm:text-left">
-                            Upload a PNG or JPEG. Max 2MB. Image will be cropped
-                            to a 1:1 ratio.
+                            {t('Upload a PNG or JPEG. Max 2MB. Image will be cropped to a 1:1 ratio.')}
                         </p>
                         <div className="mt-1 flex items-center gap-3">
                             <input
@@ -353,7 +354,7 @@ export default function Profile({
                             >
                                 <label htmlFor="avatar-upload-input">
                                     <Upload className="h-3.5 w-3.5" />
-                                    Upload Picture
+                                    {t('Upload Picture')}
                                 </label>
                             </Button>
 
@@ -370,7 +371,7 @@ export default function Profile({
                                     ) : (
                                         <Trash2 className="h-3.5 w-3.5" />
                                     )}
-                                    Remove
+                                    {t('Remove')}
                                 </Button>
                             )}
                         </div>
@@ -391,11 +392,10 @@ export default function Profile({
                     <DialogContent className="border-border bg-background sm:max-w-md">
                         <DialogHeader>
                             <DialogTitle className="font-serif text-xl font-bold text-arabic-bronze dark:text-arabic-sand">
-                                Crop Profile Picture
+                                {t('Crop Profile Picture')}
                             </DialogTitle>
                             <DialogDescription>
-                                Drag the image to position it and use the slider
-                                to zoom.
+                                {t('Drag the image to position it and use the slider to zoom.')}
                             </DialogDescription>
                         </DialogHeader>
 
@@ -426,7 +426,7 @@ export default function Profile({
                         <div className="space-y-4 px-4">
                             <div className="flex items-center gap-3">
                                 <span className="text-xs font-bold tracking-wider text-arabic-bronze/60 uppercase dark:text-arabic-sand/60">
-                                    Zoom
+                                    {t('Zoom')}
                                 </span>
                                 <input
                                     type="range"
@@ -458,7 +458,7 @@ export default function Profile({
                                 disabled={isUploading}
                                 className="w-full rounded-full border-arabic-bronze/25 text-arabic-bronze hover:bg-arabic-cream sm:w-auto"
                             >
-                                Cancel
+                                {t('Cancel')}
                             </Button>
                             <Button
                                 onClick={handleCropSave}
@@ -468,10 +468,10 @@ export default function Profile({
                                 {isUploading ? (
                                     <>
                                         <Loader2 className="h-4 w-4 animate-spin" />
-                                        Uploading...
+                                        {t('Uploading...')}
                                     </>
                                 ) : (
-                                    'Apply & Save'
+                                    t('Apply & Save')
                                 )}
                             </Button>
                         </DialogFooter>
@@ -488,7 +488,7 @@ export default function Profile({
                     {({ processing, errors }) => (
                         <>
                             <div className="grid gap-2">
-                                <Label htmlFor="name">Name</Label>
+                                <Label htmlFor="name">{t('Name')}</Label>
 
                                 <Input
                                     id="name"
@@ -497,7 +497,7 @@ export default function Profile({
                                     name="name"
                                     required
                                     autoComplete="name"
-                                    placeholder="Full name"
+                                    placeholder={t('Full name')}
                                 />
 
                                 <InputError
@@ -507,7 +507,7 @@ export default function Profile({
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                                <Label htmlFor="email">{t('Email address')}</Label>
 
                                 <Input
                                     id="email"
@@ -517,7 +517,7 @@ export default function Profile({
                                     name="email"
                                     required
                                     autoComplete="username"
-                                    placeholder="Email address"
+                                    placeholder={t('Email address')}
                                 />
 
                                 <InputError
@@ -530,22 +530,20 @@ export default function Profile({
                                 auth.user.email_verified_at === null && (
                                     <div>
                                         <p className="-mt-4 text-sm text-muted-foreground">
-                                            Your email address is unverified.{' '}
+                                            {t('Your email address is unverified.')}{' '}
                                             <Link
                                                 href={send()}
                                                 as="button"
                                                 className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
                                             >
-                                                Click here to re-send the
-                                                verification email.
+                                                {t('Click here to re-send the verification email.')}
                                             </Link>
                                         </p>
 
                                         {status ===
                                             'verification-link-sent' && (
                                             <div className="mt-2 text-sm font-medium text-green-600">
-                                                A new verification link has been
-                                                sent to your email address.
+                                                {t('A new verification link has been sent to your email address.')}
                                             </div>
                                         )}
                                     </div>
@@ -556,7 +554,7 @@ export default function Profile({
                                     disabled={processing}
                                     data-test="update-profile-button"
                                 >
-                                    Save
+                                    {t('Save')}
                                 </Button>
                             </div>
                         </>

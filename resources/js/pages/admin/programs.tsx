@@ -420,7 +420,7 @@ export default function Programs({ programs = [] }: ProgramsProps) {
                             <div className="flex shrink-0 items-center justify-between border-b border-arabic-cream bg-arabic-cream/60 px-6 py-4">
                                 <div>
                                     <span className="block text-[9px] font-bold tracking-widest text-arabic-gold uppercase">
-                                        {t('Al-Quran Arabic Academy')}
+                                        {t('Tahseen')}
                                     </span>
                                     <h4 className="font-serif text-base font-black text-arabic-bronze">
                                         {t('Add New Learning Program')}
@@ -735,7 +735,7 @@ export default function Programs({ programs = [] }: ProgramsProps) {
                             <div className="flex shrink-0 items-center justify-between border-b border-arabic-cream bg-arabic-cream/60 px-6 py-4">
                                 <div>
                                     <span className="block text-[9px] font-bold tracking-widest text-arabic-gold uppercase">
-                                        {t('Al-Quran Arabic Academy')}
+                                        {t('Tahseen')}
                                     </span>
                                     <h4 className="font-serif text-base font-black text-arabic-bronze">
                                         {t('Modify Quranic Program')}

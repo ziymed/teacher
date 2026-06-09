@@ -8,15 +8,18 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
+import { useTranslation } from '@/hooks/use-translation';
 
 type Props = {
     passwordRules: string;
 };
 
 export default function Register({ passwordRules }: Props) {
+    const { t } = useTranslation();
+
     return (
         <>
-            <Head title="Register" />
+            <Head title={t('Register')} />
             <Form
                 {...store.form()}
                 resetOnSuccess={['password', 'password_confirmation']}
@@ -27,7 +30,7 @@ export default function Register({ passwordRules }: Props) {
                     <>
                         <div className="grid gap-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="name">Name</Label>
+                                <Label htmlFor="name">{t('Name')}</Label>
                                 <Input
                                     id="name"
                                     type="text"
@@ -36,7 +39,7 @@ export default function Register({ passwordRules }: Props) {
                                     tabIndex={1}
                                     autoComplete="name"
                                     name="name"
-                                    placeholder="Full name"
+                                    placeholder={t('Full name')}
                                 />
                                 <InputError
                                     message={errors.name}
@@ -45,7 +48,7 @@ export default function Register({ passwordRules }: Props) {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                                <Label htmlFor="email">{t('Email address')}</Label>
                                 <Input
                                     id="email"
                                     type="email"
@@ -53,20 +56,20 @@ export default function Register({ passwordRules }: Props) {
                                     tabIndex={2}
                                     autoComplete="email"
                                     name="email"
-                                    placeholder="email@example.com"
+                                    placeholder={t('email@example.com')}
                                 />
                                 <InputError message={errors.email} />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="password">Password</Label>
+                                <Label htmlFor="password">{t('Password')}</Label>
                                 <PasswordInput
                                     id="password"
                                     required
                                     tabIndex={3}
                                     autoComplete="new-password"
                                     name="password"
-                                    placeholder="Password"
+                                    placeholder={t('Password')}
                                     passwordrules={passwordRules}
                                 />
                                 <InputError message={errors.password} />
@@ -74,7 +77,7 @@ export default function Register({ passwordRules }: Props) {
 
                             <div className="grid gap-2">
                                 <Label htmlFor="password_confirmation">
-                                    Confirm password
+                                    {t('Confirm password')}
                                 </Label>
                                 <PasswordInput
                                     id="password_confirmation"
@@ -82,7 +85,7 @@ export default function Register({ passwordRules }: Props) {
                                     tabIndex={4}
                                     autoComplete="new-password"
                                     name="password_confirmation"
-                                    placeholder="Confirm password"
+                                    placeholder={t('Confirm password')}
                                     passwordrules={passwordRules}
                                 />
                                 <InputError
@@ -97,14 +100,14 @@ export default function Register({ passwordRules }: Props) {
                                 data-test="register-user-button"
                             >
                                 {processing && <Spinner />}
-                                Create account
+                                {t('Create account')}
                             </Button>
                         </div>
 
                         <div className="relative flex items-center py-2">
                             <div className="flex-grow border-t border-muted"></div>
                             <span className="mx-4 flex-shrink text-xs font-semibold text-muted-foreground uppercase">
-                                Or continue with
+                                {t('Or continue with')}
                             </span>
                             <div className="flex-grow border-t border-muted"></div>
                         </div>
@@ -118,7 +121,7 @@ export default function Register({ passwordRules }: Props) {
                             >
                                 <a
                                     href="/auth/google/redirect"
-                                    title="Register with Google"
+                                    title={t('Register with Google')}
                                 >
                                     <svg
                                         className="h-4 w-4"
@@ -152,7 +155,7 @@ export default function Register({ passwordRules }: Props) {
                             >
                                 <a
                                     href="/auth/facebook/redirect"
-                                    title="Register with Facebook"
+                                    title={t('Register with Facebook')}
                                 >
                                     <svg
                                         className="h-4 w-4 fill-current text-[#1877F2]"
@@ -171,7 +174,7 @@ export default function Register({ passwordRules }: Props) {
                             >
                                 <a
                                     href="/auth/twitter/redirect"
-                                    title="Register with X"
+                                    title={t('Register with X')}
                                 >
                                     <svg
                                         className="h-4 w-4 fill-current text-foreground"
@@ -185,9 +188,9 @@ export default function Register({ passwordRules }: Props) {
                         </div>
 
                         <div className="text-center text-sm text-muted-foreground">
-                            Already have an account?{' '}
+                            {t('Already have an account?')}{' '}
                             <TextLink href={login()} tabIndex={6}>
-                                Log in
+                                {t('Log in')}
                             </TextLink>
                         </div>
                     </>

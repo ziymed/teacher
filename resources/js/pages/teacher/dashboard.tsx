@@ -1076,7 +1076,7 @@ export default function TeacherDashboard({
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
                     {/* Left Column */}
                     <div className="min-h-[300px] space-y-8 lg:col-span-4">
-                        {layout.left.map((sectionId, index) => (
+                        {layout.left.map((sectionId: string, index: number) => (
                             <div
                                 key={sectionId}
                                 draggable
@@ -1099,7 +1099,7 @@ export default function TeacherDashboard({
 
                     {/* Right Column */}
                     <div className="min-h-[300px] space-y-8 lg:col-span-8">
-                        {layout.right.map((sectionId, index) => (
+                        {layout.right.map((sectionId: string, index: number) => (
                             <div
                                 key={sectionId}
                                 draggable

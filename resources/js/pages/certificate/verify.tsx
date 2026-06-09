@@ -10,6 +10,8 @@ import {
 } from 'lucide-react';
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/hooks/use-translation';
+import { getTranslation } from '@/lib/translation-utils';
 
 interface Certificate {
     id: number;
@@ -34,6 +36,7 @@ export default function CertificateVerify({
     certificate,
     searchedHash,
 }: CertificateVerifyProps) {
+    const { t, locale } = useTranslation();
     const formattedDate = certificate
         ? new Date(certificate.issued_at).toLocaleDateString('en-US', {
               month: 'long',
@@ -45,7 +48,7 @@ export default function CertificateVerify({
     return (
         <>
             <Head>
-                <title>Verify Certificate - Al-Quran Arabic Academy</title>
+                <title>{t('Verify Certificate - Tahseen')}</title>
                 <link
                     href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Outfit:wght@100..900&display=swap"
                     rel="stylesheet"
@@ -59,7 +62,7 @@ export default function CertificateVerify({
                             🕌
                         </div>
                         <span className="font-serif text-sm font-black tracking-wide text-arabic-bronze">
-                            AL-QURAN ACADEMY
+                            {t('TAHSEEN')}
                         </span>
                     </Link>
                     <Link href="/">
@@ -67,7 +70,7 @@ export default function CertificateVerify({
                             variant="ghost"
                             className="gap-1 rounded-xl text-xs font-bold text-arabic-bronze hover:bg-arabic-cream/65"
                         >
-                            <ArrowLeft className="h-3.5 w-3.5" /> Back to Home
+                            <ArrowLeft className="h-3.5 w-3.5" /> {t('Back to Home')}
                         </Button>
                     </Link>
                 </div>
@@ -80,7 +83,7 @@ export default function CertificateVerify({
                             <div className="flex justify-center">
                                 <div className="inline-flex items-center gap-1.5 rounded-full border border-arabic-emerald/30 bg-arabic-emerald/10 px-4 py-1.5 text-xs font-bold text-emerald-600 shadow-sm dark:text-emerald-500">
                                     <ShieldCheck className="h-4 w-4 animate-pulse" />
-                                    Cryptographically Verified Credential
+                                    {t('Cryptographically Verified Credential')}
                                 </div>
                             </div>
 
@@ -94,7 +97,7 @@ export default function CertificateVerify({
                                 <div className="space-y-2">
                                     <Award className="mx-auto h-14 w-14 text-arabic-gold" />
                                     <h2 className="font-serif text-xs font-black tracking-widest text-arabic-gold uppercase">
-                                        Platform Certificate of Completion
+                                        {t('Platform Certificate of Completion')}
                                     </h2>
                                     <div className="mx-auto h-px w-24 bg-arabic-gold/45" />
                                 </div>
@@ -102,17 +105,16 @@ export default function CertificateVerify({
                                 {/* Citation Details */}
                                 <div className="space-y-4">
                                     <span className="font-serif text-xs text-arabic-bronze/70 italic">
-                                        This is to officially certify that
+                                        {t('This is to officially certify that')}
                                     </span>
                                     <h1 className="font-serif text-3xl font-black tracking-tight text-arabic-bronze md:text-4xl">
                                         {certificate.student.name}
                                     </h1>
                                     <span className="block font-serif text-xs text-arabic-bronze/70 italic">
-                                        has successfully completed all
-                                        requirements for
+                                        {t('has successfully completed all requirements for')}
                                     </span>
                                     <h3 className="font-serif text-xl font-black text-arabic-gold italic">
-                                        {certificate.program.name}
+                                        {getTranslation(certificate.program.name, locale)}
                                     </h3>
                                 </div>
 
@@ -120,7 +122,7 @@ export default function CertificateVerify({
                                 <div className="mx-auto max-w-md rounded-2xl border border-arabic-cream bg-arabic-cream/25 p-4 text-xs leading-relaxed font-medium text-arabic-bronze/80">
                                     "
                                     {certificate.notes ||
-                                        'Awarded for exceptional recitation, pronunciation fluency, and dedicated study under native Moroccan Ustaz instruction.'}
+                                        t('Awarded for exceptional recitation, pronunciation fluency, and dedicated study under native Moroccan Ustaz instruction.')}
                                     "
                                 </div>
 
@@ -128,10 +130,10 @@ export default function CertificateVerify({
                                 <div className="mx-auto grid max-w-md grid-cols-2 gap-4 pt-4 text-[10px] font-bold text-arabic-bronze/60 uppercase">
                                     <div className="space-y-1 text-center">
                                         <span className="block border-b border-arabic-cream pb-1 font-serif text-xs font-black text-arabic-bronze/80 capitalize italic">
-                                            Ustaz from Morocco
+                                            {t('Ustaz from Morocco')}
                                         </span>
                                         <span className="block tracking-wider">
-                                            Direct Instruction
+                                            {t('Direct Instruction')}
                                         </span>
                                     </div>
                                     <div className="space-y-1 text-center">
@@ -139,7 +141,7 @@ export default function CertificateVerify({
                                             {formattedDate}
                                         </span>
                                         <span className="block tracking-wider">
-                                            Date of Issuance
+                                            {t('Date of Issuance')}
                                         </span>
                                     </div>
                                 </div>
@@ -147,7 +149,7 @@ export default function CertificateVerify({
                                 {/* Cryptographic Metadata hash block */}
                                 <div className="space-y-1 border-t border-arabic-cream/65 pt-6 font-mono text-[9px] text-arabic-bronze/50 select-all">
                                     <span className="block font-bold">
-                                        VERIFICATION HASH:
+                                        {t('VERIFICATION HASH:')}
                                     </span>
                                     <span className="block break-all">
                                         {certificate.verification_hash}
@@ -164,22 +166,20 @@ export default function CertificateVerify({
 
                             <div className="space-y-2">
                                 <h3 className="font-serif text-xl font-black text-arabic-bronze">
-                                    Credential Not Found
+                                    {t('Credential Not Found')}
                                 </h3>
                                 <p className="text-xs leading-relaxed font-medium text-arabic-bronze/70">
-                                    The cryptographic signature or certificate
-                                    hash provided could not be verified. It may
-                                    be invalid, modified, or has been revoked.
+                                    {t('The cryptographic signature or certificate hash provided could not be verified. It may be invalid, modified, or has been revoked.')}
                                 </p>
                             </div>
 
                             <div className="rounded-xl border border-rose-500/10 bg-rose-500/5 p-3 font-mono text-[10px] break-all text-rose-600 select-all">
-                                Searched Hash: {searchedHash}
+                                {t('Searched Hash:')} {searchedHash}
                             </div>
 
                             <Link href="/">
                                 <Button className="mt-2 h-10 w-full rounded-xl bg-arabic-bronze text-xs font-bold text-arabic-sand shadow-sm hover:bg-arabic-bronze/90">
-                                    Return to Homepage
+                                    {t('Return to Homepage')}
                                 </Button>
                             </Link>
                         </div>
@@ -187,8 +187,7 @@ export default function CertificateVerify({
                 </main>
 
                 <footer className="py-4 text-[10px] font-bold tracking-wider text-arabic-bronze/50 uppercase">
-                    © 2026 Al-Quran Arabic Academy. Secure Verification
-                    Registry.
+                    {t('© 2026 Tahseen. Secure Verification Registry.')}
                 </footer>
             </div>
         </>

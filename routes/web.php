@@ -62,8 +62,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Admin Dashboard & Actions
         Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])
             ->name('admin.dashboard');
+        Route::get('/admin/certificates', [AdminDashboardController::class, 'certificatesIndex'])
+            ->name('admin.certificates.index');
         Route::post('/admin/certificates', [AdminDashboardController::class, 'issueCertificate'])
             ->name('admin.certificates.store');
+        Route::put('/admin/certificates/{certificate}', [AdminDashboardController::class, 'updateCertificate'])
+            ->name('admin.certificates.update');
+        Route::delete('/admin/certificates/{certificate}', [AdminDashboardController::class, 'destroyCertificate'])
+            ->name('admin.certificates.destroy');
 
         Route::get('/admin/programs', [AdminDashboardController::class, 'programsIndex'])
             ->name('admin.programs.index');
@@ -93,6 +99,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('admin.students.update');
         Route::delete('/admin/students/{student}', [AdminDashboardController::class, 'destroyStudent'])
             ->name('admin.students.destroy');
+        Route::post('/admin/students/{student}/promote', [AdminDashboardController::class, 'promoteStudent'])
+            ->name('admin.students.promote');
 
         Route::post('/admin/slots', [AdminDashboardController::class, 'storeSlot'])
             ->name('admin.slots.store');

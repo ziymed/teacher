@@ -293,7 +293,7 @@ export default function AdminDashboard({
                                 <CardTitle className="flex items-center gap-2 text-sm font-black tracking-wider text-arabic-bronze uppercase">
                                     <GripVertical className="h-4 w-4 shrink-0 text-arabic-gold/70" />
                                     <Users className="h-4.5 w-4.5 text-arabic-gold" />{' '}
-                                    Moroccan Teachers Registry
+                                    Teachers Registry
                                 </CardTitle>
                                 <Badge className="bg-arabic-cream text-[9px] font-bold text-arabic-bronze">
                                     Draggable
@@ -544,15 +544,14 @@ export default function AdminDashboard({
                                                     </td>
                                                     <td className="p-4 text-right">
                                                         <Badge
-                                                            className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${
-                                                                booking.status ===
-                                                                'completed'
+                                                            className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${booking.status ===
+                                                                    'completed'
                                                                     ? 'bg-arabic-emerald text-white'
                                                                     : booking.status ===
                                                                         'confirmed'
-                                                                      ? 'bg-arabic-gold text-arabic-bronze'
-                                                                      : 'bg-rose-500 text-white'
-                                                            }`}
+                                                                        ? 'bg-arabic-gold text-arabic-bronze'
+                                                                        : 'bg-rose-500 text-white'
+                                                                }`}
                                                         >
                                                             {booking.status}
                                                         </Badge>
@@ -746,15 +745,15 @@ export default function AdminDashboard({
                     <div className="flex shrink-0 items-center gap-2">
                         {JSON.stringify(layout) !==
                             JSON.stringify(defaultLayout) && (
-                            <Button
-                                onClick={handleResetLayout}
-                                variant="outline"
-                                className="h-9 gap-1 rounded-full border-arabic-bronze/25 px-4 text-xs font-bold text-arabic-bronze shadow-sm hover:bg-arabic-cream"
-                            >
-                                <RefreshCw className="h-3.5 w-3.5 text-arabic-gold" />{' '}
-                                Reset Layout
-                            </Button>
-                        )}
+                                <Button
+                                    onClick={handleResetLayout}
+                                    variant="outline"
+                                    className="h-9 gap-1 rounded-full border-arabic-bronze/25 px-4 text-xs font-bold text-arabic-bronze shadow-sm hover:bg-arabic-cream"
+                                >
+                                    <RefreshCw className="h-3.5 w-3.5 text-arabic-gold" />{' '}
+                                    Reset Layout
+                                </Button>
+                            )}
                         <Button
                             onClick={() => setIsIssuing(true)}
                             className="h-9 shrink-0 gap-1 rounded-full bg-arabic-gold px-4 text-xs font-black text-arabic-bronze shadow-md transition hover:bg-arabic-gold/90"
@@ -847,11 +846,10 @@ export default function AdminDashboard({
                                 onDragOver={(e) => handleDragOver(e, sectionId)}
                                 onDragLeave={handleDragLeave}
                                 onDrop={(e) => handleDrop(e, index, 'left')}
-                                className={`transition-all duration-200 ${
-                                    dragOverId === sectionId
+                                className={`transition-all duration-200 ${dragOverId === sectionId
                                         ? 'scale-[0.98] rounded-[1.5rem] border-2 border-dashed border-arabic-gold/80 p-1 opacity-50'
                                         : ''
-                                }`}
+                                    }`}
                             >
                                 {renderSection(sectionId)}
                             </div>
@@ -870,11 +868,10 @@ export default function AdminDashboard({
                                 onDragOver={(e) => handleDragOver(e, sectionId)}
                                 onDragLeave={handleDragLeave}
                                 onDrop={(e) => handleDrop(e, index, 'right')}
-                                className={`transition-all duration-200 ${
-                                    dragOverId === sectionId
+                                className={`transition-all duration-200 ${dragOverId === sectionId
                                         ? 'scale-[0.98] rounded-[1.5rem] border-2 border-dashed border-arabic-gold/80 p-1 opacity-50'
                                         : ''
-                                }`}
+                                    }`}
                             >
                                 {renderSection(sectionId)}
                             </div>

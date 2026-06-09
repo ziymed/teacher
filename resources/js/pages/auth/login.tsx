@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { useTranslation } from '@/hooks/use-translation';
 import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
@@ -18,9 +19,11 @@ type Props = {
 };
 
 export default function Login({ status, canResetPassword }: Props) {
+    const { t } = useTranslation();
+
     return (
         <>
-            <Head title="Log in" />
+            <Head title={t('Log in')} />
 
             <PasskeyVerify />
 
@@ -33,7 +36,7 @@ export default function Login({ status, canResetPassword }: Props) {
                     <>
                         <div className="grid gap-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                                <Label htmlFor="email">{t('Email address')}</Label>
                                 <Input
                                     id="email"
                                     type="email"
@@ -42,21 +45,21 @@ export default function Login({ status, canResetPassword }: Props) {
                                     autoFocus
                                     tabIndex={1}
                                     autoComplete="email"
-                                    placeholder="email@example.com"
+                                    placeholder={t('email@example.com')}
                                 />
                                 <InputError message={errors.email} />
                             </div>
 
                             <div className="grid gap-2">
                                 <div className="flex items-center">
-                                    <Label htmlFor="password">Password</Label>
+                                    <Label htmlFor="password">{t('Password')}</Label>
                                     {canResetPassword && (
                                         <TextLink
                                             href={request()}
                                             className="ml-auto text-sm"
                                             tabIndex={5}
                                         >
-                                            Forgot your password?
+                                            {t('Forgot your password?')}
                                         </TextLink>
                                     )}
                                 </div>
@@ -66,7 +69,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                     required
                                     tabIndex={2}
                                     autoComplete="current-password"
-                                    placeholder="Password"
+                                    placeholder={t('Password')}
                                 />
                                 <InputError message={errors.password} />
                             </div>
@@ -77,7 +80,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                     name="remember"
                                     tabIndex={3}
                                 />
-                                <Label htmlFor="remember">Remember me</Label>
+                                <Label htmlFor="remember">{t('Remember me')}</Label>
                             </div>
 
                             <Button
@@ -88,14 +91,14 @@ export default function Login({ status, canResetPassword }: Props) {
                                 data-test="login-button"
                             >
                                 {processing && <Spinner />}
-                                Log in
+                                {t('Log in')}
                             </Button>
                         </div>
 
                         <div className="relative flex items-center py-2">
                             <div className="flex-grow border-t border-muted"></div>
                             <span className="mx-4 flex-shrink text-xs font-semibold text-muted-foreground uppercase">
-                                Or continue with
+                                {t('Or continue with')}
                             </span>
                             <div className="flex-grow border-t border-muted"></div>
                         </div>
@@ -109,7 +112,7 @@ export default function Login({ status, canResetPassword }: Props) {
                             >
                                 <a
                                     href="/auth/google/redirect"
-                                    title="Log in with Google"
+                                    title={t('Log in with Google')}
                                 >
                                     <svg
                                         className="h-4 w-4"
@@ -143,7 +146,7 @@ export default function Login({ status, canResetPassword }: Props) {
                             >
                                 <a
                                     href="/auth/facebook/redirect"
-                                    title="Log in with Facebook"
+                                    title={t('Log in with Facebook')}
                                 >
                                     <svg
                                         className="h-4 w-4 fill-current text-[#1877F2]"
@@ -162,7 +165,7 @@ export default function Login({ status, canResetPassword }: Props) {
                             >
                                 <a
                                     href="/auth/twitter/redirect"
-                                    title="Log in with X"
+                                    title={t('Log in with X')}
                                 >
                                     <svg
                                         className="h-4 w-4 fill-current text-foreground"
@@ -176,9 +179,9 @@ export default function Login({ status, canResetPassword }: Props) {
                         </div>
 
                         <div className="text-center text-sm text-muted-foreground">
-                            Don't have an account?{' '}
+                            {t("Don't have an account?")}{' '}
                             <TextLink href={register()} tabIndex={5}>
-                                Sign up
+                                {t('Sign up')}
                             </TextLink>
                         </div>
                     </>
@@ -187,7 +190,7 @@ export default function Login({ status, canResetPassword }: Props) {
 
             {status && (
                 <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    {status}
+                    {t(status)}
                 </div>
             )}
         </>

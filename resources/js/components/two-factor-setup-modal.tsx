@@ -83,7 +83,7 @@ function TwoFactorSetupStep({
                                         }}
                                         style={{
                                             filter:
-                                                resolvedAppearance === 'dark'
+                                                (resolvedAppearance as string) === 'dark'
                                                     ? 'invert(1) brightness(1.5)'
                                                     : undefined,
                                         }}

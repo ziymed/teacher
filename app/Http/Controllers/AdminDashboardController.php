@@ -622,4 +622,126 @@ class AdminDashboardController extends Controller
 
         return back()->with('success', 'Student successfully deleted!');
     }
+
+    /**
+     * Promote a student to a teacher.
+     */
+    public function promoteStudent(Request $request, User $student): RedirectResponse
+    {
+        $user = $request->user();
+
+        if (! $user->isAdmin()) {
+            abort(403, 'Unauthorized. Only admins can promote students.');
+        }
+
+        if ($student->role !== 'student') {
+            return back()->withErrors(['error' => 'Invalid user. Selected account is not a student.']);
+        }
+
+        // Safety check: Cannot promote if active bookings exist
+        $hasActiveBookings = $student->studentBookings()->whereIn('status', ['pending', 'confirmed'])->exists();
+        if ($hasActiveBookings) {
+            return back()->withErrors(['error' => 'Cannot promote student with active or confirmed bookings. Please cancel or complete bookings first.']);
+        }
+
+        $request->validate([
+            'bio' => ['required', 'array'],
+            'bio.id' => ['required', 'string'],
+            'bio.ar' => ['required', 'string'],
+            'bio.en' => ['required', 'string'],
+            'whatsapp_number' => ['required', 'string', 'max:255'],
+            'zoom_link' => ['nullable', 'url', 'max:255'],
+            'google_meet_link' => ['nullable', 'url', 'max:255'],
+            'specializations_json' => ['nullable', 'string'],
+        ]);
+
+        $specializations = [];
+        if ($request->filled('specializations_json')) {
+            $specializations = array_filter(array_map('trim', explode(',', $request->specializations_json)));
+        }
+
+        // Change role to teacher
+        $student->update([
+            'role' => 'teacher',
+        ]);
+
+        // Create the teacher profile
+        $student->teacherProfile()->create([
+            'bio' => $request->bio,
+            'whatsapp_number' => $request->whatsapp_number,
+            'zoom_link' => $request->zoom_link,
+            'google_meet_link' => $request->google_meet_link,
+            'specializations_json' => $specializations,
+        ]);
+
+        return back()->with('success', 'Student successfully promoted to Teacher!');
+    }
+
+    /**
+     * Show the admin certificates management panel.
+     */
+    public function certificatesIndex(Request $request): Response
+    {
+        $user = $request->user();
+
+        if (! $user->isAdmin()) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        $certificates = Certificate::with(['student', 'program'])
+            ->latest()
+            ->get();
+
+        $students = User::where('role', 'student')
+            ->orderBy('name')
+            ->get();
+
+        $programs = Program::where('is_hidden', false)
+            ->orderBy('name')
+            ->get();
+
+        return Inertia::render('admin/certificates', [
+            'certificates' => $certificates,
+            'students' => $students,
+            'programs' => $programs,
+        ]);
+    }
+
+    /**
+     * Update an existing certificate's notes.
+     */
+    public function updateCertificate(Request $request, Certificate $certificate): RedirectResponse
+    {
+        $user = $request->user();
+
+        if (! $user->isAdmin()) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        $request->validate([
+            'notes' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $certificate->update([
+            'notes' => $request->notes,
+        ]);
+
+        return back()->with('success', 'Certificate notes successfully updated!');
+    }
+
+    /**
+     * Delete/revoke an issued certificate.
+     */
+    public function destroyCertificate(Request $request, Certificate $certificate): RedirectResponse
+    {
+        $user = $request->user();
+
+        if (! $user->isAdmin()) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        $certificate->delete();
+
+        return back()->with('success', 'Certificate successfully revoked!');
+    }
 }
