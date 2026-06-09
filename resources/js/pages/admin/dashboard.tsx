@@ -1,4 +1,3 @@
-import AppLayout from '@/layouts/app-layout';
 import { Head, useForm, Link, router, usePage } from '@inertiajs/react';
 import {
     Award,
@@ -14,8 +13,9 @@ import {
     RefreshCw,
 } from 'lucide-react';
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
@@ -25,12 +25,12 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/use-translation';
+import AppLayout from '@/layouts/app-layout';
+import { getTranslation } from '@/lib/translation-utils';
 import { dashboard } from '@/routes';
 import { dashboard as adminDashboard } from '@/routes/admin';
 import { store as storeCertificate } from '@/routes/admin/certificates';
-import { useTranslation } from '@/hooks/use-translation';
-import { getTranslation } from '@/lib/translation-utils';
 
 interface Student {
     id: number;
@@ -135,6 +135,7 @@ export default function AdminDashboard({
             typeof user.dashboard_layout === 'object'
         ) {
             const saved = user.dashboard_layout;
+
             if (Array.isArray(saved.left) && Array.isArray(saved.right)) {
                 left = [...saved.left];
                 right = [...saved.right];
@@ -177,13 +178,17 @@ export default function AdminDashboard({
     ) => {
         e.preventDefault();
         setDragOverId(null);
-        if (!draggingId || !draggingCol) return;
+
+        if (!draggingId || !draggingCol) {
+            return;
+        }
 
         const sourceList = [...layout[draggingCol]];
         const targetList =
             draggingCol === targetCol ? sourceList : [...layout[targetCol]];
 
         const sourceIndex = sourceList.indexOf(draggingId);
+
         if (sourceIndex > -1) {
             sourceList.splice(sourceIndex, 1);
         }
@@ -249,11 +254,13 @@ export default function AdminDashboard({
 
         if (!certForm.data.student_id) {
             toast.error('Please select a student.');
+
             return;
         }
 
         if (!certForm.data.program_id) {
             toast.error('Please select a program.');
+
             return;
         }
 
@@ -520,13 +527,19 @@ export default function AdminDashboard({
                                                     </td>
                                                     <td className="p-4">
                                                         <span className="rounded-full border border-arabic-cream/80 bg-arabic-cream px-2 py-0.5 text-[10px] font-bold text-arabic-bronze">
-                                                            {getTranslation(booking.program.name, locale).replace(
-                                                                ' Program',
-                                                                '',
-                                                            ).replace(
-                                                                'Program ',
-                                                                '',
-                                                            )}
+                                                            {getTranslation(
+                                                                booking.program
+                                                                    .name,
+                                                                locale,
+                                                            )
+                                                                .replace(
+                                                                    ' Program',
+                                                                    '',
+                                                                )
+                                                                .replace(
+                                                                    'Program ',
+                                                                    '',
+                                                                )}
                                                         </span>
                                                     </td>
                                                     <td className="p-4 text-right">
@@ -590,7 +603,10 @@ export default function AdminDashboard({
                                         className="flex items-center justify-between text-xs font-semibold"
                                     >
                                         <span className="block font-bold text-arabic-bronze">
-                                            {getTranslation(program.name, locale)}
+                                            {getTranslation(
+                                                program.name,
+                                                locale,
+                                            )}
                                         </span>
                                         {program.is_hidden ? (
                                             <Badge className="rounded-full border border-amber-500/25 bg-amber-500/10 px-2 py-0.5 text-[9px] font-bold text-amber-600">
@@ -674,7 +690,10 @@ export default function AdminDashboard({
                                                 </div>
                                                 <div className="mt-2 rounded-xl border border-arabic-cream/60 bg-arabic-cream/35 p-2.5">
                                                     <span className="block font-extrabold text-arabic-bronze">
-                                                        {getTranslation(cert.program.name, locale)}
+                                                        {getTranslation(
+                                                            cert.program.name,
+                                                            locale,
+                                                        )}
                                                     </span>
                                                     {cert.notes && (
                                                         <p className="mt-1 text-[10px] leading-relaxed font-medium text-arabic-bronze/80">
@@ -942,7 +961,10 @@ export default function AdminDashboard({
                                                     key={prog.id}
                                                     value={prog.id}
                                                 >
-                                                    {getTranslation(prog.name, locale)}
+                                                    {getTranslation(
+                                                        prog.name,
+                                                        locale,
+                                                    )}
                                                 </option>
                                             ))}
                                         </select>

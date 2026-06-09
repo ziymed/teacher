@@ -1,4 +1,3 @@
-import AppLayout from '@/layouts/app-layout';
 import { Head, useForm } from '@inertiajs/react';
 import {
     BookOpen,
@@ -12,8 +11,9 @@ import {
     Plus,
 } from 'lucide-react';
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
@@ -21,13 +21,13 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
+import { Textarea } from '@/components/ui/textarea';
+import { useTranslation } from '@/hooks/use-translation';
+import AppLayout from '@/layouts/app-layout';
+import { getTranslation, getTranslationList } from '@/lib/translation-utils';
 import { dashboard } from '@/routes';
 import { dashboard as adminDashboard } from '@/routes/admin';
-import { getTranslation, getTranslationList } from '@/lib/translation-utils';
-import { useTranslation } from '@/hooks/use-translation';
 
 interface Program {
     id: number;
@@ -67,12 +67,25 @@ export default function Programs({ programs = [] }: ProgramsProps) {
     const handleAddProgramSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!newProgramForm.data.name.id || !newProgramForm.data.name.ar || !newProgramForm.data.name.en) {
+        if (
+            !newProgramForm.data.name.id ||
+            !newProgramForm.data.name.ar ||
+            !newProgramForm.data.name.en
+        ) {
             toast.error(t('Please provide a program name in all languages.'));
+
             return;
         }
-        if (!newProgramForm.data.description.id || !newProgramForm.data.description.ar || !newProgramForm.data.description.en) {
-            toast.error(t('Please provide a program description in all languages.'));
+
+        if (
+            !newProgramForm.data.description.id ||
+            !newProgramForm.data.description.ar ||
+            !newProgramForm.data.description.en
+        ) {
+            toast.error(
+                t('Please provide a program description in all languages.'),
+            );
+
             return;
         }
 
@@ -93,14 +106,29 @@ export default function Programs({ programs = [] }: ProgramsProps) {
     const handleEditProgramSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!editingProgram) return;
-
-        if (!editProgramForm.data.name.id || !editProgramForm.data.name.ar || !editProgramForm.data.name.en) {
-            toast.error(t('Please provide a program name in all languages.'));
+        if (!editingProgram) {
             return;
         }
-        if (!editProgramForm.data.description.id || !editProgramForm.data.description.ar || !editProgramForm.data.description.en) {
-            toast.error(t('Please provide a program description in all languages.'));
+
+        if (
+            !editProgramForm.data.name.id ||
+            !editProgramForm.data.name.ar ||
+            !editProgramForm.data.name.en
+        ) {
+            toast.error(t('Please provide a program name in all languages.'));
+
+            return;
+        }
+
+        if (
+            !editProgramForm.data.description.id ||
+            !editProgramForm.data.description.ar ||
+            !editProgramForm.data.description.en
+        ) {
+            toast.error(
+                t('Please provide a program description in all languages.'),
+            );
+
             return;
         }
 
@@ -108,7 +136,9 @@ export default function Programs({ programs = [] }: ProgramsProps) {
             onSuccess: () => {
                 setEditingProgram(null);
                 editProgramForm.reset();
-                toast.success(t('Alhamdulillah! Program updated successfully!'));
+                toast.success(
+                    t('Alhamdulillah! Program updated successfully!'),
+                );
             },
             onError: (err: any) => {
                 toast.error(err.error || t('Failed to update program.'));
@@ -140,6 +170,7 @@ export default function Programs({ programs = [] }: ProgramsProps) {
     const handleToggleVisibility = (program: Program) => {
         const actionText = program.is_hidden ? t('show/unhide') : t('hide');
         const displayName = getTranslation(program.name, locale);
+
         if (
             confirm(
                 t('Are you sure you want to :action the program ":name"?', {
@@ -154,13 +185,18 @@ export default function Programs({ programs = [] }: ProgramsProps) {
                     onSuccess: () => {
                         toast.success(
                             program.is_hidden
-                                ? t('Alhamdulillah! Program successfully made visible!')
-                                : t('Alhamdulillah! Program successfully hidden!'),
+                                ? t(
+                                      'Alhamdulillah! Program successfully made visible!',
+                                  )
+                                : t(
+                                      'Alhamdulillah! Program successfully hidden!',
+                                  ),
                         );
                     },
                     onError: (err: any) => {
                         toast.error(
-                            err.error || t('Failed to toggle program visibility.'),
+                            err.error ||
+                                t('Failed to toggle program visibility.'),
                         );
                     },
                 },
@@ -170,11 +206,15 @@ export default function Programs({ programs = [] }: ProgramsProps) {
 
     const handleDeleteProgram = (program: Program) => {
         const displayName = getTranslation(program.name, locale);
+
         if (
             confirm(
-                t('Are you sure you want to delete the program ":name"? This action cannot be undone.', {
-                    name: displayName,
-                }),
+                t(
+                    'Are you sure you want to delete the program ":name"? This action cannot be undone.',
+                    {
+                        name: displayName,
+                    },
+                ),
             )
         ) {
             deleteProgramForm.delete(`/admin/programs/${program.id}`, {
@@ -208,7 +248,9 @@ export default function Programs({ programs = [] }: ProgramsProps) {
                             {t('Manage Programs')}
                         </h1>
                         <p className="mt-1 text-xs font-medium text-arabic-bronze/70">
-                            {t('Add new learning courses, configure syllabus points, and control user visibility settings.')}
+                            {t(
+                                'Add new learning courses, configure syllabus points, and control user visibility settings.',
+                            )}
                         </p>
                     </div>
                     <Button
@@ -228,7 +270,9 @@ export default function Programs({ programs = [] }: ProgramsProps) {
                                 {t('Listed Programs')}
                             </CardTitle>
                             <CardDescription className="mt-1 text-[11px] font-medium text-arabic-bronze/70">
-                                {t('Complete registry list of all platform academic streams.')}
+                                {t(
+                                    'Complete registry list of all platform academic streams.',
+                                )}
                             </CardDescription>
                         </div>
                     </CardHeader>
@@ -237,7 +281,9 @@ export default function Programs({ programs = [] }: ProgramsProps) {
                             <table className="w-full min-w-[700px] border-collapse text-left text-xs">
                                 <thead>
                                     <tr className="border-b border-arabic-cream/45 bg-arabic-cream/20 text-[10px] font-black tracking-wider text-arabic-bronze/80 uppercase">
-                                        <th className="p-4">{t('Program Details')}</th>
+                                        <th className="p-4">
+                                            {t('Program Details')}
+                                        </th>
                                         <th className="p-4">
                                             {t('Benefits/Target Metrics')}
                                         </th>
@@ -260,7 +306,9 @@ export default function Programs({ programs = [] }: ProgramsProps) {
                                                     {program.name_translation}
                                                 </span>
                                                 <p className="mt-1 text-[10px] leading-relaxed font-medium text-arabic-bronze/70">
-                                                    {program.description_translation}
+                                                    {
+                                                        program.description_translation
+                                                    }
                                                 </p>
                                             </td>
                                             <td className="max-w-xs p-4">
@@ -301,7 +349,9 @@ export default function Programs({ programs = [] }: ProgramsProps) {
                                                             )
                                                         }
                                                         className="rounded-lg p-1.5 text-arabic-bronze/75 transition hover:bg-arabic-cream hover:text-arabic-bronze"
-                                                        title={t('Edit Program')}
+                                                        title={t(
+                                                            'Edit Program',
+                                                        )}
                                                     >
                                                         <Edit2 className="h-3.5 w-3.5" />
                                                     </button>
@@ -314,8 +364,12 @@ export default function Programs({ programs = [] }: ProgramsProps) {
                                                         className="rounded-lg p-1.5 text-arabic-bronze/75 transition hover:bg-arabic-cream hover:text-arabic-bronze"
                                                         title={
                                                             program.is_hidden
-                                                                ? t('Show/Unhide Program')
-                                                                : t('Hide Program')
+                                                                ? t(
+                                                                      'Show/Unhide Program',
+                                                                  )
+                                                                : t(
+                                                                      'Hide Program',
+                                                                  )
                                                         }
                                                     >
                                                         {program.is_hidden ? (
@@ -331,7 +385,9 @@ export default function Programs({ programs = [] }: ProgramsProps) {
                                                             )
                                                         }
                                                         className="rounded-lg p-1.5 text-rose-500 transition hover:bg-rose-500/10 hover:text-rose-700"
-                                                        title={t('Delete Program')}
+                                                        title={t(
+                                                            'Delete Program',
+                                                        )}
                                                     >
                                                         <Trash2 className="h-3.5 w-3.5" />
                                                     </button>
@@ -345,7 +401,9 @@ export default function Programs({ programs = [] }: ProgramsProps) {
                                                 colSpan={4}
                                                 className="p-8 text-center text-xs font-bold text-arabic-bronze/50"
                                             >
-                                                {t('No programs defined in the database yet.')}
+                                                {t(
+                                                    'No programs defined in the database yet.',
+                                                )}
                                             </td>
                                         </tr>
                                     )}
@@ -388,46 +446,76 @@ export default function Programs({ programs = [] }: ProgramsProps) {
                                         </label>
                                         <div className="space-y-1.5">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-sm w-5 text-center">🇮🇩</span>
+                                                <span className="w-5 text-center text-sm">
+                                                    🇮🇩
+                                                </span>
                                                 <Input
                                                     type="text"
                                                     placeholder="Nama Program (Indonesian)"
-                                                    value={newProgramForm.data.name.id}
+                                                    value={
+                                                        newProgramForm.data.name
+                                                            .id
+                                                    }
                                                     onChange={(e) =>
-                                                        newProgramForm.setData('name', {
-                                                            ...newProgramForm.data.name,
-                                                            id: e.target.value,
-                                                        })
+                                                        newProgramForm.setData(
+                                                            'name',
+                                                            {
+                                                                ...newProgramForm
+                                                                    .data.name,
+                                                                id: e.target
+                                                                    .value,
+                                                            },
+                                                        )
                                                     }
                                                     className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
                                                 />
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <span className="text-sm w-5 text-center">🇲🇦</span>
+                                                <span className="w-5 text-center text-sm">
+                                                    🇲🇦
+                                                </span>
                                                 <Input
                                                     type="text"
                                                     placeholder="اسم البرنامج (Arabic)"
-                                                    value={newProgramForm.data.name.ar}
+                                                    value={
+                                                        newProgramForm.data.name
+                                                            .ar
+                                                    }
                                                     onChange={(e) =>
-                                                        newProgramForm.setData('name', {
-                                                            ...newProgramForm.data.name,
-                                                            ar: e.target.value,
-                                                        })
+                                                        newProgramForm.setData(
+                                                            'name',
+                                                            {
+                                                                ...newProgramForm
+                                                                    .data.name,
+                                                                ar: e.target
+                                                                    .value,
+                                                            },
+                                                        )
                                                     }
                                                     className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
                                                 />
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <span className="text-sm w-5 text-center">🇬🇧</span>
+                                                <span className="w-5 text-center text-sm">
+                                                    🇬🇧
+                                                </span>
                                                 <Input
                                                     type="text"
                                                     placeholder="Program Name (English)"
-                                                    value={newProgramForm.data.name.en}
+                                                    value={
+                                                        newProgramForm.data.name
+                                                            .en
+                                                    }
                                                     onChange={(e) =>
-                                                        newProgramForm.setData('name', {
-                                                            ...newProgramForm.data.name,
-                                                            en: e.target.value,
-                                                        })
+                                                        newProgramForm.setData(
+                                                            'name',
+                                                            {
+                                                                ...newProgramForm
+                                                                    .data.name,
+                                                                en: e.target
+                                                                    .value,
+                                                            },
+                                                        )
                                                     }
                                                     className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
                                                 />
@@ -442,43 +530,76 @@ export default function Programs({ programs = [] }: ProgramsProps) {
                                         </label>
                                         <div className="space-y-1.5">
                                             <div className="flex items-start gap-2">
-                                                <span className="text-sm w-5 text-center pt-2">🇮🇩</span>
+                                                <span className="w-5 pt-2 text-center text-sm">
+                                                    🇮🇩
+                                                </span>
                                                 <Textarea
                                                     placeholder="Deskripsi program (Indonesian)..."
-                                                    value={newProgramForm.data.description.id}
+                                                    value={
+                                                        newProgramForm.data
+                                                            .description.id
+                                                    }
                                                     onChange={(e) =>
-                                                        newProgramForm.setData('description', {
-                                                            ...newProgramForm.data.description,
-                                                            id: e.target.value,
-                                                        })
+                                                        newProgramForm.setData(
+                                                            'description',
+                                                            {
+                                                                ...newProgramForm
+                                                                    .data
+                                                                    .description,
+                                                                id: e.target
+                                                                    .value,
+                                                            },
+                                                        )
                                                     }
                                                     className="min-h-[70px] rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
                                                 />
                                             </div>
                                             <div className="flex items-start gap-2">
-                                                <span className="text-sm w-5 text-center pt-2">🇲🇦</span>
+                                                <span className="w-5 pt-2 text-center text-sm">
+                                                    🇲🇦
+                                                </span>
                                                 <Textarea
                                                     placeholder="وصف البرنامج (Arabic)..."
-                                                    value={newProgramForm.data.description.ar}
+                                                    value={
+                                                        newProgramForm.data
+                                                            .description.ar
+                                                    }
                                                     onChange={(e) =>
-                                                        newProgramForm.setData('description', {
-                                                            ...newProgramForm.data.description,
-                                                            ar: e.target.value,
-                                                        })
+                                                        newProgramForm.setData(
+                                                            'description',
+                                                            {
+                                                                ...newProgramForm
+                                                                    .data
+                                                                    .description,
+                                                                ar: e.target
+                                                                    .value,
+                                                            },
+                                                        )
                                                     }
                                                     className="min-h-[70px] rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
                                                 />
                                             </div>
                                             <div className="flex items-start gap-2">
-                                                <span className="text-sm w-5 text-center pt-2">🇬🇧</span>
+                                                <span className="w-5 pt-2 text-center text-sm">
+                                                    🇬🇧
+                                                </span>
                                                 <Textarea
                                                     placeholder="Program description (English)..."
-                                                    value={newProgramForm.data.description.en}
+                                                    value={
+                                                        newProgramForm.data
+                                                            .description.en
+                                                    }
                                                     onChange={(e) =>
-                                                        newProgramForm.setData('description', {
-                                                            ...newProgramForm.data.description,
-                                                            en: e.target.value,
-                                                        })
+                                                        newProgramForm.setData(
+                                                            'description',
+                                                            {
+                                                                ...newProgramForm
+                                                                    .data
+                                                                    .description,
+                                                                en: e.target
+                                                                    .value,
+                                                            },
+                                                        )
                                                     }
                                                     className="min-h-[70px] rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
                                                 />
@@ -489,57 +610,94 @@ export default function Programs({ programs = [] }: ProgramsProps) {
                                     {/* Targets/Benefits Fields */}
                                     <div className="space-y-2 border-l-2 border-arabic-gold/30 pl-3">
                                         <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                            {t('Targets/Benefits (comma-separated)')}
+                                            {t(
+                                                'Targets/Benefits (comma-separated)',
+                                            )}
                                         </label>
                                         <div className="space-y-1.5">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-sm w-5 text-center">🇮🇩</span>
+                                                <span className="w-5 text-center text-sm">
+                                                    🇮🇩
+                                                </span>
                                                 <Input
                                                     type="text"
                                                     placeholder="Target (Indonesia), e.g. Koreksi makhraj, Melatih kelancaran"
-                                                    value={newProgramForm.data.details_json.id}
+                                                    value={
+                                                        newProgramForm.data
+                                                            .details_json.id
+                                                    }
                                                     onChange={(e) =>
-                                                        newProgramForm.setData('details_json', {
-                                                            ...newProgramForm.data.details_json,
-                                                            id: e.target.value,
-                                                        })
+                                                        newProgramForm.setData(
+                                                            'details_json',
+                                                            {
+                                                                ...newProgramForm
+                                                                    .data
+                                                                    .details_json,
+                                                                id: e.target
+                                                                    .value,
+                                                            },
+                                                        )
                                                     }
                                                     className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
                                                 />
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <span className="text-sm w-5 text-center">🇲🇦</span>
+                                                <span className="w-5 text-center text-sm">
+                                                    🇲🇦
+                                                </span>
                                                 <Input
                                                     type="text"
                                                     placeholder="الأهداف (العربية)، مثلاً: تصحيح المخارج، تدريب الطلاقة"
-                                                    value={newProgramForm.data.details_json.ar}
+                                                    value={
+                                                        newProgramForm.data
+                                                            .details_json.ar
+                                                    }
                                                     onChange={(e) =>
-                                                        newProgramForm.setData('details_json', {
-                                                            ...newProgramForm.data.details_json,
-                                                            ar: e.target.value,
-                                                        })
+                                                        newProgramForm.setData(
+                                                            'details_json',
+                                                            {
+                                                                ...newProgramForm
+                                                                    .data
+                                                                    .details_json,
+                                                                ar: e.target
+                                                                    .value,
+                                                            },
+                                                        )
                                                     }
                                                     className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
                                                 />
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <span className="text-sm w-5 text-center">🇬🇧</span>
+                                                <span className="w-5 text-center text-sm">
+                                                    🇬🇧
+                                                </span>
                                                 <Input
                                                     type="text"
                                                     placeholder="Targets (English), e.g. Correct makhraj, Master fluency"
-                                                    value={newProgramForm.data.details_json.en}
+                                                    value={
+                                                        newProgramForm.data
+                                                            .details_json.en
+                                                    }
                                                     onChange={(e) =>
-                                                        newProgramForm.setData('details_json', {
-                                                            ...newProgramForm.data.details_json,
-                                                            en: e.target.value,
-                                                        })
+                                                        newProgramForm.setData(
+                                                            'details_json',
+                                                            {
+                                                                ...newProgramForm
+                                                                    .data
+                                                                    .details_json,
+                                                                en: e.target
+                                                                    .value,
+                                                            },
+                                                        )
                                                     }
                                                     className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
                                                 />
                                             </div>
                                         </div>
-                                        <span className="block text-[9px] text-arabic-bronze/50 ml-7">
-                                            {t('Separate each target with a comma.')}
+                                        <span className="ml-7 block text-[9px] text-arabic-bronze/50">
+                                            {t(
+                                                'Separate each target with a comma.',
+                                            )}
                                         </span>
                                     </div>
                                 </div>
@@ -603,46 +761,76 @@ export default function Programs({ programs = [] }: ProgramsProps) {
                                         </label>
                                         <div className="space-y-1.5">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-sm w-5 text-center">🇮🇩</span>
+                                                <span className="w-5 text-center text-sm">
+                                                    🇮🇩
+                                                </span>
                                                 <Input
                                                     type="text"
                                                     placeholder="Nama Program (Indonesian)"
-                                                    value={editProgramForm.data.name.id}
+                                                    value={
+                                                        editProgramForm.data
+                                                            .name.id
+                                                    }
                                                     onChange={(e) =>
-                                                        editProgramForm.setData('name', {
-                                                            ...editProgramForm.data.name,
-                                                            id: e.target.value,
-                                                        })
+                                                        editProgramForm.setData(
+                                                            'name',
+                                                            {
+                                                                ...editProgramForm
+                                                                    .data.name,
+                                                                id: e.target
+                                                                    .value,
+                                                            },
+                                                        )
                                                     }
                                                     className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
                                                 />
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <span className="text-sm w-5 text-center">🇲🇦</span>
+                                                <span className="w-5 text-center text-sm">
+                                                    🇲🇦
+                                                </span>
                                                 <Input
                                                     type="text"
                                                     placeholder="اسم البرنامج (Arabic)"
-                                                    value={editProgramForm.data.name.ar}
+                                                    value={
+                                                        editProgramForm.data
+                                                            .name.ar
+                                                    }
                                                     onChange={(e) =>
-                                                        editProgramForm.setData('name', {
-                                                            ...editProgramForm.data.name,
-                                                            ar: e.target.value,
-                                                        })
+                                                        editProgramForm.setData(
+                                                            'name',
+                                                            {
+                                                                ...editProgramForm
+                                                                    .data.name,
+                                                                ar: e.target
+                                                                    .value,
+                                                            },
+                                                        )
                                                     }
                                                     className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
                                                 />
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <span className="text-sm w-5 text-center">🇬🇧</span>
+                                                <span className="w-5 text-center text-sm">
+                                                    🇬🇧
+                                                </span>
                                                 <Input
                                                     type="text"
                                                     placeholder="Program Name (English)"
-                                                    value={editProgramForm.data.name.en}
+                                                    value={
+                                                        editProgramForm.data
+                                                            .name.en
+                                                    }
                                                     onChange={(e) =>
-                                                        editProgramForm.setData('name', {
-                                                            ...editProgramForm.data.name,
-                                                            en: e.target.value,
-                                                        })
+                                                        editProgramForm.setData(
+                                                            'name',
+                                                            {
+                                                                ...editProgramForm
+                                                                    .data.name,
+                                                                en: e.target
+                                                                    .value,
+                                                            },
+                                                        )
                                                     }
                                                     className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
                                                 />
@@ -657,43 +845,76 @@ export default function Programs({ programs = [] }: ProgramsProps) {
                                         </label>
                                         <div className="space-y-1.5">
                                             <div className="flex items-start gap-2">
-                                                <span className="text-sm w-5 text-center pt-2">🇮🇩</span>
+                                                <span className="w-5 pt-2 text-center text-sm">
+                                                    🇮🇩
+                                                </span>
                                                 <Textarea
                                                     placeholder="Deskripsi program (Indonesian)..."
-                                                    value={editProgramForm.data.description.id}
+                                                    value={
+                                                        editProgramForm.data
+                                                            .description.id
+                                                    }
                                                     onChange={(e) =>
-                                                        editProgramForm.setData('description', {
-                                                            ...editProgramForm.data.description,
-                                                            id: e.target.value,
-                                                        })
+                                                        editProgramForm.setData(
+                                                            'description',
+                                                            {
+                                                                ...editProgramForm
+                                                                    .data
+                                                                    .description,
+                                                                id: e.target
+                                                                    .value,
+                                                            },
+                                                        )
                                                     }
                                                     className="min-h-[70px] rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
                                                 />
                                             </div>
                                             <div className="flex items-start gap-2">
-                                                <span className="text-sm w-5 text-center pt-2">🇲🇦</span>
+                                                <span className="w-5 pt-2 text-center text-sm">
+                                                    🇲🇦
+                                                </span>
                                                 <Textarea
                                                     placeholder="وصف البرنامج (Arabic)..."
-                                                    value={editProgramForm.data.description.ar}
+                                                    value={
+                                                        editProgramForm.data
+                                                            .description.ar
+                                                    }
                                                     onChange={(e) =>
-                                                        editProgramForm.setData('description', {
-                                                            ...editProgramForm.data.description,
-                                                            ar: e.target.value,
-                                                        })
+                                                        editProgramForm.setData(
+                                                            'description',
+                                                            {
+                                                                ...editProgramForm
+                                                                    .data
+                                                                    .description,
+                                                                ar: e.target
+                                                                    .value,
+                                                            },
+                                                        )
                                                     }
                                                     className="min-h-[70px] rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
                                                 />
                                             </div>
                                             <div className="flex items-start gap-2">
-                                                <span className="text-sm w-5 text-center pt-2">🇬🇧</span>
+                                                <span className="w-5 pt-2 text-center text-sm">
+                                                    🇬🇧
+                                                </span>
                                                 <Textarea
                                                     placeholder="Program description (English)..."
-                                                    value={editProgramForm.data.description.en}
+                                                    value={
+                                                        editProgramForm.data
+                                                            .description.en
+                                                    }
                                                     onChange={(e) =>
-                                                        editProgramForm.setData('description', {
-                                                            ...editProgramForm.data.description,
-                                                            en: e.target.value,
-                                                        })
+                                                        editProgramForm.setData(
+                                                            'description',
+                                                            {
+                                                                ...editProgramForm
+                                                                    .data
+                                                                    .description,
+                                                                en: e.target
+                                                                    .value,
+                                                            },
+                                                        )
                                                     }
                                                     className="min-h-[70px] rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
                                                 />
@@ -704,57 +925,94 @@ export default function Programs({ programs = [] }: ProgramsProps) {
                                     {/* Targets/Benefits Fields */}
                                     <div className="space-y-2 border-l-2 border-arabic-gold/30 pl-3">
                                         <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                            {t('Targets/Benefits (comma-separated)')}
+                                            {t(
+                                                'Targets/Benefits (comma-separated)',
+                                            )}
                                         </label>
                                         <div className="space-y-1.5">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-sm w-5 text-center">🇮🇩</span>
+                                                <span className="w-5 text-center text-sm">
+                                                    🇮🇩
+                                                </span>
                                                 <Input
                                                     type="text"
                                                     placeholder="Target (Indonesia), e.g. Koreksi makhraj, Melatih kelancaran"
-                                                    value={editProgramForm.data.details_json.id}
+                                                    value={
+                                                        editProgramForm.data
+                                                            .details_json.id
+                                                    }
                                                     onChange={(e) =>
-                                                        editProgramForm.setData('details_json', {
-                                                            ...editProgramForm.data.details_json,
-                                                            id: e.target.value,
-                                                        })
+                                                        editProgramForm.setData(
+                                                            'details_json',
+                                                            {
+                                                                ...editProgramForm
+                                                                    .data
+                                                                    .details_json,
+                                                                id: e.target
+                                                                    .value,
+                                                            },
+                                                        )
                                                     }
                                                     className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
                                                 />
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <span className="text-sm w-5 text-center">🇲🇦</span>
+                                                <span className="w-5 text-center text-sm">
+                                                    🇲🇦
+                                                </span>
                                                 <Input
                                                     type="text"
                                                     placeholder="الأهداف (العربية)، misalnya: تصحيح المخارج، تدريب الطلاقة"
-                                                    value={editProgramForm.data.details_json.ar}
+                                                    value={
+                                                        editProgramForm.data
+                                                            .details_json.ar
+                                                    }
                                                     onChange={(e) =>
-                                                        editProgramForm.setData('details_json', {
-                                                            ...editProgramForm.data.details_json,
-                                                            ar: e.target.value,
-                                                        })
+                                                        editProgramForm.setData(
+                                                            'details_json',
+                                                            {
+                                                                ...editProgramForm
+                                                                    .data
+                                                                    .details_json,
+                                                                ar: e.target
+                                                                    .value,
+                                                            },
+                                                        )
                                                     }
                                                     className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
                                                 />
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <span className="text-sm w-5 text-center">🇬🇧</span>
+                                                <span className="w-5 text-center text-sm">
+                                                    🇬🇧
+                                                </span>
                                                 <Input
                                                     type="text"
                                                     placeholder="Targets (English), e.g. Correct makhraj, Master fluency"
-                                                    value={editProgramForm.data.details_json.en}
+                                                    value={
+                                                        editProgramForm.data
+                                                            .details_json.en
+                                                    }
                                                     onChange={(e) =>
-                                                        editProgramForm.setData('details_json', {
-                                                            ...editProgramForm.data.details_json,
-                                                            en: e.target.value,
-                                                        })
+                                                        editProgramForm.setData(
+                                                            'details_json',
+                                                            {
+                                                                ...editProgramForm
+                                                                    .data
+                                                                    .details_json,
+                                                                en: e.target
+                                                                    .value,
+                                                            },
+                                                        )
                                                     }
                                                     className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
                                                 />
                                             </div>
                                         </div>
-                                        <span className="block text-[9px] text-arabic-bronze/50 ml-7">
-                                            {t('Separate each target with a comma.')}
+                                        <span className="ml-7 block text-[9px] text-arabic-bronze/50">
+                                            {t(
+                                                'Separate each target with a comma.',
+                                            )}
                                         </span>
                                     </div>
                                 </div>

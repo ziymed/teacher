@@ -2,15 +2,13 @@ import AppLogoIcon from '@/components/app-logo-icon';
 
 export default function AppLogo() {
     return (
-        <>
-            <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
-                <AppLogoIcon className="size-5 fill-current text-white dark:text-black" />
-            </div>
-            <div className="ml-1 grid flex-1 text-left text-sm">
-                <span className="mb-0.5 truncate leading-tight font-semibold">
-                    Teach Quran
-                </span>
-            </div>
-        </>
+        <div className="flex h-12 items-center">
+            <AppLogoIcon className="block h-10 w-auto text-[#D4AF37] group-data-[collapsible=icon]:hidden" />
+            <img
+                src="/apple-touch-icon.png"
+                alt="Tahseen Logo"
+                className="hidden h-8 w-8 object-contain group-data-[collapsible=icon]:block"
+            />
+        </div>
     );
 }

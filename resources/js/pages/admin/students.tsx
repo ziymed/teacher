@@ -1,4 +1,3 @@
-import AppLayout from '@/layouts/app-layout';
 import { Head, useForm, router } from '@inertiajs/react';
 import {
     Users,
@@ -13,8 +12,9 @@ import {
     GraduationCap,
 } from 'lucide-react';
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
@@ -24,10 +24,10 @@ import {
     CardFooter,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/use-translation';
+import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import { dashboard as adminDashboard } from '@/routes/admin';
-import { useTranslation } from '@/hooks/use-translation';
 
 interface Student {
     id: number;
@@ -53,6 +53,7 @@ export default function Students({ students = [] }: StudentsProps) {
         const matchesEmail = student.email
             .toLowerCase()
             .includes(searchFilter.toLowerCase());
+
         return matchesName || matchesEmail;
     });
 
@@ -75,17 +76,22 @@ export default function Students({ students = [] }: StudentsProps) {
 
         if (!newStudentForm.data.name) {
             toast.error(t("Please provide the student's name."));
+
             return;
         }
+
         if (!newStudentForm.data.email) {
             toast.error(t('Please provide a valid email address.'));
+
             return;
         }
+
         if (
             !newStudentForm.data.password ||
             newStudentForm.data.password.length < 8
         ) {
             toast.error(t('Password must be at least 8 characters long.'));
+
             return;
         }
 
@@ -94,7 +100,9 @@ export default function Students({ students = [] }: StudentsProps) {
                 setIsAddingStudent(false);
                 newStudentForm.reset();
                 toast.success(
-                    t('Alhamdulillah! New Student account successfully created!'),
+                    t(
+                        'Alhamdulillah! New Student account successfully created!',
+                    ),
                 );
             },
             onError: (err: any) => {
@@ -106,21 +114,28 @@ export default function Students({ students = [] }: StudentsProps) {
     const handleEditStudentSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!editingStudent) return;
+        if (!editingStudent) {
+            return;
+        }
 
         if (!editStudentForm.data.name) {
             toast.error(t("Please provide the student's name."));
+
             return;
         }
+
         if (!editStudentForm.data.email) {
             toast.error(t('Please provide a valid email address.'));
+
             return;
         }
+
         if (
             editStudentForm.data.password &&
             editStudentForm.data.password.length < 8
         ) {
             toast.error(t('Password must be at least 8 characters long.'));
+
             return;
         }
 
@@ -150,9 +165,12 @@ export default function Students({ students = [] }: StudentsProps) {
     const handleDeleteStudent = (student: Student) => {
         if (
             confirm(
-                t('Are you sure you want to delete the student ":name"? This action cannot be undone.', {
-                    name: student.name,
-                }),
+                t(
+                    'Are you sure you want to delete the student ":name"? This action cannot be undone.',
+                    {
+                        name: student.name,
+                    },
+                ),
             )
         ) {
             deleteStudentForm.delete(`/admin/students/${student.id}`, {
@@ -187,7 +205,9 @@ export default function Students({ students = [] }: StudentsProps) {
                             {t('Manage Students')}
                         </h1>
                         <p className="mt-1 text-xs font-medium text-arabic-bronze/70">
-                            {t('Register new students, update profiles, and monitor private tutoring bookings.')}
+                            {t(
+                                'Register new students, update profiles, and monitor private tutoring bookings.',
+                            )}
                         </p>
                     </div>
                     <div>
@@ -210,7 +230,9 @@ export default function Students({ students = [] }: StudentsProps) {
                                     {t('Student Directory')}
                                 </CardTitle>
                                 <CardDescription className="mt-1 text-[11px] font-medium text-arabic-bronze/70">
-                                    {t('Registry list of all students enrolled in the platform.')}
+                                    {t(
+                                        'Registry list of all students enrolled in the platform.',
+                                    )}
                                 </CardDescription>
                             </div>
 
@@ -219,7 +241,9 @@ export default function Students({ students = [] }: StudentsProps) {
                                 <Search className="absolute top-1/2 left-3.5 h-3.5 w-3.5 -translate-y-1/2 text-arabic-bronze/40" />
                                 <Input
                                     type="text"
-                                    placeholder={t('Search by Name or Email...')}
+                                    placeholder={t(
+                                        'Search by Name or Email...',
+                                    )}
                                     value={searchFilter}
                                     onChange={(e) =>
                                         setSearchFilter(e.target.value)
@@ -234,7 +258,9 @@ export default function Students({ students = [] }: StudentsProps) {
                             <table className="w-full min-w-[600px] border-collapse text-left text-xs">
                                 <thead>
                                     <tr className="border-b border-arabic-cream/45 bg-arabic-cream/20 text-[10px] font-black tracking-wider text-arabic-bronze/80 uppercase">
-                                        <th className="p-4">{t('Student Profile')}</th>
+                                        <th className="p-4">
+                                            {t('Student Profile')}
+                                        </th>
                                         <th className="p-4">
                                             {t('Total Booking Activity')}
                                         </th>
@@ -269,7 +295,11 @@ export default function Students({ students = [] }: StudentsProps) {
                                             </td>
                                             <td className="p-4">
                                                 <span className="text-sm font-bold text-arabic-gold">
-                                                    {t(':count slots booked', { count: String(student.student_bookings_count) })}
+                                                    {t(':count slots booked', {
+                                                        count: String(
+                                                            student.student_bookings_count,
+                                                        ),
+                                                    })}
                                                 </span>
                                             </td>
                                             <td className="p-4">
@@ -286,7 +316,9 @@ export default function Students({ students = [] }: StudentsProps) {
                                                             )
                                                         }
                                                         className="cursor-pointer rounded-lg p-1.5 text-arabic-bronze/75 transition hover:bg-arabic-cream hover:text-arabic-bronze"
-                                                        title={t('Edit Student')}
+                                                        title={t(
+                                                            'Edit Student',
+                                                        )}
                                                     >
                                                         <Edit2 className="h-3.5 w-3.5" />
                                                     </button>
@@ -297,7 +329,9 @@ export default function Students({ students = [] }: StudentsProps) {
                                                             )
                                                         }
                                                         className="cursor-pointer rounded-lg p-1.5 text-rose-500 transition hover:bg-rose-500/10 hover:text-rose-700"
-                                                        title={t('Delete Student')}
+                                                        title={t(
+                                                            'Delete Student',
+                                                        )}
                                                     >
                                                         <Trash2 className="h-3.5 w-3.5" />
                                                     </button>
@@ -311,7 +345,9 @@ export default function Students({ students = [] }: StudentsProps) {
                                                 colSpan={4}
                                                 className="p-8 text-center text-xs font-bold text-arabic-bronze/50"
                                             >
-                                                {t('No student accounts found.')}
+                                                {t(
+                                                    'No student accounts found.',
+                                                )}
                                             </td>
                                         </tr>
                                     )}
@@ -486,7 +522,9 @@ export default function Students({ students = [] }: StudentsProps) {
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                            {t('New Password (Leave blank to keep current)')}
+                                            {t(
+                                                'New Password (Leave blank to keep current)',
+                                            )}
                                         </label>
                                         <Input
                                             type="password"

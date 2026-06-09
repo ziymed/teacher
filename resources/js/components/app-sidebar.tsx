@@ -9,6 +9,7 @@ import {
     GraduationCap,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -21,10 +22,9 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { useTranslation } from '@/hooks/use-translation';
 import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
-import { LanguageSwitcher } from '@/components/LanguageSwitcher';
-import { useTranslation } from '@/hooks/use-translation';
 
 export function AppSidebar() {
     const { t, direction } = useTranslation();
@@ -97,7 +97,11 @@ export function AppSidebar() {
     ];
 
     return (
-        <Sidebar collapsible="icon" variant="inset" side={direction === 'rtl' ? 'right' : 'left'}>
+        <Sidebar
+            collapsible="icon"
+            variant="inset"
+            side={direction === 'rtl' ? 'right' : 'left'}
+        >
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
@@ -115,7 +119,7 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <div className="px-2 py-1 flex justify-center group-data-[collapsible=icon]:hidden">
+                <div className="flex justify-center px-2 py-1 group-data-[collapsible=icon]:hidden">
                     <LanguageSwitcher />
                 </div>
                 <NavFooter items={footerNavItems} className="mt-auto" />

@@ -1,7 +1,5 @@
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { useTranslation } from '@/hooks/use-translation';
-import { getTranslation, getTranslationList } from '@/lib/translation-utils';
-import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import AppLogoIcon from '@/components/app-logo-icon';
 import {
     ArrowRight,
     BookOpen,
@@ -20,10 +18,13 @@ import {
     Award,
 } from 'lucide-react';
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { useTranslation } from '@/hooks/use-translation';
+import { getTranslation, getTranslationList } from '@/lib/translation-utils';
 import { dashboard, login, register } from '@/routes';
 import { store as storeBooking } from '@/routes/bookings';
 
@@ -94,6 +95,7 @@ export default function Welcome({
         const yyyy = dateObj.getFullYear();
         const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
         const dd = String(dateObj.getDate()).padStart(2, '0');
+
         return `${yyyy}-${mm}-${dd}`;
     };
 
@@ -135,11 +137,13 @@ export default function Welcome({
             toast.error(
                 'Please log in or register a student account to book a private session.',
             );
+
             return;
         }
 
         if (!selectedSlot) {
             toast.error('Please choose a time slot.');
+
             return;
         }
 
@@ -147,6 +151,7 @@ export default function Welcome({
             toast.error(
                 'Please select one of our Quranic programs (Talqin, Tahseen, Tajweed, or Tuhfatul Athfal).',
             );
+
             return;
         }
 
@@ -177,7 +182,9 @@ export default function Welcome({
     return (
         <>
             <Head>
-                <title>{t('Program Talqin, Tahseen Dan Tajweed Al-Quran')}</title>
+                <title>
+                    {t('Program Talqin, Tahseen Dan Tajweed Al-Quran')}
+                </title>
                 <meta
                     name="description"
                     content="Master Al-Quran recitation with native Moroccan teachers. Custom private 1-to-1 programs in Talqin, Tahseen, and Tajweed."
@@ -220,18 +227,8 @@ export default function Welcome({
 
                 {/* Header Navigation */}
                 <header className="sticky top-0 z-50 mx-auto flex max-w-7xl items-center justify-between rounded-b-[2rem] border-b border-arabic-cream bg-arabic-sand/75 px-6 py-4 shadow-sm backdrop-blur-md">
-                    <div className="flex items-center gap-2.5">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-arabic-bronze text-arabic-gold shadow-md">
-                            <BookOpen className="h-5 w-5" />
-                        </div>
-                        <div>
-                            <span className="block font-serif text-sm leading-none font-black tracking-wide">
-                                AL-QURAN
-                            </span>
-                            <span className="text-[9px] font-bold tracking-widest text-arabic-gold uppercase">
-                                Arabic Academy
-                            </span>
-                        </div>
+                    <div className="flex h-12 items-center">
+                        <AppLogoIcon className="h-10 w-auto text-arabic-bronze" />
                     </div>
 
                     <nav className="flex items-center gap-4">
@@ -275,7 +272,9 @@ export default function Welcome({
                             </div>
 
                             <h1 className="font-serif text-4xl leading-tight font-black tracking-wide text-arabic-bronze sm:text-5xl md:text-6xl">
-                                {t('Program Talqin, Tahseen Dan Tajweed Al-Quran')}
+                                {t(
+                                    'Program Talqin, Tahseen Dan Tajweed Al-Quran',
+                                )}
                             </h1>
 
                             {/* Beautiful Arabic Calligraphy Verse Quote */}
@@ -284,7 +283,8 @@ export default function Welcome({
                                     وَرَتِّلِ الْقُرْآنَ تَرْتِيلًا
                                 </p>
                                 <p className="mt-1.5 text-[10px] leading-relaxed font-bold font-semibold tracking-widest text-arabic-bronze/60 uppercase">
-                                    "{t('Arabic letters verse quote')}" ({t('QS. Al-Muzzammil: 4')})
+                                    "{t('Arabic letters verse quote')}" (
+                                    {t('QS. Al-Muzzammil: 4')})
                                 </p>
                             </div>
 
@@ -295,10 +295,14 @@ export default function Welcome({
                                 </div>
                                 <div className="text-start">
                                     <span className="block text-xs font-black text-arabic-bronze">
-                                        {t('Belajar Langsung Dengan Penutur Asli')}
+                                        {t(
+                                            'Belajar Langsung Dengan Penutur Asli',
+                                        )}
                                     </span>
                                     <span className="mt-0.5 block text-[10px] font-medium text-arabic-bronze/70">
-                                        {t('Moroccan Native Teacher description')}
+                                        {t(
+                                            'Moroccan Native Teacher description',
+                                        )}
                                     </span>
                                 </div>
                             </div>
@@ -350,7 +354,9 @@ export default function Welcome({
                                                     Ustaz Zouhir
                                                 </span>
                                                 <span className="mt-0.5 block text-[9px] font-bold tracking-widest text-arabic-sand/75 uppercase">
-                                                    {t('Native Moroccan Teacher')}
+                                                    {t(
+                                                        'Native Moroccan Teacher',
+                                                    )}
                                                 </span>
                                             </div>
                                             <span
@@ -371,7 +377,11 @@ export default function Welcome({
                         {programs.map((program) => {
                             // Find matching letter emblem
                             let letter = 'ق';
-                            const progName = getTranslation(program.name, 'en').toLowerCase();
+                            const progName = getTranslation(
+                                program.name,
+                                'en',
+                            ).toLowerCase();
+
                             if (progName.includes('tahseen')) {
                                 letter = 'ح';
                             } else if (progName.includes('tajweed')) {
@@ -379,21 +389,30 @@ export default function Welcome({
                             } else if (progName.includes('athfal')) {
                                 letter = 'ط';
                             }
-                            
+
                             // Find matching duration footer or use dynamic values if present
                             let sessionsText = t('2 Sesi per minggu');
                             let timingText = t('Sabtu & Minggu');
                             let durationText = t('Durasi 1 jam per sesi');
+
                             if (progName.includes('athfal')) {
                                 sessionsText = t('Durasi 12 minggu');
                                 timingText = t('60 menit per pertemuan');
-                                durationText = t('Bimbingan intensif & hafalan');
+                                durationText = t(
+                                    'Bimbingan intensif & hafalan',
+                                );
                             }
 
-                            const details = getTranslationList(program.details_json, locale);
+                            const details = getTranslationList(
+                                program.details_json,
+                                locale,
+                            );
 
                             return (
-                                <div key={program.id} className="group relative flex flex-col justify-between overflow-hidden rounded-t-[10rem] rounded-b-[2rem] border-2 border-arabic-cream bg-arabic-sand shadow-xl transition duration-300 hover:-translate-y-1 hover:border-arabic-gold/40">
+                                <div
+                                    key={program.id}
+                                    className="group relative flex flex-col justify-between overflow-hidden rounded-t-[10rem] rounded-b-[2rem] border-2 border-arabic-cream bg-arabic-sand shadow-xl transition duration-300 hover:-translate-y-1 hover:border-arabic-gold/40"
+                                >
                                     <div className="absolute top-0 right-0 left-0 h-20 bg-gradient-to-b from-arabic-cream/35 to-transparent" />
 
                                     <div className="flex flex-grow flex-col items-center space-y-6 p-8 pt-12">
@@ -402,14 +421,19 @@ export default function Welcome({
                                             <div className="absolute inset-0 bg-arabic-gold/5 transition duration-500 group-hover/emblem:scale-110" />
                                             <span
                                                 className="z-10 font-serif-ar text-4xl leading-none font-bold text-arabic-gold select-none group-hover:animate-float"
-                                                style={{ animationDuration: '4s' }}
+                                                style={{
+                                                    animationDuration: '4s',
+                                                }}
                                             >
                                                 {letter}
                                             </span>
                                         </div>
                                         <div className="space-y-1 text-center">
                                             <h3 className="font-serif text-2xl font-black text-arabic-bronze">
-                                                {getTranslation(program.name, locale)}
+                                                {getTranslation(
+                                                    program.name,
+                                                    locale,
+                                                )}
                                             </h3>
                                             <span className="text-[10px] font-black tracking-widest text-arabic-gold uppercase">
                                                 • {t('Programs')} •
@@ -417,7 +441,10 @@ export default function Welcome({
                                         </div>
                                         <ul className="w-full space-y-3.5 ps-2 text-start text-xs font-semibold text-arabic-bronze/85">
                                             {details.map((detail, idx) => (
-                                                <li key={idx} className="flex items-start gap-2.5">
+                                                <li
+                                                    key={idx}
+                                                    className="flex items-start gap-2.5"
+                                                >
                                                     <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-arabic-gold" />
                                                     <span>{detail}</span>
                                                 </li>
@@ -607,21 +634,31 @@ export default function Welcome({
                                             Step 2
                                         </span>
                                         <h4 className="font-serif text-lg font-black text-arabic-bronze">
-                                            {t('Choose Hour & Details') || 'Choose Hour & Details'}
+                                            {t('Choose Hour & Details') ||
+                                                'Choose Hour & Details'}
                                         </h4>
                                     </div>
 
                                     {selectedDate ? (
                                         <div className="space-y-4">
                                             <span className="block text-[11px] font-bold tracking-wider text-arabic-bronze/60 uppercase">
-                                                {t('Available slots on this day') || 'Available slots'}{' '}
+                                                {t(
+                                                    'Available slots on this day',
+                                                ) || 'Available slots'}{' '}
                                                 {new Date(
                                                     selectedDate,
-                                                ).toLocaleDateString(locale === 'id' ? 'id-ID' : locale === 'ar' ? 'ar-EG' : 'en-US', {
-                                                    month: 'long',
-                                                    day: 'numeric',
-                                                    year: 'numeric',
-                                                })}
+                                                ).toLocaleDateString(
+                                                    locale === 'id'
+                                                        ? 'id-ID'
+                                                        : locale === 'ar'
+                                                          ? 'ar-EG'
+                                                          : 'en-US',
+                                                    {
+                                                        month: 'long',
+                                                        day: 'numeric',
+                                                        year: 'numeric',
+                                                    },
+                                                )}
                                             </span>
 
                                             <div className="grid max-h-[160px] grid-cols-2 gap-3 overflow-y-auto pr-1">
@@ -665,7 +702,9 @@ export default function Welcome({
                                                     {/* Select Program */}
                                                     <div className="space-y-2">
                                                         <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                            {t('Select Program')}
+                                                            {t(
+                                                                'Select Program',
+                                                            )}
                                                         </label>
                                                         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                                                             {programs.map(
@@ -687,13 +726,18 @@ export default function Welcome({
                                                                                 : 'border-arabic-cream bg-arabic-sand text-arabic-bronze hover:bg-arabic-cream'
                                                                         }`}
                                                                     >
-                                                                        {getTranslation(prog.name, locale).replace(
-                                                                            ' Program',
-                                                                            '',
-                                                                        ).replace(
-                                                                            'Program ',
-                                                                            '',
-                                                                        )}
+                                                                        {getTranslation(
+                                                                            prog.name,
+                                                                            locale,
+                                                                        )
+                                                                            .replace(
+                                                                                ' Program',
+                                                                                '',
+                                                                            )
+                                                                            .replace(
+                                                                                'Program ',
+                                                                                '',
+                                                                            )}
                                                                     </button>
                                                                 ),
                                                             )}
@@ -703,7 +747,9 @@ export default function Welcome({
                                                     {/* Select Meeting Platform */}
                                                     <div className="animate-in space-y-2 duration-200 fade-in">
                                                         <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                            {t('Choose Platform')}
+                                                            {t(
+                                                                'Choose Platform',
+                                                            )}
                                                         </label>
                                                         <div className="flex gap-3">
                                                             {(!selectedSlot
@@ -762,10 +808,14 @@ export default function Welcome({
                                                     {/* Student Notes */}
                                                     <div className="space-y-2">
                                                         <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                            {t('Additional Notes (Optional)')}
+                                                            {t(
+                                                                'Additional Notes (Optional)',
+                                                            )}
                                                         </label>
                                                         <Textarea
-                                                            placeholder={t('Share topics, questions, or specific surahs you want to focus on...')}
+                                                            placeholder={t(
+                                                                'Share topics, questions, or specific surahs you want to focus on...',
+                                                            )}
                                                             value={notes}
                                                             onChange={(e) =>
                                                                 setNotes(
@@ -783,7 +833,9 @@ export default function Welcome({
                                         <div className="space-y-3 rounded-2xl border-2 border-dashed border-arabic-cream p-8 text-center">
                                             <Clock className="mx-auto h-8 w-8 animate-pulse text-arabic-bronze/30" />
                                             <p className="text-xs font-bold text-arabic-bronze/60">
-                                                {t('Choose one of the highlighted dates from the list to view open hour slots.')}
+                                                {t(
+                                                    'Choose one of the highlighted dates from the list to view open hour slots.',
+                                                )}
                                             </p>
                                         </div>
                                     )}
@@ -799,7 +851,8 @@ export default function Welcome({
                                             >
                                                 <div className="text-start">
                                                     <span className="block text-[9px] font-bold text-arabic-bronze/60 uppercase">
-                                                        {t('Choose Platform') || 'Platform'}
+                                                        {t('Choose Platform') ||
+                                                            'Platform'}
                                                     </span>
                                                     <span className="mt-0.5 flex items-center gap-1 text-xs font-black text-arabic-gold">
                                                         <Video className="h-3.5 w-3.5 animate-pulse text-arabic-emerald" />{' '}
@@ -825,7 +878,10 @@ export default function Welcome({
                                                         {t('Log In')}
                                                     </span>
                                                     <p className="mt-0.5 text-[11px] leading-normal text-arabic-bronze/70">
-                                                        {t('Please login or register to reserve this private slot.') || 'Please login or register.'}
+                                                        {t(
+                                                            'Please login or register to reserve this private slot.',
+                                                        ) ||
+                                                            'Please login or register.'}
                                                     </p>
                                                 </div>
                                                 <div className="flex gap-2">
@@ -859,18 +915,8 @@ export default function Welcome({
                 {/* Footer Section */}
                 <footer className="rounded-t-[3rem] border-t border-arabic-bronze bg-arabic-bronze px-6 py-12 text-arabic-sand">
                     <div className="mx-auto mb-8 flex max-w-7xl flex-col items-center justify-between gap-6 border-b border-arabic-sand/15 pb-8 md:flex-row">
-                        <div className="flex items-center gap-2">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-arabic-sand font-serif text-xl text-arabic-bronze">
-                                🕌
-                            </div>
-                            <div>
-                                <span className="block font-serif text-lg leading-none font-black tracking-wide">
-                                    AL-QURAN
-                                </span>
-                                <span className="text-[9px] font-bold tracking-widest text-arabic-gold uppercase">
-                                    Arabic Academy
-                                </span>
-                            </div>
+                        <div className="flex h-12 items-center">
+                            <AppLogoIcon className="h-10 w-auto text-arabic-sand" />
                         </div>
                         <div className="flex gap-6 text-xs font-bold text-arabic-sand/75">
                             <a

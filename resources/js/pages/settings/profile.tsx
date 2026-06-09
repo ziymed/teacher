@@ -1,15 +1,13 @@
 import { Form, Head, usePage, router } from '@inertiajs/react';
 import { Link } from '@inertiajs/react';
-import { useState, useRef, useEffect } from 'react';
 import { Camera, Trash2, Upload, Loader2 } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import DeleteUser from '@/components/delete-user';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
     Dialog,
     DialogContent,
@@ -18,6 +16,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { edit } from '@/routes/profile';
 import { send } from '@/routes/verification';
 import type { Auth } from '@/types';
@@ -54,7 +54,10 @@ export default function Profile({
     const initialOffset = useRef({ x: 0, y: 0 });
 
     useEffect(() => {
-        if (!imageUrl) return;
+        if (!imageUrl) {
+            return;
+        }
+
         const img = new Image();
         img.onload = () => {
             setNaturalSize({ w: img.naturalWidth, h: img.naturalHeight });
@@ -83,14 +86,18 @@ export default function Profile({
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
+
         if (file) {
             if (file.size > 2 * 1024 * 1024) {
                 toast.error('File size must be less than 2MB.');
+
                 return;
             }
+
             if (imageUrl) {
                 URL.revokeObjectURL(imageUrl);
             }
+
             setSelectedFile(file);
             const url = URL.createObjectURL(file);
             setImageUrl(url);
@@ -102,7 +109,10 @@ export default function Profile({
     };
 
     const updateOffset = (newX: number, newY: number) => {
-        if (!naturalSize) return;
+        if (!naturalSize) {
+            return;
+        }
+
         const V = 256;
         const maxX = Math.max(0, (fitW * zoom - V) / 2);
         const maxY = Math.max(0, (fitH * zoom - V) / 2);
@@ -113,7 +123,11 @@ export default function Profile({
 
     const handleZoomChange = (newZoom: number) => {
         setZoom(newZoom);
-        if (!naturalSize) return;
+
+        if (!naturalSize) {
+            return;
+        }
+
         const V = 256;
         const maxX = Math.max(0, (fitW * newZoom - V) / 2);
         const maxY = Math.max(0, (fitH * newZoom - V) / 2);
@@ -142,7 +156,9 @@ export default function Profile({
     };
 
     useEffect(() => {
-        if (!isDragging) return;
+        if (!isDragging) {
+            return;
+        }
 
         const handleMouseMove = (e: MouseEvent) => {
             const dx = e.clientX - dragStart.current.x;
@@ -182,7 +198,10 @@ export default function Profile({
     }, [isDragging, zoom, fitW, fitH, naturalSize]);
 
     const handleCropSave = () => {
-        if (!imageUrl || !naturalSize) return;
+        if (!imageUrl || !naturalSize) {
+            return;
+        }
+
         setIsUploading(true);
 
         const img = new Image();
@@ -195,6 +214,7 @@ export default function Profile({
 
             if (!ctx) {
                 setIsUploading(false);
+
                 return;
             }
 

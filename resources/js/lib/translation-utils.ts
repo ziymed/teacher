@@ -14,16 +14,30 @@ export function getTranslation(
         if (field.startsWith('{')) {
             try {
                 const parsed = JSON.parse(field);
-                return parsed[locale] || parsed['id'] || parsed['en'] || Object.values(parsed)[0] || '';
+
+                return (
+                    parsed[locale] ||
+                    parsed['id'] ||
+                    parsed['en'] ||
+                    Object.values(parsed)[0] ||
+                    ''
+                );
             } catch (e) {
                 // Return original string if parse fails
             }
         }
+
         return field;
     }
 
     if (typeof field === 'object') {
-        return field[locale] || field['id'] || field['en'] || Object.values(field)[0] || '';
+        return (
+            field[locale] ||
+            field['id'] ||
+            field['en'] ||
+            Object.values(field)[0] ||
+            ''
+        );
     }
 
     return '';
@@ -45,7 +59,13 @@ export function getTranslationList(
     }
 
     if (typeof field === 'object') {
-        return field[locale] || field['id'] || field['en'] || Object.values(field)[0] || [];
+        return (
+            field[locale] ||
+            field['id'] ||
+            field['en'] ||
+            Object.values(field)[0] ||
+            []
+        );
     }
 
     return [];

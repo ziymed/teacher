@@ -1,4 +1,3 @@
-import AppLayout from '@/layouts/app-layout';
 import { Head, useForm, usePage, router } from '@inertiajs/react';
 import {
     BookOpen,
@@ -16,6 +15,8 @@ import {
     Pen,
 } from 'lucide-react';
 import React, { useState } from 'react';
+import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -25,21 +26,20 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/use-translation';
+import AppLayout from '@/layouts/app-layout';
+import { getTranslation } from '@/lib/translation-utils';
 import { dashboard } from '@/routes';
 import { dashboard as teacherDashboard } from '@/routes/teacher';
+import { complete as completeBooking } from '@/routes/teacher/bookings';
 import {
     store as storeSlot,
     destroy as destroySlot,
     batch as batchSlots,
 } from '@/routes/teacher/slots';
-import { complete as completeBooking } from '@/routes/teacher/bookings';
-import { useTranslation } from '@/hooks/use-translation';
-import { getTranslation } from '@/lib/translation-utils';
 
 interface Slot {
     id: number;
@@ -111,6 +111,7 @@ export default function TeacherDashboard({
         const dd = pad(date.getDate());
         const hh = pad(date.getHours());
         const min = pad(date.getMinutes());
+
         return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
     };
 
@@ -125,10 +126,12 @@ export default function TeacherDashboard({
             typeof user.dashboard_layout === 'object'
         ) {
             const saved = user.dashboard_layout;
+
             if (Array.isArray(saved.left) && Array.isArray(saved.right)) {
                 return saved;
             }
         }
+
         return defaultLayout;
     });
 
@@ -165,13 +168,17 @@ export default function TeacherDashboard({
     ) => {
         e.preventDefault();
         setDragOverId(null);
-        if (!draggingId || !draggingCol) return;
+
+        if (!draggingId || !draggingCol) {
+            return;
+        }
 
         const sourceList = [...layout[draggingCol]];
         const targetList =
             draggingCol === targetCol ? sourceList : [...layout[targetCol]];
 
         const sourceIndex = sourceList.indexOf(draggingId);
+
         if (sourceIndex > -1) {
             sourceList.splice(sourceIndex, 1);
         }
@@ -201,7 +208,9 @@ export default function TeacherDashboard({
                 preserveScroll: true,
                 onSuccess: () => {
                     toast.success(
-                        t('Alhamdulillah! Dashboard layout updated successfully.'),
+                        t(
+                            'Alhamdulillah! Dashboard layout updated successfully.',
+                        ),
                     );
                 },
             },
@@ -219,7 +228,9 @@ export default function TeacherDashboard({
                 preserveScroll: true,
                 onSuccess: () => {
                     toast.success(
-                        t('Alhamdulillah! Dashboard layout reset successfully.'),
+                        t(
+                            'Alhamdulillah! Dashboard layout reset successfully.',
+                        ),
                     );
                 },
             },
@@ -237,6 +248,7 @@ export default function TeacherDashboard({
 
         if (!slotForm.data.start_time) {
             toast.error(t('Please choose a start date & time.'));
+
             return;
         }
 
@@ -261,6 +273,7 @@ export default function TeacherDashboard({
 
         if (!batchForm.data.start_date || !batchForm.data.end_date) {
             toast.error(t('Please choose a start date & end date.'));
+
             return;
         }
 
@@ -294,10 +307,14 @@ export default function TeacherDashboard({
 
     const handleEditSlotSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!editingSlot) return;
+
+        if (!editingSlot) {
+            return;
+        }
 
         if (!editSlotForm.data.start_time) {
             toast.error(t('Please choose a start date & time.'));
+
             return;
         }
 
@@ -324,9 +341,13 @@ export default function TeacherDashboard({
     const handleCompleteBookingSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!selectedBooking) return;
+        if (!selectedBooking) {
+            return;
+        }
+
         if (completionForm.data.teacher_feedback.length < 10) {
             toast.error(t('Feedback must be at least 10 characters long.'));
+
             return;
         }
 
@@ -335,7 +356,9 @@ export default function TeacherDashboard({
                 setSelectedBooking(null);
                 completionForm.reset();
                 toast.success(
-                    t('Class marked as completed! Student progress report has been filed.'),
+                    t(
+                        'Class marked as completed! Student progress report has been filed.',
+                    ),
                 );
             },
             onError: (err: any) => {
@@ -415,8 +438,12 @@ export default function TeacherDashboard({
                                 </CardTitle>
                                 <CardDescription className="text-[11px] font-medium text-arabic-bronze/70">
                                     {activeTab === 'single'
-                                        ? t('Create a custom private session slot for students to book.')
-                                        : t('Automatically generate slots for every Sat & Sun (8 AM - 6 PM) in a date range.')}
+                                        ? t(
+                                              'Create a custom private session slot for students to book.',
+                                          )
+                                        : t(
+                                              'Automatically generate slots for every Sat & Sun (8 AM - 6 PM) in a date range.',
+                                          )}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="p-5 pt-2">
@@ -465,7 +492,9 @@ export default function TeacherDashboard({
                                                     {t('60 minutes (1 hour)')}
                                                 </option>
                                                 <option value="90">
-                                                    {t('90 minutes (1.5 hours)')}
+                                                    {t(
+                                                        '90 minutes (1.5 hours)',
+                                                    )}
                                                 </option>
                                                 <option value="120">
                                                     {t('120 minutes (2 hours)')}
@@ -545,7 +574,9 @@ export default function TeacherDashboard({
                                                     {t('60 minutes (1 hour)')}
                                                 </option>
                                                 <option value="90">
-                                                    {t('90 minutes (1.5 hours)')}
+                                                    {t(
+                                                        '90 minutes (1.5 hours)',
+                                                    )}
                                                 </option>
                                                 <option value="120">
                                                     {t('120 minutes (2 hours)')}
@@ -553,7 +584,10 @@ export default function TeacherDashboard({
                                             </select>
                                         </div>
                                         <div className="rounded-xl border border-arabic-cream bg-arabic-cream/30 p-3 text-[10px] leading-normal font-medium text-arabic-bronze/80">
-                                            💡 {t('Generates non-overlapping slots on Saturdays & Sundays (8:00 AM to 6:00 PM) within this range.')}
+                                            💡{' '}
+                                            {t(
+                                                'Generates non-overlapping slots on Saturdays & Sundays (8:00 AM to 6:00 PM) within this range.',
+                                            )}
                                         </div>
                                         <Button
                                             type="submit"
@@ -597,11 +631,15 @@ export default function TeacherDashboard({
                                     );
                                     const formattedTime =
                                         startTime.toLocaleDateString(
-                                            locale === 'id' ? 'id-ID' : locale === 'ar' ? 'ar-EG' : 'en-US',
+                                            locale === 'id'
+                                                ? 'id-ID'
+                                                : locale === 'ar'
+                                                  ? 'ar-EG'
+                                                  : 'en-US',
                                             {
                                                 month: 'short',
                                                 day: 'numeric',
-                                            }
+                                            },
                                         ) +
                                         ' @ ' +
                                         startTime.toLocaleTimeString([], {
@@ -666,7 +704,9 @@ export default function TeacherDashboard({
                                                                 );
                                                             }}
                                                             className="cursor-pointer rounded-lg p-1 text-arabic-gold transition hover:bg-arabic-gold/10"
-                                                            title={t('Edit Slot Time')}
+                                                            title={t(
+                                                                'Edit Slot Time',
+                                                            )}
                                                         >
                                                             <Pen className="h-3.5 w-3.5" />
                                                         </button>
@@ -677,7 +717,9 @@ export default function TeacherDashboard({
                                                                 )
                                                             }
                                                             className="cursor-pointer rounded-lg p-1 text-rose-500 transition hover:bg-rose-500/10"
-                                                            title={t('Delete Slot')}
+                                                            title={t(
+                                                                'Delete Slot',
+                                                            )}
                                                         >
                                                             <X className="h-3.5 w-3.5" />
                                                         </button>
@@ -690,7 +732,9 @@ export default function TeacherDashboard({
                             </div>
                         ) : (
                             <div className="rounded-2xl border border-arabic-cream bg-arabic-sand p-6 text-center text-xs font-bold text-arabic-bronze/60">
-                                {t('No teaching hour slots created yet. Use the card above to open hours.')}
+                                {t(
+                                    'No teaching hour slots created yet. Use the card above to open hours.',
+                                )}
                             </div>
                         )}
                     </div>
@@ -718,11 +762,15 @@ export default function TeacherDashboard({
                                     );
                                     const formattedTime =
                                         startTime.toLocaleDateString(
-                                            locale === 'id' ? 'id-ID' : locale === 'ar' ? 'ar-EG' : 'en-US',
+                                            locale === 'id'
+                                                ? 'id-ID'
+                                                : locale === 'ar'
+                                                  ? 'ar-EG'
+                                                  : 'en-US',
                                             {
                                                 month: 'short',
                                                 day: 'numeric',
-                                            }
+                                            },
                                         ) +
                                         ' @ ' +
                                         startTime.toLocaleTimeString([], {
@@ -742,7 +790,11 @@ export default function TeacherDashboard({
                                                         variant="secondary"
                                                         className="rounded-full bg-rose-100 text-[9px] font-bold text-rose-700 uppercase"
                                                     >
-                                                        {getTranslation(booking.program.name, locale)}
+                                                        {getTranslation(
+                                                            booking.program
+                                                                .name,
+                                                            locale,
+                                                        )}
                                                     </Badge>
                                                     <span className="text-[10px] font-black text-rose-600">
                                                         {t('Pending Feedback')}
@@ -782,7 +834,9 @@ export default function TeacherDashboard({
                             </div>
                         ) : (
                             <div className="rounded-[2rem] border border-arabic-cream bg-arabic-sand p-8 text-center text-xs font-bold text-arabic-bronze/60">
-                                {t('Alhamdulillah! You have no pending progress reports to file.')}
+                                {t(
+                                    'Alhamdulillah! You have no pending progress reports to file.',
+                                )}
                             </div>
                         )}
                     </div>
@@ -810,12 +864,16 @@ export default function TeacherDashboard({
                                     );
                                     const formattedTime =
                                         startTime.toLocaleDateString(
-                                            locale === 'id' ? 'id-ID' : locale === 'ar' ? 'ar-EG' : 'en-US',
+                                            locale === 'id'
+                                                ? 'id-ID'
+                                                : locale === 'ar'
+                                                  ? 'ar-EG'
+                                                  : 'en-US',
                                             {
                                                 weekday: 'short',
                                                 month: 'short',
                                                 day: 'numeric',
-                                            }
+                                            },
                                         ) +
                                         ' @ ' +
                                         startTime.toLocaleTimeString([], {
@@ -835,13 +893,19 @@ export default function TeacherDashboard({
                                                         variant="secondary"
                                                         className="rounded-full bg-arabic-cream text-[9px] font-bold text-arabic-bronze uppercase"
                                                     >
-                                                        {getTranslation(booking.program.name, locale).replace(
-                                                            ' Program',
-                                                            '',
-                                                        ).replace(
-                                                            'Program ',
-                                                            '',
-                                                        )}
+                                                        {getTranslation(
+                                                            booking.program
+                                                                .name,
+                                                            locale,
+                                                        )
+                                                            .replace(
+                                                                ' Program',
+                                                                '',
+                                                            )
+                                                            .replace(
+                                                                'Program ',
+                                                                '',
+                                                            )}
                                                     </Badge>
                                                     <span className="text-[10px] font-black text-arabic-emerald">
                                                         {t('Booked')}
@@ -886,7 +950,9 @@ export default function TeacherDashboard({
                             </div>
                         ) : (
                             <div className="rounded-[2rem] border border-arabic-cream bg-arabic-sand p-8 text-center text-xs font-bold text-arabic-bronze/60">
-                                {t('No upcoming sessions have been booked yet. Opened slots will appear on the calendar for students.')}
+                                {t(
+                                    'No upcoming sessions have been booked yet. Opened slots will appear on the calendar for students.',
+                                )}
                             </div>
                         )}
                     </div>
@@ -912,12 +978,16 @@ export default function TeacherDashboard({
                                     const dateStr = new Date(
                                         booking.slot.start_time,
                                     ).toLocaleDateString(
-                                        locale === 'id' ? 'id-ID' : locale === 'ar' ? 'ar-EG' : 'en-US',
+                                        locale === 'id'
+                                            ? 'id-ID'
+                                            : locale === 'ar'
+                                              ? 'ar-EG'
+                                              : 'en-US',
                                         {
                                             month: 'short',
                                             day: 'numeric',
                                             year: 'numeric',
-                                        }
+                                        },
                                     );
 
                                     return (
@@ -936,8 +1006,13 @@ export default function TeacherDashboard({
                                                     </span>
                                                     <span className="mt-1 block text-[10px] font-medium text-arabic-bronze/60">
                                                         {t('Class Program')}:{' '}
-                                                        {getTranslation(booking.program.name, locale)} •
-                                                        {t('Completed on')} {dateStr}
+                                                        {getTranslation(
+                                                            booking.program
+                                                                .name,
+                                                            locale,
+                                                        )}{' '}
+                                                        •{t('Completed on')}{' '}
+                                                        {dateStr}
                                                     </span>
                                                 </div>
                                             </div>
@@ -953,7 +1028,9 @@ export default function TeacherDashboard({
                             </div>
                         ) : (
                             <div className="rounded-[2rem] border border-arabic-cream bg-arabic-sand p-8 text-center text-xs font-bold text-arabic-bronze/60">
-                                {t('No completed lessons recorded in your system yet.')}
+                                {t(
+                                    'No completed lessons recorded in your system yet.',
+                                )}
                             </div>
                         )}
                     </div>
@@ -976,7 +1053,9 @@ export default function TeacherDashboard({
                             {t('Teacher Portal')}
                         </h1>
                         <p className="mt-1 text-xs font-medium text-arabic-bronze/70">
-                            {t('Manage your available hours, connect with private students on Zoom/Meet, and submit progress feedback reports.')}
+                            {t(
+                                'Manage your available hours, connect with private students on Zoom/Meet, and submit progress feedback reports.',
+                            )}
                         </p>
                     </div>
                     {JSON.stringify(layout) !==
@@ -1052,7 +1131,8 @@ export default function TeacherDashboard({
                                         {t('Log Progress Report')}
                                     </span>
                                     <h4 className="font-serif text-base font-black text-arabic-bronze">
-                                        {t('Recap for')} {selectedBooking.student.name}
+                                        {t('Recap for')}{' '}
+                                        {selectedBooking.student.name}
                                     </h4>
                                 </div>
                                 <button
@@ -1073,7 +1153,10 @@ export default function TeacherDashboard({
                                             {t('Class Program')}
                                         </label>
                                         <span className="block text-xs font-bold text-arabic-bronze">
-                                            {getTranslation(selectedBooking.program.name, locale)}
+                                            {getTranslation(
+                                                selectedBooking.program.name,
+                                                locale,
+                                            )}
                                         </span>
                                     </div>
 
@@ -1082,7 +1165,9 @@ export default function TeacherDashboard({
                                             {t('Detailed Performance Feedback')}
                                         </label>
                                         <Textarea
-                                            placeholder={t('Write constructive progress comments on student pronunciation accuracy, surah mastery, tajweed rules learned, etc...')}
+                                            placeholder={t(
+                                                'Write constructive progress comments on student pronunciation accuracy, surah mastery, tajweed rules learned, etc...',
+                                            )}
                                             value={
                                                 completionForm.data
                                                     .teacher_feedback
@@ -1096,7 +1181,9 @@ export default function TeacherDashboard({
                                             className="min-h-[120px] rounded-xl border-arabic-cream bg-arabic-sand text-xs placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
                                         />
                                         <span className="block text-[10px] leading-relaxed text-arabic-bronze/50">
-                                            {t('Student will immediately view these notes on their portal.')}
+                                            {t(
+                                                'Student will immediately view these notes on their portal.',
+                                            )}
                                         </span>
                                     </div>
 
@@ -1120,10 +1207,21 @@ export default function TeacherDashboard({
                                                 htmlFor="issue_cert"
                                                 className="block cursor-pointer text-xs font-black text-arabic-bronze"
                                             >
-                                                {t('Award Program Completion Certificate')}
+                                                {t(
+                                                    'Award Program Completion Certificate',
+                                                )}
                                             </label>
                                             <p className="mt-0.5 text-[10px] leading-normal font-medium text-arabic-bronze/80">
-                                                {t("If the student has fully completed all rules, lessons, and surahs required for :program, award their official platform credentials.", { program: getTranslation(selectedBooking.program.name, locale) })}
+                                                {t(
+                                                    'If the student has fully completed all rules, lessons, and surahs required for :program, award their official platform credentials.',
+                                                    {
+                                                        program: getTranslation(
+                                                            selectedBooking
+                                                                .program.name,
+                                                            locale,
+                                                        ),
+                                                    },
+                                                )}
                                             </p>
                                         </div>
                                     </div>

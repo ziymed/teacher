@@ -186,24 +186,24 @@
     }
 
     /* Arabic typography rules */
-    html[lang="ar"],
-    html[lang="ar"] body,
-    html[lang="ar"] input,
-    html[lang="ar"] button,
-    html[lang="ar"] textarea,
-    html[lang="ar"] select {
+    html[lang='ar'],
+    html[lang='ar'] body,
+    html[lang='ar'] input,
+    html[lang='ar'] button,
+    html[lang='ar'] textarea,
+    html[lang='ar'] select {
         font-family: var(--font-sans-ar);
     }
 
-    html[lang="ar"] .font-serif {
+    html[lang='ar'] .font-serif {
         font-family: var(--font-serif-ar);
     }
 
     /* Disable letter-spacing for Arabic script to prevent disjointed character rendering */
-    [lang="ar"],
+    [lang='ar'],
     .font-sans-ar,
     .font-serif-ar,
-    [dir="rtl"] {
+    [dir='rtl'] {
         letter-spacing: normal !important;
     }
 }

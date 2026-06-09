@@ -1,7 +1,7 @@
+import React from 'react';
+import { useTranslation } from '@/hooks/use-translation';
 import AppLayoutTemplate from '@/layouts/app/app-sidebar-layout';
 import type { BreadcrumbItem } from '@/types';
-import { useTranslation } from '@/hooks/use-translation';
-import React from 'react';
 
 export default function AppLayout({
     breadcrumbs = [],

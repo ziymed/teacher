@@ -1,4 +1,3 @@
-import AppLayout from '@/layouts/app-layout';
 import { Head, useForm, router } from '@inertiajs/react';
 import {
     Users,
@@ -18,8 +17,9 @@ import {
     Trash,
 } from 'lucide-react';
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
@@ -27,13 +27,13 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
+import { Textarea } from '@/components/ui/textarea';
+import { useTranslation } from '@/hooks/use-translation';
+import AppLayout from '@/layouts/app-layout';
+import { getTranslation } from '@/lib/translation-utils';
 import { dashboard } from '@/routes';
 import { dashboard as adminDashboard } from '@/routes/admin';
-import { getTranslation } from '@/lib/translation-utils';
-import { useTranslation } from '@/hooks/use-translation';
 
 interface Teacher {
     id: number;
@@ -99,6 +99,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
             .includes(teacherFilter.toLowerCase());
 
         let matchesDate = true;
+
         if (dateFilter) {
             const slotDateStr = new Date(slot.start_time)
                 .toISOString()
@@ -137,6 +138,7 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                         newIds.push(id);
                     }
                 });
+
                 return newIds;
             });
         }
@@ -145,19 +147,24 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
     const handleDeleteSelected = () => {
         const unbookedSelectedIds = selectedSlotIds.filter((id) => {
             const slot = slots.find((s) => s.id === id);
+
             return slot && !slot.is_booked;
         });
 
         if (unbookedSelectedIds.length === 0) {
             toast.error(t('No available/unbooked slots selected.'));
+
             return;
         }
 
         if (
             confirm(
-                t('Are you sure you want to delete the :count selected unbooked slots?', {
-                    count: String(unbookedSelectedIds.length),
-                }),
+                t(
+                    'Are you sure you want to delete the :count selected unbooked slots?',
+                    {
+                        count: String(unbookedSelectedIds.length),
+                    },
+                ),
             )
         ) {
             router.delete('/admin/slots/bulk', {
@@ -180,7 +187,9 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
     const handleDeleteAllUnbooked = () => {
         if (
             confirm(
-                t('Are you sure you want to delete ALL available (unbooked) teaching slots across the entire platform? This action cannot be undone.'),
+                t(
+                    'Are you sure you want to delete ALL available (unbooked) teaching slots across the entire platform? This action cannot be undone.',
+                ),
             )
         ) {
             router.delete('/admin/slots/all', {
@@ -256,10 +265,13 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
 
         if (!newSlotForm.data.teacher_id) {
             toast.error(t('Please select a teacher.'));
+
             return;
         }
+
         if (!newSlotForm.data.start_time) {
             toast.error(t('Please select a start date & time.'));
+
             return;
         }
 
@@ -282,33 +294,46 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
 
         if (!newTeacherForm.data.name) {
             toast.error(t("Please provide the teacher's name."));
+
             return;
         }
+
         if (!newTeacherForm.data.email) {
             toast.error(t('Please provide a valid email address.'));
+
             return;
         }
+
         if (
             !newTeacherForm.data.password ||
             newTeacherForm.data.password.length < 8
         ) {
             toast.error(t('Password must be at least 8 characters long.'));
+
             return;
         }
+
         if (!newTeacherForm.data.bio.id) {
             toast.error(t('Please provide the biography in Indonesian.'));
+
             return;
         }
+
         if (!newTeacherForm.data.bio.ar) {
             toast.error(t('Please provide the biography in Arabic.'));
+
             return;
         }
+
         if (!newTeacherForm.data.bio.en) {
             toast.error(t('Please provide the biography in English.'));
+
             return;
         }
+
         if (!newTeacherForm.data.whatsapp_number) {
             toast.error(t('Please provide a WhatsApp contact number.'));
+
             return;
         }
 
@@ -317,7 +342,9 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                 setIsAddingTeacher(false);
                 newTeacherForm.reset();
                 toast.success(
-                    t('Alhamdulillah! New Teacher account successfully created!'),
+                    t(
+                        'Alhamdulillah! New Teacher account successfully created!',
+                    ),
                 );
             },
             onError: (err: any) => {
@@ -329,37 +356,52 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
     const handleEditTeacherSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!editingTeacher) return;
+        if (!editingTeacher) {
+            return;
+        }
 
         if (!editTeacherForm.data.name) {
             toast.error(t("Please provide the teacher's name."));
+
             return;
         }
+
         if (!editTeacherForm.data.email) {
             toast.error(t('Please provide a valid email address.'));
+
             return;
         }
+
         if (
             editTeacherForm.data.password &&
             editTeacherForm.data.password.length < 8
         ) {
             toast.error(t('Password must be at least 8 characters long.'));
+
             return;
         }
+
         if (!editTeacherForm.data.bio.id) {
             toast.error(t('Please provide the biography in Indonesian.'));
+
             return;
         }
+
         if (!editTeacherForm.data.bio.ar) {
             toast.error(t('Please provide the biography in Arabic.'));
+
             return;
         }
+
         if (!editTeacherForm.data.bio.en) {
             toast.error(t('Please provide the biography in English.'));
+
             return;
         }
+
         if (!editTeacherForm.data.whatsapp_number) {
             toast.error(t('Please provide a WhatsApp contact number.'));
+
             return;
         }
 
@@ -402,9 +444,12 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
     const handleDeleteTeacher = (teacher: Teacher) => {
         if (
             confirm(
-                t('Are you sure you want to delete the teacher ":name"? This action cannot be undone.', {
-                    name: teacher.name,
-                }),
+                t(
+                    'Are you sure you want to delete the teacher ":name"? This action cannot be undone.',
+                    {
+                        name: teacher.name,
+                    },
+                ),
             )
         ) {
             deleteTeacherForm.delete(`/admin/teachers/${teacher.id}`, {
@@ -438,7 +483,9 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                             {t('Manage Teachers')}
                         </h1>
                         <p className="mt-1 text-xs font-medium text-arabic-bronze/70">
-                            {t('Add approved Moroccan educators, configure contact credentials, and audit active teaching capacities.')}
+                            {t(
+                                'Add approved Moroccan educators, configure contact credentials, and audit active teaching capacities.',
+                            )}
                         </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -446,7 +493,8 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                             onClick={() => setIsAddingSlot(true)}
                             className="h-9 cursor-pointer gap-1 rounded-full border border-arabic-bronze/35 bg-arabic-cream px-4 text-xs font-black text-arabic-bronze shadow-md transition hover:bg-arabic-cream/80"
                         >
-                            <Clock className="h-4 w-4 text-arabic-gold" /> {t('Open Teaching Hour')}
+                            <Clock className="h-4 w-4 text-arabic-gold" />{' '}
+                            {t('Open Teaching Hour')}
                         </Button>
                         <Button
                             onClick={() => setIsAddingTeacher(true)}
@@ -466,7 +514,9 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                 {t('Teacher Directory')}
                             </CardTitle>
                             <CardDescription className="mt-1 text-[11px] font-medium text-arabic-bronze/70">
-                                {t('Complete registry list of all platform educators.')}
+                                {t(
+                                    'Complete registry list of all platform educators.',
+                                )}
                             </CardDescription>
                         </div>
                     </CardHeader>
@@ -475,8 +525,12 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                             <table className="w-full min-w-[700px] border-collapse text-left text-xs">
                                 <thead>
                                     <tr className="border-b border-arabic-cream/45 bg-arabic-cream/20 text-[10px] font-black tracking-wider text-arabic-bronze/80 uppercase">
-                                        <th className="p-4">{t('Teacher Profile')}</th>
-                                        <th className="p-4">{t('Biography')}</th>
+                                        <th className="p-4">
+                                            {t('Teacher Profile')}
+                                        </th>
+                                        <th className="p-4">
+                                            {t('Biography')}
+                                        </th>
                                         <th className="p-4">
                                             {t('Classrooms (Zoom/Meet)')}
                                         </th>
@@ -530,7 +584,9 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                                 <p className="line-clamp-3 text-[10px] leading-relaxed font-medium text-arabic-bronze/80">
                                                     {teacher.teacher_profile
                                                         ?.bio_translation ||
-                                                        t('No biography details logged.')}
+                                                        t(
+                                                            'No biography details logged.',
+                                                        )}
                                                 </p>
                                                 <div className="mt-2 flex items-center gap-1.5 text-[10px] font-bold text-arabic-gold">
                                                     <Phone className="h-3.5 w-3.5" />{' '}
@@ -577,12 +633,15 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                                     !teacher.teacher_profile
                                                         ?.google_meet_link && (
                                                         <span className="text-arabic-bronze/50">
-                                                            {t('No meeting links set.')}
+                                                            {t(
+                                                                'No meeting links set.',
+                                                            )}
                                                         </span>
                                                     )}
                                             </td>
                                             <td className="p-4 text-center font-extrabold text-arabic-gold">
-                                                {teacher.slots_count} {t('slots')}
+                                                {teacher.slots_count}{' '}
+                                                {t('slots')}
                                             </td>
                                             <td className="p-4 text-right">
                                                 <div className="flex items-center justify-end gap-1">
@@ -593,7 +652,9 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                                             )
                                                         }
                                                         className="rounded-lg p-1.5 text-arabic-bronze/75 transition hover:bg-arabic-cream hover:text-arabic-bronze"
-                                                        title={t('Edit Teacher Profile')}
+                                                        title={t(
+                                                            'Edit Teacher Profile',
+                                                        )}
                                                     >
                                                         <Edit2 className="h-3.5 w-3.5" />
                                                     </button>
@@ -604,7 +665,9 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                                             )
                                                         }
                                                         className="rounded-lg p-1.5 text-rose-500 transition hover:bg-rose-500/10 hover:text-rose-700"
-                                                        title={t('Delete Teacher')}
+                                                        title={t(
+                                                            'Delete Teacher',
+                                                        )}
                                                     >
                                                         <Trash2 className="h-3.5 w-3.5" />
                                                     </button>
@@ -618,7 +681,9 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                                 colSpan={5}
                                                 className="p-8 text-center text-xs font-bold text-arabic-bronze/50"
                                             >
-                                                {t('No teacher accounts defined in the database yet.')}
+                                                {t(
+                                                    'No teacher accounts defined in the database yet.',
+                                                )}
                                             </td>
                                         </tr>
                                     )}
@@ -638,7 +703,9 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                     {t('All Open Teaching Slots')}
                                 </CardTitle>
                                 <CardDescription className="mt-1 text-[11px] font-medium text-arabic-bronze/70">
-                                    {t('Manage, search, and bulk delete teaching availability slots across the platform.')}
+                                    {t(
+                                        'Manage, search, and bulk delete teaching availability slots across the platform.',
+                                    )}
                                 </CardDescription>
                             </div>
                             <div className="flex flex-wrap items-center gap-2">
@@ -647,14 +714,17 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                     variant="outline"
                                     className="h-8 gap-1.5 rounded-full border-rose-500/30 px-3.5 text-[10px] font-bold text-rose-600 shadow-sm hover:bg-rose-500/10"
                                 >
-                                    <Trash className="h-3.5 w-3.5" /> {t('Delete All Available')}
+                                    <Trash className="h-3.5 w-3.5" />{' '}
+                                    {t('Delete All Available')}
                                 </Button>
                                 <Button
                                     onClick={handleDeleteSelected}
                                     disabled={selectedSlotIds.length === 0}
                                     className="h-8 gap-1.5 rounded-full bg-rose-600 px-3.5 text-[10px] font-bold text-white shadow-sm hover:bg-rose-700 disabled:bg-arabic-bronze/10 disabled:text-arabic-bronze/40"
                                 >
-                                    <Trash2 className="h-3.5 w-3.5" /> {t('Delete Selected')} ({selectedSlotIds.length})
+                                    <Trash2 className="h-3.5 w-3.5" />{' '}
+                                    {t('Delete Selected')} (
+                                    {selectedSlotIds.length})
                                 </Button>
                             </div>
                         </div>
@@ -716,7 +786,9 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                             />
                                         </th>
                                         <th className="p-4">{t('Teacher')}</th>
-                                        <th className="p-4">{t('Slot Time')}</th>
+                                        <th className="p-4">
+                                            {t('Slot Time')}
+                                        </th>
                                         <th className="p-4">{t('Status')}</th>
                                         <th className="p-4 text-right">
                                             {t('Actions')}
@@ -827,7 +899,9 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                                 colSpan={5}
                                                 className="p-8 text-center text-xs font-bold text-arabic-bronze/50"
                                             >
-                                                {t('No teaching slots found matching filters.')}
+                                                {t(
+                                                    'No teaching slots found matching filters.',
+                                                )}
                                             </td>
                                         </tr>
                                     )}
@@ -1070,7 +1144,9 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                         </div>
                                         <div className="space-y-1.5">
                                             <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                {t('Specializations (comma-separated)')}
+                                                {t(
+                                                    'Specializations (comma-separated)',
+                                                )}
                                             </label>
                                             <Input
                                                 type="text"
@@ -1096,43 +1172,79 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                         </label>
                                         <div className="space-y-1.5">
                                             <div className="flex items-start gap-2">
-                                                <span className="text-sm w-5 text-center pt-2">🇮🇩</span>
+                                                <span className="w-5 pt-2 text-center text-sm">
+                                                    🇮🇩
+                                                </span>
                                                 <Textarea
-                                                    placeholder={t('Biography (Indonesian)...')}
-                                                    value={newTeacherForm.data.bio.id}
+                                                    placeholder={t(
+                                                        'Biography (Indonesian)...',
+                                                    )}
+                                                    value={
+                                                        newTeacherForm.data.bio
+                                                            .id
+                                                    }
                                                     onChange={(e) =>
-                                                        newTeacherForm.setData('bio', {
-                                                            ...newTeacherForm.data.bio,
-                                                            id: e.target.value,
-                                                        })
+                                                        newTeacherForm.setData(
+                                                            'bio',
+                                                            {
+                                                                ...newTeacherForm
+                                                                    .data.bio,
+                                                                id: e.target
+                                                                    .value,
+                                                            },
+                                                        )
                                                     }
                                                     className="min-h-[70px] rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
                                                 />
                                             </div>
                                             <div className="flex items-start gap-2">
-                                                <span className="text-sm w-5 text-center pt-2">🇲🇦</span>
+                                                <span className="w-5 pt-2 text-center text-sm">
+                                                    🇲🇦
+                                                </span>
                                                 <Textarea
-                                                    placeholder={t('Biography (Arabic)...')}
-                                                    value={newTeacherForm.data.bio.ar}
+                                                    placeholder={t(
+                                                        'Biography (Arabic)...',
+                                                    )}
+                                                    value={
+                                                        newTeacherForm.data.bio
+                                                            .ar
+                                                    }
                                                     onChange={(e) =>
-                                                        newTeacherForm.setData('bio', {
-                                                            ...newTeacherForm.data.bio,
-                                                            ar: e.target.value,
-                                                        })
+                                                        newTeacherForm.setData(
+                                                            'bio',
+                                                            {
+                                                                ...newTeacherForm
+                                                                    .data.bio,
+                                                                ar: e.target
+                                                                    .value,
+                                                            },
+                                                        )
                                                     }
                                                     className="min-h-[70px] rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
                                                 />
                                             </div>
                                             <div className="flex items-start gap-2">
-                                                <span className="text-sm w-5 text-center pt-2">🇬🇧</span>
+                                                <span className="w-5 pt-2 text-center text-sm">
+                                                    🇬🇧
+                                                </span>
                                                 <Textarea
-                                                    placeholder={t('Biography (English)...')}
-                                                    value={newTeacherForm.data.bio.en}
+                                                    placeholder={t(
+                                                        'Biography (English)...',
+                                                    )}
+                                                    value={
+                                                        newTeacherForm.data.bio
+                                                            .en
+                                                    }
                                                     onChange={(e) =>
-                                                        newTeacherForm.setData('bio', {
-                                                            ...newTeacherForm.data.bio,
-                                                            en: e.target.value,
-                                                        })
+                                                        newTeacherForm.setData(
+                                                            'bio',
+                                                            {
+                                                                ...newTeacherForm
+                                                                    .data.bio,
+                                                                en: e.target
+                                                                    .value,
+                                                            },
+                                                        )
                                                     }
                                                     className="min-h-[70px] rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
                                                 />
@@ -1220,7 +1332,9 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                         {t('Teacher Profile Editor')}
                                     </span>
                                     <h4 className="font-serif text-base font-black text-arabic-bronze">
-                                        {t('Modify Teacher: :name', { name: editingTeacher.name })}
+                                        {t('Modify Teacher: :name', {
+                                            name: editingTeacher.name,
+                                        })}
                                     </h4>
                                 </div>
                                 <button
@@ -1279,7 +1393,9 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
 
                                     <div className="space-y-1.5">
                                         <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                            {t('Reset Password (leave empty to keep current)')}
+                                            {t(
+                                                'Reset Password (leave empty to keep current)',
+                                            )}
                                         </label>
                                         <Input
                                             type="password"
@@ -1320,7 +1436,9 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                         </div>
                                         <div className="space-y-1.5">
                                             <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                {t('Specializations (comma-separated)')}
+                                                {t(
+                                                    'Specializations (comma-separated)',
+                                                )}
                                             </label>
                                             <Input
                                                 type="text"
@@ -1346,43 +1464,79 @@ export default function Teachers({ teachers = [], slots = [] }: TeachersProps) {
                                         </label>
                                         <div className="space-y-1.5">
                                             <div className="flex items-start gap-2">
-                                                <span className="text-sm w-5 text-center pt-2">🇮🇩</span>
+                                                <span className="w-5 pt-2 text-center text-sm">
+                                                    🇮🇩
+                                                </span>
                                                 <Textarea
-                                                    placeholder={t('Biography (Indonesian)...')}
-                                                    value={editTeacherForm.data.bio.id}
+                                                    placeholder={t(
+                                                        'Biography (Indonesian)...',
+                                                    )}
+                                                    value={
+                                                        editTeacherForm.data.bio
+                                                            .id
+                                                    }
                                                     onChange={(e) =>
-                                                        editTeacherForm.setData('bio', {
-                                                            ...editTeacherForm.data.bio,
-                                                            id: e.target.value,
-                                                        })
+                                                        editTeacherForm.setData(
+                                                            'bio',
+                                                            {
+                                                                ...editTeacherForm
+                                                                    .data.bio,
+                                                                id: e.target
+                                                                    .value,
+                                                            },
+                                                        )
                                                     }
                                                     className="min-h-[70px] rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
                                                 />
                                             </div>
                                             <div className="flex items-start gap-2">
-                                                <span className="text-sm w-5 text-center pt-2">🇲🇦</span>
+                                                <span className="w-5 pt-2 text-center text-sm">
+                                                    🇲🇦
+                                                </span>
                                                 <Textarea
-                                                    placeholder={t('Biography (Arabic)...')}
-                                                    value={editTeacherForm.data.bio.ar}
+                                                    placeholder={t(
+                                                        'Biography (Arabic)...',
+                                                    )}
+                                                    value={
+                                                        editTeacherForm.data.bio
+                                                            .ar
+                                                    }
                                                     onChange={(e) =>
-                                                        editTeacherForm.setData('bio', {
-                                                            ...editTeacherForm.data.bio,
-                                                            ar: e.target.value,
-                                                        })
+                                                        editTeacherForm.setData(
+                                                            'bio',
+                                                            {
+                                                                ...editTeacherForm
+                                                                    .data.bio,
+                                                                ar: e.target
+                                                                    .value,
+                                                            },
+                                                        )
                                                     }
                                                     className="min-h-[70px] rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
                                                 />
                                             </div>
                                             <div className="flex items-start gap-2">
-                                                <span className="text-sm w-5 text-center pt-2">🇬🇧</span>
+                                                <span className="w-5 pt-2 text-center text-sm">
+                                                    🇬🇧
+                                                </span>
                                                 <Textarea
-                                                    placeholder={t('Biography (English)...')}
-                                                    value={editTeacherForm.data.bio.en}
+                                                    placeholder={t(
+                                                        'Biography (English)...',
+                                                    )}
+                                                    value={
+                                                        editTeacherForm.data.bio
+                                                            .en
+                                                    }
                                                     onChange={(e) =>
-                                                        editTeacherForm.setData('bio', {
-                                                            ...editTeacherForm.data.bio,
-                                                            en: e.target.value,
-                                                        })
+                                                        editTeacherForm.setData(
+                                                            'bio',
+                                                            {
+                                                                ...editTeacherForm
+                                                                    .data.bio,
+                                                                en: e.target
+                                                                    .value,
+                                                            },
+                                                        )
                                                     }
                                                     className="min-h-[70px] rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold shadow-sm placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
                                                 />

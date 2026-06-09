@@ -1,23 +1,29 @@
-import React from 'react';
 import { router, usePage } from '@inertiajs/react';
 import { Globe } from 'lucide-react';
+import React from 'react';
+import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
 
 const IndonesianFlag = () => (
-    <svg viewBox="0 0 3 2" className="h-3 w-4.5 rounded-xs overflow-hidden shadow-xs border border-neutral-200/20 shrink-0">
+    <svg
+        viewBox="0 0 3 2"
+        className="h-3 w-4.5 shrink-0 overflow-hidden rounded-xs border border-neutral-200/20 shadow-xs"
+    >
         <rect width="3" height="1" fill="#FF0000" />
         <rect y="1" width="3" height="1" fill="#FFFFFF" />
     </svg>
 );
 
 const MoroccanFlag = () => (
-    <svg viewBox="0 0 3 2" className="h-3 w-4.5 rounded-xs overflow-hidden shadow-xs border border-neutral-200/20 shrink-0">
+    <svg
+        viewBox="0 0 3 2"
+        className="h-3 w-4.5 shrink-0 overflow-hidden rounded-xs border border-neutral-200/20 shadow-xs"
+    >
         <rect width="3" height="2" fill="#C1272D" />
         <path
             d="M 1.5,0.55 L 1.764,1.364 L 1.072,0.861 L 1.928,0.861 L 1.236,1.364 Z"
@@ -30,7 +36,10 @@ const MoroccanFlag = () => (
 );
 
 const BritishFlag = () => (
-    <svg viewBox="0 0 60 40" className="h-3 w-4.5 rounded-xs overflow-hidden shadow-xs border border-neutral-200/20 shrink-0">
+    <svg
+        viewBox="0 0 60 40"
+        className="h-3 w-4.5 shrink-0 overflow-hidden rounded-xs border border-neutral-200/20 shadow-xs"
+    >
         <rect width="60" height="40" fill="#012169" />
         <path d="M0,0 L60,40 M60,0 L0,40" stroke="#FFFFFF" strokeWidth="6" />
         <path d="M0,0 L60,40 M60,0 L0,40" stroke="#C8102E" strokeWidth="2.5" />
@@ -48,7 +57,8 @@ export function LanguageSwitcher() {
         { code: 'en', name: 'English', flag: <BritishFlag /> },
     ];
 
-    const currentLanguage = languages.find((lang) => lang.code === locale) || languages[0];
+    const currentLanguage =
+        languages.find((lang) => lang.code === locale) || languages[0];
 
     const handleLanguageChange = (code: string) => {
         router.post('/locale', { locale: code });
@@ -60,20 +70,29 @@ export function LanguageSwitcher() {
                 <Button
                     variant="outline"
                     size="sm"
-                    className="flex h-9 items-center gap-2 rounded-full border-arabic-cream bg-arabic-sand px-3 text-xs font-bold text-arabic-bronze transition hover:bg-arabic-cream/40 focus:ring-1 focus:ring-arabic-gold cursor-pointer"
+                    className="flex h-9 cursor-pointer items-center gap-2 rounded-full border-arabic-cream bg-arabic-sand px-3 text-xs font-bold text-arabic-bronze transition hover:bg-arabic-cream/40 focus:ring-1 focus:ring-arabic-gold"
                 >
                     <Globe className="h-3.5 w-3.5 text-arabic-gold" />
-                    <span className="flex items-center">{currentLanguage.flag}</span>
-                    <span className="hidden md:inline">{currentLanguage.name}</span>
+                    <span className="flex items-center">
+                        {currentLanguage.flag}
+                    </span>
+                    <span className="hidden md:inline">
+                        {currentLanguage.name}
+                    </span>
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-44 border-arabic-cream bg-arabic-sand text-arabic-bronze shadow-md rounded-2xl p-1">
+            <DropdownMenuContent
+                align="end"
+                className="w-44 rounded-2xl border-arabic-cream bg-arabic-sand p-1 text-arabic-bronze shadow-md"
+            >
                 {languages.map((lang) => (
                     <DropdownMenuItem
                         key={lang.code}
                         onClick={() => handleLanguageChange(lang.code)}
-                        className={`flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-xl cursor-pointer hover:bg-arabic-cream/40 focus:bg-arabic-cream/40 ${
-                            lang.code === locale ? 'bg-arabic-cream/60 text-arabic-bronze font-extrabold border-l-2 border-arabic-gold' : ''
+                        className={`flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold hover:bg-arabic-cream/40 focus:bg-arabic-cream/40 ${
+                            lang.code === locale
+                                ? 'border-l-2 border-arabic-gold bg-arabic-cream/60 font-extrabold text-arabic-bronze'
+                                : ''
                         }`}
                     >
                         <span className="flex items-center">{lang.flag}</span>

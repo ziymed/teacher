@@ -1,4 +1,3 @@
-import AppLayout from '@/layouts/app-layout';
 import { Head, Link, useForm, usePage, router } from '@inertiajs/react';
 import {
     BookOpen,
@@ -17,6 +16,8 @@ import {
     Loader2,
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -26,18 +27,17 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/use-translation';
+import AppLayout from '@/layouts/app-layout';
+import { getTranslation } from '@/lib/translation-utils';
 import { dashboard } from '@/routes';
-import { dashboard as studentDashboard } from '@/routes/student';
 import {
     destroy as destroyBooking,
     store as storeBooking,
 } from '@/routes/bookings';
 import { verify as verifyCertificate } from '@/routes/certificates';
-import { useTranslation } from '@/hooks/use-translation';
-import { getTranslation } from '@/lib/translation-utils';
+import { dashboard as studentDashboard } from '@/routes/student';
 
 interface Slot {
     id: number;
@@ -143,6 +143,7 @@ export default function StudentDashboard({
             typeof user.dashboard_layout === 'object'
         ) {
             const saved = user.dashboard_layout;
+
             if (Array.isArray(saved.left) && Array.isArray(saved.right)) {
                 left = [...saved.left];
                 right = [...saved.right];
@@ -163,6 +164,7 @@ export default function StudentDashboard({
         const yyyy = dateObj.getFullYear();
         const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
         const dd = String(dateObj.getDate()).padStart(2, '0');
+
         return `${yyyy}-${mm}-${dd}`;
     };
 
@@ -202,11 +204,13 @@ export default function StudentDashboard({
 
         if (!selectedSlot) {
             toast.error(t('Please choose a time slot.'));
+
             return;
         }
 
         if (!selectedProgramId) {
             toast.error(t('Please select one of our Quranic programs.'));
+
             return;
         }
 
@@ -225,11 +229,15 @@ export default function StudentDashboard({
                 setSelectedProgramId(null);
                 setNotes('');
                 toast.success(
-                    t('Alhamdulillah! Your private 1-to-1 session has been booked successfully.'),
+                    t(
+                        'Alhamdulillah! Your private 1-to-1 session has been booked successfully.',
+                    ),
                 );
             },
             onError: (err: any) => {
-                toast.error(err.error || t('Failed to submit session booking.'));
+                toast.error(
+                    err.error || t('Failed to submit session booking.'),
+                );
             },
         });
     };
@@ -242,6 +250,7 @@ export default function StudentDashboard({
                 window.location.search.includes('book=true')
             ) {
                 const element = document.getElementById('book-session-widget');
+
                 if (element) {
                     element.scrollIntoView({
                         behavior: 'smooth',
@@ -259,6 +268,7 @@ export default function StudentDashboard({
                             'ring-offset-2',
                         );
                     }, 2000);
+
                     return () => clearTimeout(timeoutId);
                 }
             }
@@ -269,6 +279,7 @@ export default function StudentDashboard({
 
         // Listen for hashchange events for same-page link clicks
         window.addEventListener('hashchange', scrollToWidget);
+
         return () => {
             window.removeEventListener('hashchange', scrollToWidget);
         };
@@ -307,13 +318,17 @@ export default function StudentDashboard({
     ) => {
         e.preventDefault();
         setDragOverId(null);
-        if (!draggingId || !draggingCol) return;
+
+        if (!draggingId || !draggingCol) {
+            return;
+        }
 
         const sourceList = [...layout[draggingCol]];
         const targetList =
             draggingCol === targetCol ? sourceList : [...layout[targetCol]];
 
         const sourceIndex = sourceList.indexOf(draggingId);
+
         if (sourceIndex > -1) {
             sourceList.splice(sourceIndex, 1);
         }
@@ -343,7 +358,9 @@ export default function StudentDashboard({
                 preserveScroll: true,
                 onSuccess: () => {
                     toast.success(
-                        t('Alhamdulillah! Dashboard layout updated successfully.'),
+                        t(
+                            'Alhamdulillah! Dashboard layout updated successfully.',
+                        ),
                     );
                 },
             },
@@ -361,7 +378,9 @@ export default function StudentDashboard({
                 preserveScroll: true,
                 onSuccess: () => {
                     toast.success(
-                        t('Alhamdulillah! Dashboard layout reset successfully.'),
+                        t(
+                            'Alhamdulillah! Dashboard layout reset successfully.',
+                        ),
                     );
                 },
             },
@@ -371,13 +390,17 @@ export default function StudentDashboard({
     const handleCancelBooking = (bookingId: number) => {
         if (
             confirm(
-                t('Are you sure you want to cancel this scheduled learning session?'),
+                t(
+                    'Are you sure you want to cancel this scheduled learning session?',
+                ),
             )
         ) {
             cancelForm.delete(destroyBooking.url(bookingId), {
                 onSuccess: () => {
                     toast.success(
-                        t('Alhamdulillah! Your booking has been cancelled and the slot is open.'),
+                        t(
+                            'Alhamdulillah! Your booking has been cancelled and the slot is open.',
+                        ),
                     );
                 },
                 onError: (err: any) => {
@@ -409,7 +432,9 @@ export default function StudentDashboard({
                                     {t('Book a New Session')}
                                 </CardTitle>
                                 <CardDescription className="text-xs text-muted-foreground">
-                                    {t('Choose an available slot with our Moroccan teachers.')}
+                                    {t(
+                                        'Choose an available slot with our Moroccan teachers.',
+                                    )}
                                 </CardDescription>
                             </div>
                             <Badge className="bg-arabic-cream text-[9px] font-bold text-arabic-bronze">
@@ -434,14 +459,22 @@ export default function StudentDashboard({
                                                     selectedDate === dateStr;
                                                 const dayName =
                                                     dateObj.toLocaleDateString(
-                                                        locale === 'id' ? 'id-ID' : locale === 'ar' ? 'ar-EG' : 'en-US',
+                                                        locale === 'id'
+                                                            ? 'id-ID'
+                                                            : locale === 'ar'
+                                                              ? 'ar-EG'
+                                                              : 'en-US',
                                                         { weekday: 'short' },
                                                     );
                                                 const dayNum =
                                                     dateObj.getDate();
                                                 const monthName =
                                                     dateObj.toLocaleDateString(
-                                                        locale === 'id' ? 'id-ID' : locale === 'ar' ? 'ar-EG' : 'en-US',
+                                                        locale === 'id'
+                                                            ? 'id-ID'
+                                                            : locale === 'ar'
+                                                              ? 'ar-EG'
+                                                              : 'en-US',
                                                         { month: 'short' },
                                                     );
 
@@ -567,13 +600,18 @@ export default function StudentDashboard({
                                                                     : 'border-arabic-cream bg-arabic-sand text-arabic-bronze hover:bg-arabic-cream'
                                                             }`}
                                                         >
-                                                            {getTranslation(prog.name, locale).replace(
-                                                                ' Program',
-                                                                '',
-                                                            ).replace(
-                                                                'Program ',
-                                                                '',
-                                                            )}
+                                                            {getTranslation(
+                                                                prog.name,
+                                                                locale,
+                                                            )
+                                                                .replace(
+                                                                    ' Program',
+                                                                    '',
+                                                                )
+                                                                .replace(
+                                                                    'Program ',
+                                                                    '',
+                                                                )}
                                                         </button>
                                                     ))}
                                                 </div>
@@ -582,7 +620,9 @@ export default function StudentDashboard({
                                             {/* Select Platform */}
                                             <div className="space-y-2">
                                                 <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                    {t('Select Meeting Platform')}
+                                                    {t(
+                                                        'Select Meeting Platform',
+                                                    )}
                                                 </label>
                                                 <div className="flex gap-2">
                                                     {(!selectedSlot.teacher
@@ -637,10 +677,14 @@ export default function StudentDashboard({
                                             {/* Notes */}
                                             <div className="space-y-2">
                                                 <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                    {t('Study Notes (Optional)')}
+                                                    {t(
+                                                        'Study Notes (Optional)',
+                                                    )}
                                                 </label>
                                                 <Textarea
-                                                    placeholder={t('Focus areas (e.g. pronunciation, memorization)...')}
+                                                    placeholder={t(
+                                                        'Focus areas (e.g. pronunciation, memorization)...',
+                                                    )}
                                                     value={notes}
                                                     onChange={(e) =>
                                                         setNotes(e.target.value)
@@ -655,7 +699,9 @@ export default function StudentDashboard({
                                 <div className="space-y-2 bg-arabic-sand p-4 text-center">
                                     <AlertCircle className="mx-auto h-6 w-6 text-arabic-bronze/30" />
                                     <p className="text-xs font-semibold text-arabic-bronze/60">
-                                        {t('No available time slots. Please check back later.')}
+                                        {t(
+                                            'No available time slots. Please check back later.',
+                                        )}
                                     </p>
                                 </div>
                             )}
@@ -708,12 +754,16 @@ export default function StudentDashboard({
 
                                     const formattedDate =
                                         startTime.toLocaleDateString(
-                                            locale === 'id' ? 'id-ID' : locale === 'ar' ? 'ar-EG' : 'en-US',
+                                            locale === 'id'
+                                                ? 'id-ID'
+                                                : locale === 'ar'
+                                                  ? 'ar-EG'
+                                                  : 'en-US',
                                             {
                                                 weekday: 'short',
                                                 month: 'short',
                                                 day: 'numeric',
-                                            }
+                                            },
                                         );
 
                                     const formattedTime =
@@ -740,21 +790,30 @@ export default function StudentDashboard({
                                                         variant="secondary"
                                                         className="rounded-full bg-arabic-cream text-[9px] font-bold text-arabic-bronze uppercase"
                                                     >
-                                                        {getTranslation(booking.program.name, locale).replace(
-                                                            ' Program',
-                                                            '',
-                                                        ).replace(
-                                                            'Program ',
-                                                            '',
-                                                        )}
+                                                        {getTranslation(
+                                                            booking.program
+                                                                .name,
+                                                            locale,
+                                                        )
+                                                            .replace(
+                                                                ' Program',
+                                                                '',
+                                                            )
+                                                            .replace(
+                                                                'Program ',
+                                                                '',
+                                                            )}
                                                     </Badge>
                                                     <span className="flex items-center gap-1 text-[10px] font-black text-arabic-emerald">
                                                         <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-arabic-emerald" />{' '}
-                                                        {t('Confirmed Bookings')}
+                                                        {t(
+                                                            'Confirmed Bookings',
+                                                        )}
                                                     </span>
                                                 </div>
                                                 <CardTitle className="mt-2 text-sm font-black text-arabic-bronze">
-                                                    {t('Class with')} {booking.slot.teacher.name}
+                                                    {t('Class with')}{' '}
+                                                    {booking.slot.teacher.name}
                                                 </CardTitle>
                                                 <CardDescription className="mt-1 flex items-center gap-1 text-[11px] font-medium text-arabic-bronze/70">
                                                     <Clock className="h-3.5 w-3.5 text-arabic-gold" />{' '}
@@ -807,7 +866,9 @@ export default function StudentDashboard({
                             <div className="space-y-3 rounded-[2rem] border border-arabic-cream bg-arabic-sand p-8 text-center">
                                 <AlertCircle className="mx-auto h-8 w-8 text-arabic-bronze/30" />
                                 <p className="text-xs font-bold text-arabic-bronze/60">
-                                    {t('You have no upcoming private classes scheduled.')}
+                                    {t(
+                                        'You have no upcoming private classes scheduled.',
+                                    )}
                                 </p>
                                 <Link href="/">
                                     <Button
@@ -842,13 +903,17 @@ export default function StudentDashboard({
                                     const dateStr = new Date(
                                         booking.slot.start_time,
                                     ).toLocaleDateString(
-                                        locale === 'id' ? 'id-ID' : locale === 'ar' ? 'ar-EG' : 'en-US',
+                                        locale === 'id'
+                                            ? 'id-ID'
+                                            : locale === 'ar'
+                                              ? 'ar-EG'
+                                              : 'en-US',
                                         {
                                             weekday: 'short',
                                             month: 'short',
                                             day: 'numeric',
                                             year: 'numeric',
-                                        }
+                                        },
                                     );
 
                                     return (
@@ -866,7 +931,11 @@ export default function StudentDashboard({
                                                 <div>
                                                     <div className="flex items-center gap-2">
                                                         <span className="text-xs font-black text-arabic-bronze">
-                                                            {getTranslation(booking.program.name, locale)}
+                                                            {getTranslation(
+                                                                booking.program
+                                                                    .name,
+                                                                locale,
+                                                            )}
                                                         </span>
                                                         <Badge
                                                             variant="secondary"
@@ -888,7 +957,9 @@ export default function StudentDashboard({
                                             <div className="flex items-center gap-3 self-end sm:self-center">
                                                 {booking.teacher_feedback ? (
                                                     <Badge className="rounded-full bg-arabic-gold px-2 py-0.5 text-[9px] font-bold text-arabic-bronze">
-                                                        {t('Feedback Available')}
+                                                        {t(
+                                                            'Feedback Available',
+                                                        )}
                                                     </Badge>
                                                 ) : (
                                                     <Badge
@@ -906,7 +977,9 @@ export default function StudentDashboard({
                             </div>
                         ) : (
                             <div className="rounded-[2rem] border border-arabic-cream bg-arabic-sand p-8 text-center text-xs font-bold text-arabic-bronze/60">
-                                {t('No completed sessions yet. Once your teacher completes a class, progress details will appear here.')}
+                                {t(
+                                    'No completed sessions yet. Once your teacher completes a class, progress details will appear here.',
+                                )}
                             </div>
                         )}
                     </div>
@@ -932,12 +1005,16 @@ export default function StudentDashboard({
                                     const issueDate = new Date(
                                         cert.issued_at,
                                     ).toLocaleDateString(
-                                        locale === 'id' ? 'id-ID' : locale === 'ar' ? 'ar-EG' : 'en-US',
+                                        locale === 'id'
+                                            ? 'id-ID'
+                                            : locale === 'ar'
+                                              ? 'ar-EG'
+                                              : 'en-US',
                                         {
                                             month: 'long',
                                             day: 'numeric',
                                             year: 'numeric',
-                                        }
+                                        },
                                     );
 
                                     return (
@@ -949,16 +1026,22 @@ export default function StudentDashboard({
                                             <CardHeader className="p-5 pb-2">
                                                 <Award className="mb-2 h-8 w-8 text-arabic-gold" />
                                                 <CardTitle className="text-xs font-black tracking-wider text-arabic-bronze uppercase">
-                                                    {t('Certificate of Completion')}
+                                                    {t(
+                                                        'Certificate of Completion',
+                                                    )}
                                                 </CardTitle>
                                                 <CardDescription className="mt-1 text-xs font-bold text-arabic-gold">
-                                                    {getTranslation(cert.program.name, locale)}
+                                                    {getTranslation(
+                                                        cert.program.name,
+                                                        locale,
+                                                    )}
                                                 </CardDescription>
                                             </CardHeader>
                                             <CardContent className="p-5 pt-2 pb-4 text-[10px] leading-relaxed font-medium text-arabic-bronze/70">
                                                 {cert.notes}
                                                 <span className="mt-2 block font-bold text-arabic-bronze">
-                                                    {t('Issued on:')} {issueDate}
+                                                    {t('Issued on:')}{' '}
+                                                    {issueDate}
                                                 </span>
                                             </CardContent>
                                             <CardFooter className="border-t border-arabic-cream/45 bg-arabic-cream/15 p-5 pt-2">
@@ -985,7 +1068,9 @@ export default function StudentDashboard({
                                     {t('No certificates earned yet.')}
                                 </span>
                                 <p className="mx-auto max-w-[200px] text-[10px] leading-relaxed text-arabic-bronze/50">
-                                    {t('Complete program levels and receive recommendations from your teacher to earn certificates.')}
+                                    {t(
+                                        'Complete program levels and receive recommendations from your teacher to earn certificates.',
+                                    )}
                                 </p>
                             </div>
                         )}
@@ -1009,7 +1094,9 @@ export default function StudentDashboard({
                             {t('Ahlan wa Sahlan!')}
                         </h1>
                         <p className="mt-1 text-xs font-medium text-arabic-bronze/70">
-                            {t('Manage your private Al-Quran sessions, review teacher feedback, and view earned certifications.')}
+                            {t(
+                                'Manage your private Al-Quran sessions, review teacher feedback, and view earned certifications.',
+                            )}
                         </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
@@ -1092,7 +1179,10 @@ export default function StudentDashboard({
                                         {t('Class Recap')}
                                     </span>
                                     <h4 className="font-serif text-base font-black text-arabic-bronze">
-                                        {getTranslation(selectedBooking.program.name, locale)}
+                                        {getTranslation(
+                                            selectedBooking.program.name,
+                                            locale,
+                                        )}
                                     </h4>
                                 </div>
                                 <button
@@ -1121,12 +1211,16 @@ export default function StudentDashboard({
                                             {new Date(
                                                 selectedBooking.slot.start_time,
                                             ).toLocaleDateString(
-                                                locale === 'id' ? 'id-ID' : locale === 'ar' ? 'ar-EG' : 'en-US',
+                                                locale === 'id'
+                                                    ? 'id-ID'
+                                                    : locale === 'ar'
+                                                      ? 'ar-EG'
+                                                      : 'en-US',
                                                 {
                                                     month: 'short',
                                                     day: 'numeric',
                                                     year: 'numeric',
-                                                }
+                                                },
                                             )}
                                         </span>
                                     </div>
@@ -1138,7 +1232,9 @@ export default function StudentDashboard({
                                     </span>
                                     <div className="min-h-[120px] rounded-2xl border border-arabic-cream bg-arabic-cream/40 p-4 text-xs leading-relaxed font-medium whitespace-pre-line text-arabic-bronze/90">
                                         {selectedBooking.teacher_feedback ||
-                                            t("The teacher hasn't logged the progress feedback for this session yet.")}
+                                            t(
+                                                "The teacher hasn't logged the progress feedback for this session yet.",
+                                            )}
                                     </div>
                                 </div>
 
