@@ -84,6 +84,7 @@ export default function Welcome({
         'google_meet' | 'zoom'
     >('google_meet');
     const [country, setCountry] = useState<'id' | 'my' | 'sg'>('id');
+    const [billingCycle, setBillingCycle] = useState<'monthly' | 'program'>('monthly');
 
     const handleCopyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
@@ -393,40 +394,69 @@ export default function Welcome({
                             {t('Pilih wilayah Anda untuk melihat biaya program privat 1-on-1 dan metode pembayaran lokal.')}
                         </p>
 
-                        <div className="inline-flex rounded-full bg-arabic-cream/35 p-1.5 border border-arabic-cream/80 shadow-[0_8px_30px_rgb(30,56,51,0.02)] backdrop-blur-md mt-4 transition duration-300">
-                            <button
-                                type="button"
-                                onClick={() => setCountry('id')}
-                                className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-black transition-all duration-300 cursor-pointer ${
-                                    country === 'id'
-                                        ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
-                                        : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
-                                }`}
-                            >
-                                <span className="text-base leading-none">🇮🇩</span> Indonesia
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setCountry('my')}
-                                className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-black transition-all duration-300 cursor-pointer ${
-                                    country === 'my'
-                                        ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
-                                        : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
-                                }`}
-                            >
-                                <span className="text-base leading-none">🇲🇾</span> Malaysia
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setCountry('sg')}
-                                className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-black transition-all duration-300 cursor-pointer ${
-                                    country === 'sg'
-                                        ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
-                                        : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
-                                }`}
-                            >
-                                <span className="text-base leading-none">🇸🇬</span> Singapore
-                            </button>
+                        <div className="flex flex-col md:flex-row items-center justify-center gap-4 mt-6">
+                            {/* Country Selector */}
+                            <div className="inline-flex rounded-full bg-arabic-cream/35 p-1.5 border border-arabic-cream/80 shadow-[0_8px_30px_rgb(30,56,51,0.02)] backdrop-blur-md transition duration-300">
+                                <button
+                                    type="button"
+                                    onClick={() => setCountry('id')}
+                                    className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-black transition-all duration-300 cursor-pointer ${
+                                        country === 'id'
+                                            ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
+                                            : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
+                                    }`}
+                                >
+                                    <span className="text-base leading-none">🇮🇩</span> Indonesia
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setCountry('my')}
+                                    className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-black transition-all duration-300 cursor-pointer ${
+                                        country === 'my'
+                                            ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
+                                            : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
+                                    }`}
+                                >
+                                    <span className="text-base leading-none">🇲🇾</span> Malaysia
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setCountry('sg')}
+                                    className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-black transition-all duration-300 cursor-pointer ${
+                                        country === 'sg'
+                                            ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
+                                            : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
+                                    }`}
+                                >
+                                    <span className="text-base leading-none">🇸🇬</span> Singapore
+                                </button>
+                            </div>
+
+                            {/* Billing Cycle Switcher */}
+                            <div className="inline-flex rounded-full bg-arabic-cream/35 p-1.5 border border-arabic-cream/80 shadow-[0_8px_30px_rgb(30,56,51,0.02)] backdrop-blur-md transition duration-300">
+                                <button
+                                    type="button"
+                                    onClick={() => setBillingCycle('monthly')}
+                                    className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-black transition-all duration-300 cursor-pointer ${
+                                        billingCycle === 'monthly'
+                                            ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
+                                            : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
+                                    }`}
+                                >
+                                    {t('Bulanan')}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setBillingCycle('program')}
+                                    className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-black transition-all duration-300 cursor-pointer ${
+                                        billingCycle === 'program'
+                                            ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
+                                            : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
+                                    }`}
+                                >
+                                    {t('Paket Program')}
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -448,26 +478,62 @@ export default function Welcome({
                             }
 
                             // Dynamic pricing config
-                            const prices: Record<string, Record<'id' | 'my' | 'sg', { amount: string; unit: string }>> = {
+                            const prices: Record<string, Record<'id' | 'my' | 'sg', Record<'monthly' | 'program', { amount: string; unit: string }>>> = {
                                 talqin: {
-                                    id: { amount: 'Rp500.000', unit: 'bulan' },
-                                    my: { amount: 'RM 150', unit: 'bulan' },
-                                    sg: { amount: 'S$45', unit: 'month' },
+                                    id: {
+                                        monthly: { amount: 'Rp500.000', unit: 'bulan' },
+                                        program: { amount: 'Rp1.500.000', unit: 'paket' },
+                                    },
+                                    my: {
+                                        monthly: { amount: 'RM 150', unit: 'bulan' },
+                                        program: { amount: 'RM 450', unit: 'paket' },
+                                    },
+                                    sg: {
+                                        monthly: { amount: 'S$45', unit: 'month' },
+                                        program: { amount: 'S$135', unit: 'package' },
+                                    },
                                 },
                                 tahseen: {
-                                    id: { amount: 'Rp500.000', unit: 'bulan' },
-                                    my: { amount: 'RM 150', unit: 'bulan' },
-                                    sg: { amount: 'S$45', unit: 'month' },
+                                    id: {
+                                        monthly: { amount: 'Rp500.000', unit: 'bulan' },
+                                        program: { amount: 'Rp1.500.000', unit: 'paket' },
+                                    },
+                                    my: {
+                                        monthly: { amount: 'RM 150', unit: 'bulan' },
+                                        program: { amount: 'RM 450', unit: 'paket' },
+                                    },
+                                    sg: {
+                                        monthly: { amount: 'S$45', unit: 'month' },
+                                        program: { amount: 'S$135', unit: 'package' },
+                                    },
                                 },
                                 tajweed: {
-                                    id: { amount: 'Rp600.000', unit: 'bulan' },
-                                    my: { amount: 'RM 180', unit: 'bulan' },
-                                    sg: { amount: 'S$55', unit: 'month' },
+                                    id: {
+                                        monthly: { amount: 'Rp600.000', unit: 'bulan' },
+                                        program: { amount: 'Rp2.000.000', unit: 'paket' },
+                                    },
+                                    my: {
+                                        monthly: { amount: 'RM 180', unit: 'bulan' },
+                                        program: { amount: 'RM 600', unit: 'paket' },
+                                    },
+                                    sg: {
+                                        monthly: { amount: 'S$55', unit: 'month' },
+                                        program: { amount: 'S$180', unit: 'package' },
+                                    },
                                 },
                                 athfal: {
-                                    id: { amount: 'Rp700.000', unit: 'bulan' },
-                                    my: { amount: 'RM 210', unit: 'bulan' },
-                                    sg: { amount: 'S$65', unit: 'month' },
+                                    id: {
+                                        monthly: { amount: 'Rp700.000', unit: 'bulan' },
+                                        program: { amount: 'Rp2.500.000', unit: 'paket' },
+                                    },
+                                    my: {
+                                        monthly: { amount: 'RM 210', unit: 'bulan' },
+                                        program: { amount: 'RM 750', unit: 'paket' },
+                                    },
+                                    sg: {
+                                        monthly: { amount: 'S$65', unit: 'month' },
+                                        program: { amount: 'S$225', unit: 'package' },
+                                    },
                                 },
                             };
 
@@ -482,22 +548,85 @@ export default function Welcome({
 
                             const progKey = getProgramKey(progName);
                             const priceConfig = prices[progKey] || prices.tahseen;
-                            const activePrice = priceConfig[country];
+                            const activePrice = priceConfig[country][billingCycle];
 
                             // Find matching duration footer or use dynamic values if present
                             let sessionsText = t('2 Sesi per minggu');
                             let timingText = t('Sabtu & Minggu');
                             let durationText = t('Durasi 1 jam per sesi');
 
-                            if (progName.includes('athfal')) {
-                                sessionsText = t('Durasi 12 minggu');
-                                timingText = t('60 menit per pertemuan');
-                                durationText = t(
-                                    'Bimbingan intensif & hafalan',
-                                );
+                            if (billingCycle === 'program') {
+                                sessionsText = t('24 pertemuan');
+                                timingText = t('Jadwal Fleksibel');
+                                durationText = t('Durasi 1 jam per sesi');
+                            } else {
+                                if (progName.includes('athfal')) {
+                                    sessionsText = t('Durasi 12 minggu');
+                                    timingText = t('60 menit per pertemuan');
+                                    durationText = t(
+                                        'Bimbingan intensif & hafalan',
+                                    );
+                                }
                             }
 
-                            const details = getTranslationList(
+                            const programDetails: Record<string, Record<'monthly' | 'program', string[]>> = {
+                                talqin: {
+                                    monthly: [
+                                        t('8 pertemuan/bulan'),
+                                        t('60 menit per pertemuan'),
+                                        t('Bahasa Indonesia & Arab'),
+                                        t('Evaluasi berkala'),
+                                    ],
+                                    program: [
+                                        t('24 pertemuan'),
+                                        t('Bimbingan intensif'),
+                                        t('Evaluasi berkala'),
+                                        t('Sertifikat kelulusan'),
+                                    ],
+                                },
+                                tahseen: {
+                                    monthly: [
+                                        t('8 pertemuan/bulan'),
+                                        t('60 menit per pertemuan'),
+                                        t('Bahasa Indonesia & Arab'),
+                                        t('Evaluasi berkala'),
+                                    ],
+                                    program: [
+                                        t('24 pertemuan'),
+                                        t('perbaikan makhraj&sifat'),
+                                        t('perbaikan bacaan'),
+                                        t('sertifikat'),
+                                    ],
+                                },
+                                tajweed: {
+                                    monthly: [
+                                        t('8 pertemuan/bulan'),
+                                        t('Materi tajwid lengkap'),
+                                        t('Praktik bacaan'),
+                                    ],
+                                    program: [
+                                        t('24 pertemuan'),
+                                        t('Materi tajwid lengkap'),
+                                        t('Evaluasi berkala.'),
+                                        t('Sertifikat.'),
+                                    ],
+                                },
+                                athfal: {
+                                    monthly: [
+                                        t('Hafalan matan'),
+                                        t('Penjelasan bait'),
+                                        t('Praktik tajwid'),
+                                        t('Sertifikat setelah selesai program'),
+                                    ],
+                                    program: [
+                                        t('24 pertemuan'),
+                                        t('Sertifikat'),
+                                        t('Grup konsultasi'),
+                                    ],
+                                },
+                            };
+
+                            const details = programDetails[progKey]?.[billingCycle] || getTranslationList(
                                 program.details_json,
                                 locale,
                             );
