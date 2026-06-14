@@ -83,7 +83,7 @@ export default function Welcome({
     const [selectedPlatform, setSelectedPlatform] = useState<
         'google_meet' | 'zoom'
     >('google_meet');
-    const [country, setCountry] = useState<'id' | 'my' | 'sg'>('id');
+    const [country, setCountry] = useState<'id' | 'my' | 'sg' | 'ma'>('id');
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'program'>('monthly');
 
     const handleCopyToClipboard = (text: string) => {
@@ -406,7 +406,7 @@ export default function Welcome({
                                             : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
                                     }`}
                                 >
-                                    <span className="text-base leading-none">🇮🇩</span> Indonesia
+                                    <span className="text-base leading-none">🇮🇩</span> ID
                                 </button>
                                 <button
                                     type="button"
@@ -417,7 +417,7 @@ export default function Welcome({
                                             : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
                                     }`}
                                 >
-                                    <span className="text-base leading-none">🇲🇾</span> Malaysia
+                                    <span className="text-base leading-none">🇲🇾</span> MY
                                 </button>
                                 <button
                                     type="button"
@@ -428,7 +428,18 @@ export default function Welcome({
                                             : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
                                     }`}
                                 >
-                                    <span className="text-base leading-none">🇸🇬</span> Singapore
+                                    <span className="text-base leading-none">🇸🇬</span> SG
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setCountry('ma')}
+                                    className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-black transition-all duration-300 cursor-pointer ${
+                                        country === 'ma'
+                                            ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
+                                            : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
+                                    }`}
+                                >
+                                    <span className="text-base leading-none">🇲🇦</span> MA
                                 </button>
                             </div>
 
@@ -478,7 +489,7 @@ export default function Welcome({
                             }
 
                             // Dynamic pricing config
-                            const prices: Record<string, Record<'id' | 'my' | 'sg', Record<'monthly' | 'program', { amount: string; unit: string }>>> = {
+                            const prices: Record<string, Record<'id' | 'my' | 'sg' | 'ma', Record<'monthly' | 'program', { amount: string; unit: string }>>> = {
                                 talqin: {
                                     id: {
                                         monthly: { amount: 'Rp500.000', unit: 'bulan' },
@@ -491,6 +502,10 @@ export default function Welcome({
                                     sg: {
                                         monthly: { amount: 'S$45', unit: 'month' },
                                         program: { amount: 'S$135', unit: 'package' },
+                                    },
+                                    ma: {
+                                        monthly: { amount: '350 DH', unit: 'month' },
+                                        program: { amount: '1.050 DH', unit: 'package' },
                                     },
                                 },
                                 tahseen: {
@@ -506,6 +521,10 @@ export default function Welcome({
                                         monthly: { amount: 'S$45', unit: 'month' },
                                         program: { amount: 'S$135', unit: 'package' },
                                     },
+                                    ma: {
+                                        monthly: { amount: '350 DH', unit: 'month' },
+                                        program: { amount: '1.050 DH', unit: 'package' },
+                                    },
                                 },
                                 tajweed: {
                                     id: {
@@ -520,6 +539,10 @@ export default function Welcome({
                                         monthly: { amount: 'S$55', unit: 'month' },
                                         program: { amount: 'S$180', unit: 'package' },
                                     },
+                                    ma: {
+                                        monthly: { amount: '420 DH', unit: 'month' },
+                                        program: { amount: '1.400 DH', unit: 'package' },
+                                    },
                                 },
                                 athfal: {
                                     id: {
@@ -533,6 +556,10 @@ export default function Welcome({
                                     sg: {
                                         monthly: { amount: 'S$65', unit: 'month' },
                                         program: { amount: 'S$225', unit: 'package' },
+                                    },
+                                    ma: {
+                                        monthly: { amount: '490 DH', unit: 'month' },
+                                        program: { amount: '1.750 DH', unit: 'package' },
                                     },
                                 },
                             };
@@ -724,11 +751,13 @@ export default function Welcome({
                                     {country === 'id' && 'Metode Pembayaran di Indonesia'}
                                     {country === 'my' && 'Kaedah Pembayaran di Malaysia'}
                                     {country === 'sg' && 'Payment Methods for Singapore'}
+                                    {country === 'ma' && 'Mode de Paiement au Maroc'}
                                 </h3>
                                 <p className="text-xs font-semibold text-arabic-bronze/70 mt-1 max-w-xl leading-relaxed">
                                     {country === 'id' && 'Gunakan QRIS atau Transfer Bank Lokal untuk kemudahan transaksi Anda.'}
                                     {country === 'my' && 'FPX Online Banking dan DuitNow QR disokong untuk pembayaran pantas.'}
                                     {country === 'sg' && 'Local Bank Transfer and PayNow QR are supported for quick checkout.'}
+                                    {country === 'ma' && 'Virement bancaire direct (CIH Bank) est disponible pour un paiement sécurisé.'}
                                 </p>
                             </div>
                             <div className="flex items-center gap-2 rounded-full bg-arabic-sand px-4.5 py-2 border border-arabic-cream flex-shrink-0 self-start md:self-auto shadow-sm">
@@ -866,6 +895,34 @@ export default function Welcome({
                                                 title="Click to copy account number"
                                             >
                                                 <code className="text-xs font-mono font-black tracking-wider text-arabic-bronze group-hover/item:text-arabic-gold transition">123-45678-9</code>
+                                                <div className="flex items-center gap-1.5 text-[9px] font-bold text-arabic-bronze/60 group-hover/item:text-arabic-bronze transition">
+                                                    <span>Tahseen Live</span>
+                                                    <Copy className="h-3.5 w-3.5 text-arabic-gold/80 group-hover/item:scale-110 transition" />
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
+                            {country === 'ma' && (
+                                <>
+                                    <div className="md:col-span-2 flex gap-4.5 items-start rounded-[1.8rem] bg-arabic-sand p-5 border border-arabic-cream shadow-sm hover:border-arabic-gold/30 hover:shadow-md transition-all duration-300">
+                                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-arabic-bronze/10 text-arabic-bronze font-black text-sm flex-shrink-0 border border-arabic-bronze/10">
+                                            CIH
+                                        </div>
+                                        <div className="space-y-2.5 w-full">
+                                            <span className="block text-xs font-black text-arabic-bronze">{t('Transfer Bank (CIH Bank)')}</span>
+                                            <span className="block text-[11px] leading-relaxed font-semibold text-arabic-bronze/75">
+                                                Virement bancaire direct vers notre compte CIH Bank:
+                                            </span>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleCopyToClipboard('230 780 1234567890 0123 456')}
+                                                className="bg-arabic-cream/35 p-3 rounded-xl border border-arabic-cream/80 flex justify-between items-center w-full cursor-pointer hover:border-arabic-gold/50 hover:bg-arabic-cream/60 transition group/item"
+                                                title="Click to copy account number"
+                                            >
+                                                <code className="text-xs font-mono font-black tracking-wider text-arabic-bronze group-hover/item:text-arabic-gold transition">230 780 1234567890 0123 456</code>
                                                 <div className="flex items-center gap-1.5 text-[9px] font-bold text-arabic-bronze/60 group-hover/item:text-arabic-bronze transition">
                                                     <span>Tahseen Live</span>
                                                     <Copy className="h-3.5 w-3.5 text-arabic-gold/80 group-hover/item:scale-110 transition" />
