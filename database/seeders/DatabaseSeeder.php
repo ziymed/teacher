@@ -87,7 +87,9 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        $tahseen = Program::where('name->en', 'Tahseen Program')->first();
+        $tahseen = Program::where('name->en', 'Tahseen Program')
+            ->orWhere('name->en', 'Tahseen Private')
+            ->first();
         if ($tahseen) {
             $tahseen->update([
                 'name' => [
@@ -156,7 +158,9 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        $tajweed = Program::where('name->en', 'Tajweed Program')->first();
+        $tajweed = Program::where('name->en', 'Tajweed Program')
+            ->orWhere('name->en', 'Basic Tajweed Private')
+            ->first();
         if ($tajweed) {
             $tajweed->update([
                 'name' => [
@@ -219,7 +223,9 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        $tuhfatulAthfal = Program::where('name->en', 'Tuhfatul Athfal Program')->first();
+        $tuhfatulAthfal = Program::where('name->en', 'Tuhfatul Athfal Program')
+            ->orWhere('name->en', 'Tuhfatul Athfal Private')
+            ->first();
         if ($tuhfatulAthfal) {
             $tuhfatulAthfal->update([
                 'name' => [
