@@ -5,6 +5,7 @@ import {
     BookOpen,
     Calendar,
     Clock,
+    Copy,
     Globe,
     ShieldCheck,
     Check,
@@ -82,6 +83,12 @@ export default function Welcome({
     const [selectedPlatform, setSelectedPlatform] = useState<
         'google_meet' | 'zoom'
     >('google_meet');
+    const [country, setCountry] = useState<'id' | 'my' | 'sg'>('id');
+
+    const handleCopyToClipboard = (text: string) => {
+        navigator.clipboard.writeText(text);
+        toast.success(t('Copied to clipboard!'));
+    };
 
     const bookingForm = useForm({
         slot_id: '',
@@ -370,10 +377,60 @@ export default function Welcome({
                         </div>
                     </div>
                 </section>
-
                 {/* 3. Domed Arched Program Cards (EXACT shape and list matching the flyer) */}
-                <section id="programs" className="mx-auto max-w-7xl px-6 py-12">
-                    <div className="mx-auto grid max-w-7xl gap-8 md:grid-cols-2 lg:grid-cols-4">
+                <section id="programs" className="mx-auto max-w-7xl px-6 py-16">
+                    {/* Country Selector Header */}
+                    <div className="mx-auto mb-14 text-center max-w-2xl space-y-4 animate-fade-in-up">
+                        <span className="text-[11px] font-black tracking-[0.25em] text-arabic-gold uppercase flex items-center justify-center gap-2">
+                            <span className="h-1 w-6 bg-gradient-to-r from-transparent to-arabic-gold rounded-full" />
+                            ✦ {t('PILIHAN PAKET PRIVAT')} ✦
+                            <span className="h-1 w-6 bg-gradient-to-l from-transparent to-arabic-gold rounded-full" />
+                        </span>
+                        <h2 className="font-serif text-3xl font-black text-arabic-bronze sm:text-4xl md:text-5xl tracking-wide leading-tight">
+                            {t('Investasi Pembelajaran')}
+                        </h2>
+                        <p className="text-xs sm:text-sm font-semibold text-arabic-bronze/70 max-w-lg mx-auto leading-relaxed">
+                            {t('Pilih wilayah Anda untuk melihat biaya program privat 1-on-1 dan metode pembayaran lokal.')}
+                        </p>
+
+                        <div className="inline-flex rounded-full bg-arabic-cream/35 p-1.5 border border-arabic-cream/80 shadow-[0_8px_30px_rgb(30,56,51,0.02)] backdrop-blur-md mt-4 transition duration-300">
+                            <button
+                                type="button"
+                                onClick={() => setCountry('id')}
+                                className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-black transition-all duration-300 cursor-pointer ${
+                                    country === 'id'
+                                        ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
+                                        : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
+                                }`}
+                            >
+                                <span className="text-base leading-none">🇮🇩</span> Indonesia
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setCountry('my')}
+                                className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-black transition-all duration-300 cursor-pointer ${
+                                    country === 'my'
+                                        ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
+                                        : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
+                                }`}
+                            >
+                                <span className="text-base leading-none">🇲🇾</span> Malaysia
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setCountry('sg')}
+                                className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-black transition-all duration-300 cursor-pointer ${
+                                    country === 'sg'
+                                        ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
+                                        : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
+                                }`}
+                            >
+                                <span className="text-base leading-none">🇸🇬</span> Singapore
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="mx-auto grid max-w-7xl gap-8 sm:grid-cols-2 lg:grid-cols-4">
                         {programs.map((program) => {
                             // Find matching letter emblem
                             let letter = 'ق';
@@ -382,13 +439,50 @@ export default function Welcome({
                                 'en',
                             ).toLowerCase();
 
-                            if (progName.includes('tahseen')) {
+                            if (progName.includes('tahseen') || progName.includes('tahsin')) {
                                 letter = 'ح';
-                            } else if (progName.includes('tajweed')) {
+                            } else if (progName.includes('tajweed') || progName.includes('tajwid')) {
                                 letter = 'ت';
                             } else if (progName.includes('athfal')) {
                                 letter = 'ط';
                             }
+
+                            // Dynamic pricing config
+                            const prices: Record<string, Record<'id' | 'my' | 'sg', { amount: string; unit: string }>> = {
+                                talqin: {
+                                    id: { amount: 'Rp500.000', unit: 'bulan' },
+                                    my: { amount: 'RM 150', unit: 'bulan' },
+                                    sg: { amount: 'S$45', unit: 'month' },
+                                },
+                                tahseen: {
+                                    id: { amount: 'Rp500.000', unit: 'bulan' },
+                                    my: { amount: 'RM 150', unit: 'bulan' },
+                                    sg: { amount: 'S$45', unit: 'month' },
+                                },
+                                tajweed: {
+                                    id: { amount: 'Rp600.000', unit: 'bulan' },
+                                    my: { amount: 'RM 180', unit: 'bulan' },
+                                    sg: { amount: 'S$55', unit: 'month' },
+                                },
+                                athfal: {
+                                    id: { amount: 'Rp700.000', unit: 'bulan' },
+                                    my: { amount: 'RM 210', unit: 'bulan' },
+                                    sg: { amount: 'S$65', unit: 'month' },
+                                },
+                            };
+
+                            const getProgramKey = (name: string) => {
+                                const lower = name.toLowerCase();
+                                if (lower.includes('talqin')) return 'talqin';
+                                if (lower.includes('tahseen') || lower.includes('tahsin')) return 'tahseen';
+                                if (lower.includes('tajweed') || lower.includes('tajwid')) return 'tajweed';
+                                if (lower.includes('athfal')) return 'athfal';
+                                return 'tahseen';
+                            };
+
+                            const progKey = getProgramKey(progName);
+                            const priceConfig = prices[progKey] || prices.tahseen;
+                            const activePrice = priceConfig[country];
 
                             // Find matching duration footer or use dynamic values if present
                             let sessionsText = t('2 Sesi per minggu');
@@ -411,11 +505,11 @@ export default function Welcome({
                             return (
                                 <div
                                     key={program.id}
-                                    className="group relative flex flex-col justify-between overflow-hidden rounded-t-[10rem] rounded-b-[2rem] border-2 border-arabic-cream bg-arabic-sand shadow-xl transition duration-300 hover:-translate-y-1 hover:border-arabic-gold/40"
+                                    className="group relative flex flex-col justify-between overflow-hidden rounded-t-[11rem] rounded-b-[2.5rem] border border-arabic-cream/80 bg-arabic-sand shadow-lg hover:shadow-[0_22px_45px_-5px_rgba(30,56,51,0.12)] border-t-4 border-t-arabic-gold/70 transition-all duration-500 hover:-translate-y-2"
                                 >
-                                    <div className="absolute top-0 right-0 left-0 h-20 bg-gradient-to-b from-arabic-cream/35 to-transparent" />
+                                    <div className="absolute top-0 right-0 left-0 h-24 bg-gradient-to-b from-arabic-cream/30 to-transparent" />
 
-                                    <div className="flex flex-grow flex-col items-center space-y-6 p-8 pt-12">
+                                    <div className="flex flex-grow flex-col items-center space-y-6 p-7 pt-14">
                                         {/* Circular golden emblem with animated Arabic letter */}
                                         <div className="group/emblem relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-4 border-arabic-gold/60 bg-arabic-cream shadow-md transition duration-300 group-hover:scale-105">
                                             <div className="absolute inset-0 bg-arabic-gold/5 transition duration-500 group-hover/emblem:scale-110" />
@@ -428,17 +522,31 @@ export default function Welcome({
                                                 {letter}
                                             </span>
                                         </div>
-                                        <div className="space-y-1 text-center">
-                                            <h3 className="font-serif text-2xl font-black text-arabic-bronze">
+                                        <div className="space-y-2 text-center w-full">
+                                            <h3 className="font-serif text-2xl font-black text-arabic-bronze leading-tight">
                                                 {getTranslation(
                                                     program.name,
                                                     locale,
                                                 )}
                                             </h3>
-                                            <span className="text-[10px] font-black tracking-widest text-arabic-gold uppercase">
+                                            <span className="text-[10px] font-black tracking-widest text-arabic-gold uppercase block">
                                                 • {t('Programs')} •
                                             </span>
+
+                                            {/* Pricing Badge (Ticket style with premium details) */}
+                                            <div className="mt-3.5 inline-flex flex-col items-center bg-gradient-to-br from-arabic-cream/55 to-arabic-sand/80 border border-arabic-cream/85 py-3.5 rounded-2xl w-full shadow-sm relative overflow-hidden group/price">
+                                                <span className="text-[10px] font-bold text-arabic-gold tracking-widest uppercase block mb-0.5">
+                                                    {t('Investasi')}
+                                                </span>
+                                                <span className="text-2xl font-black text-arabic-bronze tracking-wide">
+                                                    {activePrice.amount}
+                                                </span>
+                                                <span className="text-[9px] font-extrabold text-arabic-bronze/50 uppercase tracking-widest mt-1">
+                                                    / {t(activePrice.unit)}
+                                                </span>
+                                            </div>
                                         </div>
+                                        
                                         <ul className="w-full space-y-3.5 ps-2 text-start text-xs font-semibold text-arabic-bronze/85">
                                             {details.map((detail, idx) => (
                                                 <li
@@ -446,23 +554,23 @@ export default function Welcome({
                                                     className="flex items-start gap-2.5"
                                                 >
                                                     <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-arabic-gold" />
-                                                    <span>{detail}</span>
+                                                    <span className="leading-relaxed">{detail}</span>
                                                 </li>
                                             ))}
                                         </ul>
                                     </div>
 
                                     {/* Flyer-style brown details card footer */}
-                                    <div className="flex flex-col gap-2 rounded-t-[1.5rem] border-t-2 border-arabic-gold bg-arabic-bronze p-6 text-arabic-sand">
-                                        <div className="flex items-center gap-2 text-[11px] font-bold">
+                                    <div className="flex flex-col gap-2 rounded-t-[2rem] border-t border-arabic-gold bg-gradient-to-br from-arabic-bronze to-[#2A4843] p-6 text-arabic-sand shadow-inner">
+                                        <div className="flex items-center gap-2.5 text-[11px] font-extrabold">
                                             <Calendar className="h-4 w-4 text-arabic-gold" />
                                             <span>{sessionsText}</span>
                                         </div>
-                                        <div className="flex items-center gap-2 text-[11px] font-bold">
+                                        <div className="flex items-center gap-2.5 text-[11px] font-extrabold">
                                             <Clock className="h-4 w-4 text-arabic-gold" />
                                             <span>{timingText}</span>
                                         </div>
-                                        <div className="flex items-center gap-2 text-[11px] font-bold">
+                                        <div className="flex items-center gap-2.5 text-[11px] font-extrabold">
                                             <Sparkles className="h-4 w-4 text-arabic-gold" />
                                             <span>{durationText}</span>
                                         </div>
@@ -470,6 +578,193 @@ export default function Welcome({
                                 </div>
                             );
                         })}
+                    </div>
+                </section>
+
+                {/* Payment Details Section */}
+                <section className="mx-auto max-w-4xl px-6 pb-16 animate-fade-in-up">
+                    <div className="relative overflow-hidden rounded-[2.5rem] border border-arabic-cream/80 bg-arabic-cream/15 p-7 sm:p-9 shadow-lg backdrop-blur-md">
+                        {/* Decorative background glow */}
+                        <div className="absolute -right-10 -bottom-10 -z-10 h-48 w-48 rounded-full bg-arabic-gold/5 blur-3xl" />
+                        <div className="absolute -left-10 -top-10 -z-10 h-48 w-48 rounded-full bg-arabic-gold/5 blur-3xl" />
+
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-arabic-cream/70">
+                            <div>
+                                <span className="text-[10px] font-black tracking-[0.2em] text-arabic-gold uppercase block">{t('Metode Pembayaran')}</span>
+                                <h3 className="font-serif text-2xl font-black text-arabic-bronze mt-1">
+                                    {country === 'id' && 'Metode Pembayaran di Indonesia'}
+                                    {country === 'my' && 'Kaedah Pembayaran di Malaysia'}
+                                    {country === 'sg' && 'Payment Methods for Singapore'}
+                                </h3>
+                                <p className="text-xs font-semibold text-arabic-bronze/70 mt-1 max-w-xl leading-relaxed">
+                                    {country === 'id' && 'Gunakan QRIS atau Transfer Bank Lokal untuk kemudahan transaksi Anda.'}
+                                    {country === 'my' && 'FPX Online Banking dan DuitNow QR disokong untuk pembayaran pantas.'}
+                                    {country === 'sg' && 'Local Bank Transfer and PayNow QR are supported for quick checkout.'}
+                                </p>
+                            </div>
+                            <div className="flex items-center gap-2 rounded-full bg-arabic-sand px-4.5 py-2 border border-arabic-cream flex-shrink-0 self-start md:self-auto shadow-sm">
+                                <ShieldCheck className="h-4 w-4 text-emerald-600 flex-shrink-0" />
+                                <span className="text-[9px] font-black text-arabic-bronze/85 uppercase tracking-wider">{t('Aman & Terverifikasi')}</span>
+                            </div>
+                        </div>
+
+                        <div className="grid gap-6 md:grid-cols-2 pt-6">
+                            {country === 'id' && (
+                                <>
+                                    <div className="flex gap-4.5 items-start rounded-[1.8rem] bg-arabic-sand p-5 border border-arabic-cream shadow-sm hover:border-arabic-gold/30 hover:shadow-md transition-all duration-300">
+                                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 font-black text-sm flex-shrink-0 border border-emerald-500/10">
+                                            QR
+                                        </div>
+                                        <div className="space-y-2">
+                                            <span className="block text-xs font-black text-arabic-bronze">{t('QRIS (Pembayaran Instan)')}</span>
+                                            <span className="block text-[11px] leading-relaxed font-semibold text-arabic-bronze/75">
+                                                Scan kode QRIS resmi kami menggunakan GoPay, OVO, Dana, LinkAja, ShopeePay, atau aplikasi Mobile Banking Anda.
+                                            </span>
+                                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100/70 text-emerald-850 px-2.5 py-0.5 text-[9px] font-bold">
+                                                ✦ Paling Direkomendasikan
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-4.5 items-start rounded-[1.8rem] bg-arabic-sand p-5 border border-arabic-cream shadow-sm hover:border-arabic-gold/30 hover:shadow-md transition-all duration-300">
+                                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-arabic-bronze/10 text-arabic-bronze font-black text-sm flex-shrink-0 border border-arabic-bronze/10">
+                                            BCA
+                                        </div>
+                                        <div className="space-y-2.5 w-full">
+                                            <span className="block text-xs font-black text-arabic-bronze">{t('Transfer Bank (BCA)')}</span>
+                                            <span className="block text-[11px] leading-relaxed font-semibold text-arabic-bronze/75">
+                                                Kirim transfer langsung ke rekening Bank BCA resmi:
+                                            </span>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleCopyToClipboard('8225198557')}
+                                                className="bg-arabic-cream/35 p-3 rounded-xl border border-arabic-cream/80 flex justify-between items-center w-full cursor-pointer hover:border-arabic-gold/50 hover:bg-arabic-cream/60 transition group/item"
+                                                title="Klik untuk menyalin nomor rekening"
+                                            >
+                                                <code className="text-xs font-mono font-black tracking-wider text-arabic-bronze group-hover/item:text-arabic-gold transition">8225198557</code>
+                                                <div className="flex items-center gap-1.5 text-[9px] font-bold text-arabic-bronze/60 group-hover/item:text-arabic-bronze transition">
+                                                    <span>a/n Tahseen Live</span>
+                                                    <Copy className="h-3.5 w-3.5 text-arabic-gold/80 group-hover/item:scale-110 transition" />
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
+                            {country === 'my' && (
+                                <>
+                                    <div className="flex gap-4.5 items-start rounded-[1.8rem] bg-arabic-sand p-5 border border-arabic-cream shadow-sm hover:border-arabic-gold/30 hover:shadow-md transition-all duration-300">
+                                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-red-500/10 text-red-600 font-black text-sm flex-shrink-0 border border-red-500/10">
+                                            QR
+                                        </div>
+                                        <div className="space-y-2">
+                                            <span className="block text-xs font-black text-arabic-bronze">{t('DuitNow QR')}</span>
+                                            <span className="block text-[11px] leading-relaxed font-semibold text-arabic-bronze/75">
+                                                Imbas Kod QR DuitNow menggunakan aplikasi perbankan mudah alih atau e-Dompet (Touch 'n Go, GrabPay, Boost).
+                                            </span>
+                                            <span className="inline-flex items-center gap-1 rounded-full bg-red-100/70 text-red-800 px-2.5 py-0.5 text-[9px] font-bold">
+                                                ✦ Paling Pantas
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-4.5 items-start rounded-[1.8rem] bg-arabic-sand p-5 border border-arabic-cream shadow-sm hover:border-arabic-gold/30 hover:shadow-md transition-all duration-300">
+                                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-arabic-bronze/10 text-arabic-bronze font-black text-sm flex-shrink-0 border border-arabic-bronze/10">
+                                            BANK
+                                        </div>
+                                        <div className="space-y-2.5 w-full">
+                                            <span className="block text-xs font-black text-arabic-bronze">{t('FPX / Bank Transfer')}</span>
+                                            <span className="block text-[11px] leading-relaxed font-semibold text-arabic-bronze/75">
+                                                Pindahkan terus ke akaun bank Maybank kami:
+                                            </span>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleCopyToClipboard('162021583940')}
+                                                className="bg-arabic-cream/35 p-3 rounded-xl border border-arabic-cream/80 flex justify-between items-center w-full cursor-pointer hover:border-arabic-gold/50 hover:bg-arabic-cream/60 transition group/item"
+                                                title="Klik untuk menyalin nomor akaun"
+                                            >
+                                                <code className="text-xs font-mono font-black tracking-wider text-arabic-bronze group-hover/item:text-arabic-gold transition">162021583940</code>
+                                                <div className="flex items-center gap-1.5 text-[9px] font-bold text-arabic-bronze/60 group-hover/item:text-arabic-bronze transition">
+                                                    <span>a/n Tahseen Live</span>
+                                                    <Copy className="h-3.5 w-3.5 text-arabic-gold/80 group-hover/item:scale-110 transition" />
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
+                            {country === 'sg' && (
+                                <>
+                                    <div className="flex gap-4.5 items-start rounded-[1.8rem] bg-arabic-sand p-5 border border-arabic-cream shadow-sm hover:border-arabic-gold/30 hover:shadow-md transition-all duration-300">
+                                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-600 font-black text-sm flex-shrink-0 border border-blue-500/10">
+                                            QR
+                                        </div>
+                                        <div className="space-y-2.5 w-full">
+                                            <span className="block text-xs font-black text-arabic-bronze">{t('PayNow QR')}</span>
+                                            <span className="block text-[11px] leading-relaxed font-semibold text-arabic-bronze/75">
+                                                Scan the PayNow QR code or send to UEN registration number:
+                                            </span>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleCopyToClipboard('T20LL9855G')}
+                                                className="bg-arabic-cream/35 p-3 rounded-xl border border-arabic-cream/80 flex justify-between items-center w-full cursor-pointer hover:border-arabic-gold/50 hover:bg-arabic-cream/60 transition group/item"
+                                                title="Click to copy UEN number"
+                                            >
+                                                <code className="text-xs font-mono font-black tracking-wider text-arabic-bronze group-hover/item:text-arabic-gold transition">T20LL9855G</code>
+                                                <div className="flex items-center gap-1.5 text-[9px] font-bold text-arabic-bronze/60 group-hover/item:text-arabic-bronze transition">
+                                                    <span>Tahseen Live</span>
+                                                    <Copy className="h-3.5 w-3.5 text-arabic-gold/80 group-hover/item:scale-110 transition" />
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-4.5 items-start rounded-[1.8rem] bg-arabic-sand p-5 border border-arabic-cream shadow-sm hover:border-arabic-gold/30 hover:shadow-md transition-all duration-300">
+                                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-arabic-bronze/10 text-arabic-bronze font-black text-sm flex-shrink-0 border border-arabic-bronze/10">
+                                            DBS
+                                        </div>
+                                        <div className="space-y-2.5 w-full">
+                                            <span className="block text-xs font-black text-arabic-bronze">{t('Bank Transfer (DBS)')}</span>
+                                            <span className="block text-[11px] leading-relaxed font-semibold text-arabic-bronze/75">
+                                                Transfer directly to our DBS bank account:
+                                            </span>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleCopyToClipboard('123-45678-9')}
+                                                className="bg-arabic-cream/35 p-3 rounded-xl border border-arabic-cream/80 flex justify-between items-center w-full cursor-pointer hover:border-arabic-gold/50 hover:bg-arabic-cream/60 transition group/item"
+                                                title="Click to copy account number"
+                                            >
+                                                <code className="text-xs font-mono font-black tracking-wider text-arabic-bronze group-hover/item:text-arabic-gold transition">123-45678-9</code>
+                                                <div className="flex items-center gap-1.5 text-[9px] font-bold text-arabic-bronze/60 group-hover/item:text-arabic-bronze transition">
+                                                    <span>Tahseen Live</span>
+                                                    <Copy className="h-3.5 w-3.5 text-arabic-gold/80 group-hover/item:scale-110 transition" />
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
+                        <div className="mt-8 p-4.5 bg-arabic-cream/40 rounded-2xl border border-arabic-cream/70 flex flex-col sm:flex-row items-center justify-between gap-4.5 text-center sm:text-start shadow-inner">
+                            <div className="space-y-0.5">
+                                <span className="block text-xs font-black text-arabic-bronze">{t('Setelah Melakukan Pembayaran')}</span>
+                                <span className="block text-[11px] font-semibold text-arabic-bronze/70">
+                                    {t('Kirimkan bukti transfer pembayaran Anda ke WhatsApp Admin untuk aktivasi paket instan.')}
+                                </span>
+                            </div>
+                            <a
+                                href="https://wa.me/6282251985570?text=Assalamualaikum%20Admin,%20saya%20ingin%20konfirmasi%20pembayaran%20program%20tahseen.live"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5.5 py-2.5 text-xs font-black text-white shadow-md hover:bg-emerald-700 hover:shadow-lg transition-all duration-300 flex-shrink-0 cursor-pointer"
+                            >
+                                <Phone className="h-4 w-4" />
+                                {t('Konfirmasi WhatsApp')}
+                            </a>
+                        </div>
                     </div>
                 </section>
 

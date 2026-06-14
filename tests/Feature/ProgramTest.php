@@ -10,14 +10,14 @@ uses(RefreshDatabase::class);
 test('tuhfatul athfal program is seeded successfully', function () {
     $this->seed(DatabaseSeeder::class);
 
-    $program = Program::where('name->en', 'Tuhfatul Athfal Program')->first();
+    $program = Program::where('name->en', 'Tuhfatul Athfal Private')->first();
 
     expect($program)->not->toBeNull();
     app()->setLocale('id');
     expect($program->description_translation)->toContain('12 minggu');
     expect($program->details_translation)->toBeArray();
-    expect($program->details_translation)->toContain('Menghafal matan Tuhfatul Athfal');
-    expect($program->details_translation)->toContain('Memahami makna setiap bait');
+    expect($program->details_translation)->toContain('Hafalan matan');
+    expect($program->details_translation)->toContain('Penjelasan bait');
 });
 
 test('tuhfatul athfal program is visible on the landing page', function () {
