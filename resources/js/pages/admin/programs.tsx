@@ -38,11 +38,26 @@ interface Program {
     name_translation: string;
     description_translation: string;
     details_translation: string[];
+    type: 'private' | 'group' | 'both';
+    prices_json?: any;
 }
 
 interface ProgramsProps {
     programs: Program[];
 }
+
+const defaultPrices = {
+    private: {
+        id: { monthly: 500000, program: 1500000 },
+        my: { monthly: 150, program: 450 },
+        sg: { monthly: 45, program: 135 },
+    },
+    group: {
+        id: { monthly: 500000, program: 1500000 },
+        my: { monthly: 150, program: 450 },
+        sg: { monthly: 45, program: 135 },
+    },
+};
 
 export default function Programs({ programs = [] }: ProgramsProps) {
     const { t, locale } = useTranslation();
@@ -53,12 +68,16 @@ export default function Programs({ programs = [] }: ProgramsProps) {
         name: { id: '', ar: '', en: '' },
         description: { id: '', ar: '', en: '' },
         details_json: { id: '', ar: '', en: '' },
+        type: 'both',
+        prices_json: JSON.parse(JSON.stringify(defaultPrices)),
     });
 
     const editProgramForm = useForm({
         name: { id: '', ar: '', en: '' },
         description: { id: '', ar: '', en: '' },
         details_json: { id: '', ar: '', en: '' },
+        type: 'both',
+        prices_json: JSON.parse(JSON.stringify(defaultPrices)),
     });
 
     const toggleVisibilityForm = useForm({});
@@ -164,6 +183,8 @@ export default function Programs({ programs = [] }: ProgramsProps) {
                 ar: getTranslationList(program.details_json, 'ar').join(', '),
                 en: getTranslationList(program.details_json, 'en').join(', '),
             },
+            type: program.type || 'both',
+            prices_json: program.prices_json || JSON.parse(JSON.stringify(defaultPrices)),
         });
     };
 
@@ -305,6 +326,23 @@ export default function Programs({ programs = [] }: ProgramsProps) {
                                                 <span className="block text-sm font-extrabold text-arabic-bronze">
                                                     {program.name_translation}
                                                 </span>
+                                                <div className="mt-1 flex items-center gap-1.5">
+                                                    {program.type === 'private' && (
+                                                        <Badge variant="outline" className="border-blue-500/25 bg-blue-500/10 text-blue-600 text-[8px] font-bold px-1.5 py-0">
+                                                            {t('Private')}
+                                                        </Badge>
+                                                    )}
+                                                    {program.type === 'group' && (
+                                                        <Badge variant="outline" className="border-indigo-500/25 bg-indigo-500/10 text-indigo-600 text-[8px] font-bold px-1.5 py-0">
+                                                            {t('Group')}
+                                                        </Badge>
+                                                    )}
+                                                    {program.type === 'both' && (
+                                                        <Badge variant="outline" className="border-purple-500/25 bg-purple-500/10 text-purple-600 text-[8px] font-bold px-1.5 py-0">
+                                                            {t('Private & Group')}
+                                                        </Badge>
+                                                    )}
+                                                </div>
                                                 <p className="mt-1 text-[10px] leading-relaxed font-medium text-arabic-bronze/70">
                                                     {
                                                         program.description_translation
@@ -700,6 +738,203 @@ export default function Programs({ programs = [] }: ProgramsProps) {
                                             )}
                                         </span>
                                     </div>
+
+                                    {/* Program Type */}
+                                    <div className="space-y-2 border-l-2 border-arabic-gold/30 pl-3">
+                                        <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
+                                            {t('Program Type / Visibility Scope')}
+                                        </label>
+                                        <select
+                                            value={newProgramForm.data.type}
+                                            onChange={(e) => newProgramForm.setData('type', e.target.value as any)}
+                                            className="w-full rounded-xl border border-arabic-cream bg-arabic-sand px-3 py-2 text-xs font-semibold text-arabic-bronze focus:border-arabic-gold focus:outline-none"
+                                        >
+                                            <option value="both">{t('Available for Both Private & Group')}</option>
+                                            <option value="private">{t('Private Only')}</option>
+                                            <option value="group">{t('Group Only')}</option>
+                                        </select>
+                                    </div>
+
+                                    {/* Program Pricing Configuration */}
+                                    <div className="space-y-4 border-l-2 border-arabic-gold/30 pl-3">
+                                        <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
+                                            {t('Pricing Configuration')}
+                                        </label>
+
+                                        {/* Private Pricing Grid */}
+                                        <div className="space-y-2 rounded-2xl border border-arabic-cream/80 bg-arabic-cream/10 p-4">
+                                            <span className="block text-[9px] font-black text-arabic-gold uppercase tracking-wider">
+                                                ✦ {t('Private Class Pricing')} ✦
+                                            </span>
+                                            <div className="grid grid-cols-3 gap-3">
+                                                <div>
+                                                    <label className="block text-[8px] font-bold text-arabic-bronze/70 mb-1">IDR Monthly</label>
+                                                    <Input
+                                                        type="number"
+                                                        value={newProgramForm.data.prices_json.private.id.monthly}
+                                                        onChange={(e) => {
+                                                            const prices = { ...newProgramForm.data.prices_json };
+                                                            prices.private.id.monthly = Number(e.target.value);
+                                                            newProgramForm.setData('prices_json', prices);
+                                                        }}
+                                                        className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[8px] font-bold text-arabic-bronze/70 mb-1">MYR Monthly</label>
+                                                    <Input
+                                                        type="number"
+                                                        value={newProgramForm.data.prices_json.private.my.monthly}
+                                                        onChange={(e) => {
+                                                            const prices = { ...newProgramForm.data.prices_json };
+                                                            prices.private.my.monthly = Number(e.target.value);
+                                                            newProgramForm.setData('prices_json', prices);
+                                                        }}
+                                                        className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[8px] font-bold text-arabic-bronze/70 mb-1">SGD Monthly</label>
+                                                    <Input
+                                                        type="number"
+                                                        value={newProgramForm.data.prices_json.private.sg.monthly}
+                                                        onChange={(e) => {
+                                                            const prices = { ...newProgramForm.data.prices_json };
+                                                            prices.private.sg.monthly = Number(e.target.value);
+                                                            newProgramForm.setData('prices_json', prices);
+                                                        }}
+                                                        className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[8px] font-bold text-arabic-bronze/70 mb-1">IDR Package</label>
+                                                    <Input
+                                                        type="number"
+                                                        value={newProgramForm.data.prices_json.private.id.program}
+                                                        onChange={(e) => {
+                                                            const prices = { ...newProgramForm.data.prices_json };
+                                                            prices.private.id.program = Number(e.target.value);
+                                                            newProgramForm.setData('prices_json', prices);
+                                                        }}
+                                                        className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[8px] font-bold text-arabic-bronze/70 mb-1">MYR Package</label>
+                                                    <Input
+                                                        type="number"
+                                                        value={newProgramForm.data.prices_json.private.my.program}
+                                                        onChange={(e) => {
+                                                            const prices = { ...newProgramForm.data.prices_json };
+                                                            prices.private.my.program = Number(e.target.value);
+                                                            newProgramForm.setData('prices_json', prices);
+                                                        }}
+                                                        className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[8px] font-bold text-arabic-bronze/70 mb-1">SGD Package</label>
+                                                    <Input
+                                                        type="number"
+                                                        value={newProgramForm.data.prices_json.private.sg.program}
+                                                        onChange={(e) => {
+                                                            const prices = { ...newProgramForm.data.prices_json };
+                                                            prices.private.sg.program = Number(e.target.value);
+                                                            newProgramForm.setData('prices_json', prices);
+                                                        }}
+                                                        className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Group Pricing Grid */}
+                                        <div className="space-y-2 rounded-2xl border border-arabic-cream/80 bg-arabic-cream/10 p-4">
+                                            <span className="block text-[9px] font-black text-arabic-gold uppercase tracking-wider">
+                                                ✦ {t('Group Class Pricing')} ✦
+                                            </span>
+                                            <div className="grid grid-cols-3 gap-3">
+                                                <div>
+                                                    <label className="block text-[8px] font-bold text-arabic-bronze/70 mb-1">IDR Monthly</label>
+                                                    <Input
+                                                        type="number"
+                                                        value={newProgramForm.data.prices_json.group.id.monthly}
+                                                        onChange={(e) => {
+                                                            const prices = { ...newProgramForm.data.prices_json };
+                                                            prices.group.id.monthly = Number(e.target.value);
+                                                            newProgramForm.setData('prices_json', prices);
+                                                        }}
+                                                        className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[8px] font-bold text-arabic-bronze/70 mb-1">MYR Monthly</label>
+                                                    <Input
+                                                        type="number"
+                                                        value={newProgramForm.data.prices_json.group.my.monthly}
+                                                        onChange={(e) => {
+                                                            const prices = { ...newProgramForm.data.prices_json };
+                                                            prices.group.my.monthly = Number(e.target.value);
+                                                            newProgramForm.setData('prices_json', prices);
+                                                        }}
+                                                        className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[8px] font-bold text-arabic-bronze/70 mb-1">SGD Monthly</label>
+                                                    <Input
+                                                        type="number"
+                                                        value={newProgramForm.data.prices_json.group.sg.monthly}
+                                                        onChange={(e) => {
+                                                            const prices = { ...newProgramForm.data.prices_json };
+                                                            prices.group.sg.monthly = Number(e.target.value);
+                                                            newProgramForm.setData('prices_json', prices);
+                                                        }}
+                                                        className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[8px] font-bold text-arabic-bronze/70 mb-1">IDR Package</label>
+                                                    <Input
+                                                        type="number"
+                                                        value={newProgramForm.data.prices_json.group.id.program}
+                                                        onChange={(e) => {
+                                                            const prices = { ...newProgramForm.data.prices_json };
+                                                            prices.group.id.program = Number(e.target.value);
+                                                            newProgramForm.setData('prices_json', prices);
+                                                        }}
+                                                        className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[8px] font-bold text-arabic-bronze/70 mb-1">MYR Package</label>
+                                                    <Input
+                                                        type="number"
+                                                        value={newProgramForm.data.prices_json.group.my.program}
+                                                        onChange={(e) => {
+                                                            const prices = { ...newProgramForm.data.prices_json };
+                                                            prices.group.my.program = Number(e.target.value);
+                                                            newProgramForm.setData('prices_json', prices);
+                                                        }}
+                                                        className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[8px] font-bold text-arabic-bronze/70 mb-1">SGD Package</label>
+                                                    <Input
+                                                        type="number"
+                                                        value={newProgramForm.data.prices_json.group.sg.program}
+                                                        onChange={(e) => {
+                                                            const prices = { ...newProgramForm.data.prices_json };
+                                                            prices.group.sg.program = Number(e.target.value);
+                                                            newProgramForm.setData('prices_json', prices);
+                                                        }}
+                                                        className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div className="flex shrink-0 justify-end gap-2 border-t border-arabic-cream bg-arabic-cream/30 px-6 py-4">
@@ -1014,6 +1249,203 @@ export default function Programs({ programs = [] }: ProgramsProps) {
                                                 'Separate each target with a comma.',
                                             )}
                                         </span>
+                                    </div>
+
+                                    {/* Program Type */}
+                                    <div className="space-y-2 border-l-2 border-arabic-gold/30 pl-3">
+                                        <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
+                                            {t('Program Type / Visibility Scope')}
+                                        </label>
+                                        <select
+                                            value={editProgramForm.data.type}
+                                            onChange={(e) => editProgramForm.setData('type', e.target.value as any)}
+                                            className="w-full rounded-xl border border-arabic-cream bg-arabic-sand px-3 py-2 text-xs font-semibold text-arabic-bronze focus:border-arabic-gold focus:outline-none"
+                                        >
+                                            <option value="both">{t('Available for Both Private & Group')}</option>
+                                            <option value="private">{t('Private Only')}</option>
+                                            <option value="group">{t('Group Only')}</option>
+                                        </select>
+                                    </div>
+
+                                    {/* Program Pricing Configuration */}
+                                    <div className="space-y-4 border-l-2 border-arabic-gold/30 pl-3">
+                                        <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
+                                            {t('Pricing Configuration')}
+                                        </label>
+
+                                        {/* Private Pricing Grid */}
+                                        <div className="space-y-2 rounded-2xl border border-arabic-cream/80 bg-arabic-cream/10 p-4">
+                                            <span className="block text-[9px] font-black text-arabic-gold uppercase tracking-wider">
+                                                ✦ {t('Private Class Pricing')} ✦
+                                            </span>
+                                            <div className="grid grid-cols-3 gap-3">
+                                                <div>
+                                                    <label className="block text-[8px] font-bold text-arabic-bronze/70 mb-1">IDR Monthly</label>
+                                                    <Input
+                                                        type="number"
+                                                        value={editProgramForm.data.prices_json.private.id.monthly}
+                                                        onChange={(e) => {
+                                                            const prices = { ...editProgramForm.data.prices_json };
+                                                            prices.private.id.monthly = Number(e.target.value);
+                                                            editProgramForm.setData('prices_json', prices);
+                                                        }}
+                                                        className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[8px] font-bold text-arabic-bronze/70 mb-1">MYR Monthly</label>
+                                                    <Input
+                                                        type="number"
+                                                        value={editProgramForm.data.prices_json.private.my.monthly}
+                                                        onChange={(e) => {
+                                                            const prices = { ...editProgramForm.data.prices_json };
+                                                            prices.private.my.monthly = Number(e.target.value);
+                                                            editProgramForm.setData('prices_json', prices);
+                                                        }}
+                                                        className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[8px] font-bold text-arabic-bronze/70 mb-1">SGD Monthly</label>
+                                                    <Input
+                                                        type="number"
+                                                        value={editProgramForm.data.prices_json.private.sg.monthly}
+                                                        onChange={(e) => {
+                                                            const prices = { ...editProgramForm.data.prices_json };
+                                                            prices.private.sg.monthly = Number(e.target.value);
+                                                            editProgramForm.setData('prices_json', prices);
+                                                        }}
+                                                        className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[8px] font-bold text-arabic-bronze/70 mb-1">IDR Package</label>
+                                                    <Input
+                                                        type="number"
+                                                        value={editProgramForm.data.prices_json.private.id.program}
+                                                        onChange={(e) => {
+                                                            const prices = { ...editProgramForm.data.prices_json };
+                                                            prices.private.id.program = Number(e.target.value);
+                                                            editProgramForm.setData('prices_json', prices);
+                                                        }}
+                                                        className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[8px] font-bold text-arabic-bronze/70 mb-1">MYR Package</label>
+                                                    <Input
+                                                        type="number"
+                                                        value={editProgramForm.data.prices_json.private.my.program}
+                                                        onChange={(e) => {
+                                                            const prices = { ...editProgramForm.data.prices_json };
+                                                            prices.private.my.program = Number(e.target.value);
+                                                            editProgramForm.setData('prices_json', prices);
+                                                        }}
+                                                        className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[8px] font-bold text-arabic-bronze/70 mb-1">SGD Package</label>
+                                                    <Input
+                                                        type="number"
+                                                        value={editProgramForm.data.prices_json.private.sg.program}
+                                                        onChange={(e) => {
+                                                            const prices = { ...editProgramForm.data.prices_json };
+                                                            prices.private.sg.program = Number(e.target.value);
+                                                            editProgramForm.setData('prices_json', prices);
+                                                        }}
+                                                        className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Group Pricing Grid */}
+                                        <div className="space-y-2 rounded-2xl border border-arabic-cream/80 bg-arabic-cream/10 p-4">
+                                            <span className="block text-[9px] font-black text-arabic-gold uppercase tracking-wider">
+                                                ✦ {t('Group Class Pricing')} ✦
+                                            </span>
+                                            <div className="grid grid-cols-3 gap-3">
+                                                <div>
+                                                    <label className="block text-[8px] font-bold text-arabic-bronze/70 mb-1">IDR Monthly</label>
+                                                    <Input
+                                                        type="number"
+                                                        value={editProgramForm.data.prices_json.group.id.monthly}
+                                                        onChange={(e) => {
+                                                            const prices = { ...editProgramForm.data.prices_json };
+                                                            prices.group.id.monthly = Number(e.target.value);
+                                                            editProgramForm.setData('prices_json', prices);
+                                                        }}
+                                                        className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[8px] font-bold text-arabic-bronze/70 mb-1">MYR Monthly</label>
+                                                    <Input
+                                                        type="number"
+                                                        value={editProgramForm.data.prices_json.group.my.monthly}
+                                                        onChange={(e) => {
+                                                            const prices = { ...editProgramForm.data.prices_json };
+                                                            prices.group.my.monthly = Number(e.target.value);
+                                                            editProgramForm.setData('prices_json', prices);
+                                                        }}
+                                                        className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[8px] font-bold text-arabic-bronze/70 mb-1">SGD Monthly</label>
+                                                    <Input
+                                                        type="number"
+                                                        value={editProgramForm.data.prices_json.group.sg.monthly}
+                                                        onChange={(e) => {
+                                                            const prices = { ...editProgramForm.data.prices_json };
+                                                            prices.group.sg.monthly = Number(e.target.value);
+                                                            editProgramForm.setData('prices_json', prices);
+                                                        }}
+                                                        className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[8px] font-bold text-arabic-bronze/70 mb-1">IDR Package</label>
+                                                    <Input
+                                                        type="number"
+                                                        value={editProgramForm.data.prices_json.group.id.program}
+                                                        onChange={(e) => {
+                                                            const prices = { ...editProgramForm.data.prices_json };
+                                                            prices.group.id.program = Number(e.target.value);
+                                                            editProgramForm.setData('prices_json', prices);
+                                                        }}
+                                                        className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[8px] font-bold text-arabic-bronze/70 mb-1">MYR Package</label>
+                                                    <Input
+                                                        type="number"
+                                                        value={editProgramForm.data.prices_json.group.my.program}
+                                                        onChange={(e) => {
+                                                            const prices = { ...editProgramForm.data.prices_json };
+                                                            prices.group.my.program = Number(e.target.value);
+                                                            editProgramForm.setData('prices_json', prices);
+                                                        }}
+                                                        className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[8px] font-bold text-arabic-bronze/70 mb-1">SGD Package</label>
+                                                    <Input
+                                                        type="number"
+                                                        value={editProgramForm.data.prices_json.group.sg.program}
+                                                        onChange={(e) => {
+                                                            const prices = { ...editProgramForm.data.prices_json };
+                                                            prices.group.sg.program = Number(e.target.value);
+                                                            editProgramForm.setData('prices_json', prices);
+                                                        }}
+                                                        className="rounded-xl border-arabic-cream bg-arabic-sand text-xs font-semibold"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 

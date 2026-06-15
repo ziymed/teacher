@@ -53,6 +53,8 @@ interface Program {
     name: string;
     description: string;
     details_json: string[];
+    type: 'private' | 'group' | 'both';
+    prices_json?: any;
 }
 
 interface WelcomeProps {
@@ -86,6 +88,85 @@ export default function Welcome({
     >('google_meet');
     const [country, setCountry] = useState<'id' | 'my' | 'sg'>('id');
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'program'>('monthly');
+    const [classType, setClassType] = useState<'private' | 'group'>('private');
+
+    const getProgramKey = (name: string) => {
+        const lower = name.toLowerCase();
+        if (lower.includes('talqin')) return 'talqin';
+        if (lower.includes('tahseen') || lower.includes('tahsin')) return 'tahseen';
+        if (lower.includes('tajweed') || lower.includes('tajwid')) return 'tajweed';
+        if (lower.includes('athfal')) return 'athfal';
+        return 'tahseen';
+    };
+
+    const getProgramTitle = (key: string, type: 'private' | 'group') => {
+        if (key === 'talqin') {
+            return type === 'private' ? t('Talqin Privat') : t('Program Talqin');
+        }
+        if (key === 'tahseen') {
+            return type === 'private' ? t('Tahsin Privat') : t('Program Tahseen');
+        }
+        if (key === 'tajweed') {
+            return type === 'private' ? t('Tajwid Dasar Privat') : t('Program Tajwid');
+        }
+        if (key === 'athfal') {
+            return type === 'private' ? t('Tuhfatul Athfal Privat') : t('Program Tuhfatul Athfal');
+        }
+        return '';
+    };
+
+    const getProgramPrice = (
+        program: Program,
+        type: 'private' | 'group',
+        countryCode: 'id' | 'my' | 'sg',
+        cycle: 'monthly' | 'program'
+    ) => {
+        const prices = program.prices_json;
+        let amount = 0;
+        
+        if (prices?.[type]?.[countryCode]?.[cycle] !== undefined) {
+            amount = Number(prices[type][countryCode][cycle]);
+        } else {
+            const fallbacks: Record<string, any> = {
+                talqin: {
+                    private: { id: { monthly: 500000, program: 1500000 }, my: { monthly: 150, program: 450 }, sg: { monthly: 45, program: 135 } },
+                    group: { id: { monthly: 500000, program: 1500000 }, my: { monthly: 150, program: 450 }, sg: { monthly: 45, program: 135 } }
+                },
+                tahseen: {
+                    private: { id: { monthly: 500000, program: 1500000 }, my: { monthly: 150, program: 450 }, sg: { monthly: 45, program: 135 } },
+                    group: { id: { monthly: 500000, program: 1500000 }, my: { monthly: 150, program: 450 }, sg: { monthly: 45, program: 135 } }
+                },
+                tajweed: {
+                    private: { id: { monthly: 600000, program: 1800000 }, my: { monthly: 180, program: 540 }, sg: { monthly: 55, program: 165 } },
+                    group: { id: { monthly: 700000, program: 2000000 }, my: { monthly: 210, program: 600 }, sg: { monthly: 60, program: 180 } }
+                },
+                athfal: {
+                    private: { id: { monthly: 700000, program: 2100000 }, my: { monthly: 210, program: 630 }, sg: { monthly: 65, program: 195 } },
+                    group: { id: { monthly: 900000, program: 2500000 }, my: { monthly: 270, program: 750 }, sg: { monthly: 80, program: 225 } }
+                }
+            };
+            const key = getProgramKey(getTranslation(program.name, 'en'));
+            amount = fallbacks[key]?.[type]?.[countryCode]?.[cycle] || 0;
+        }
+
+        if (countryCode === 'id') {
+            return `Rp${amount.toLocaleString('id-ID')}`;
+        }
+        if (countryCode === 'my') {
+            return `RM ${amount.toLocaleString('en-MY')}`;
+        }
+        if (countryCode === 'sg') {
+            return `S$${amount.toLocaleString('en-SG')}`;
+        }
+        return `${amount}`;
+    };
+
+    const getBillingCycleUnit = (cycle: 'monthly' | 'program', countryCode: 'id' | 'my' | 'sg') => {
+        if (countryCode === 'sg') {
+            return cycle === 'monthly' ? t('month') : t('package');
+        }
+        return cycle === 'monthly' ? t('bulan') : t('paket');
+    };
 
     const handleCopyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
@@ -144,21 +225,21 @@ export default function Welcome({
 
         if (!user) {
             toast.error(
-                'Please log in or register a student account to book a private session.',
+                t('Please log in or register a student account to book a private session.'),
             );
 
             return;
         }
 
         if (!selectedSlot) {
-            toast.error('Please choose a time slot.');
+            toast.error(t('Please choose a time slot.'));
 
             return;
         }
 
         if (!selectedProgramId) {
             toast.error(
-                'Please select one of our Quranic programs (Talqin, Tahseen, Tajweed, or Tuhfatul Athfal).',
+                t('Please select one of our Quranic programs (Talqin, Tahseen, Tajweed, or Tuhfatul Athfal).'),
             );
 
             return;
@@ -179,11 +260,11 @@ export default function Welcome({
                 setSelectedProgramId(null);
                 setNotes('');
                 toast.success(
-                    'Alhamdulillah! Your private 1-to-1 session has been booked successfully.',
+                    t('Alhamdulillah! Your private 1-to-1 session has been booked successfully.'),
                 );
             },
             onError: (err: any) => {
-                toast.error(err.error || 'Failed to submit session booking.');
+                toast.error(err.error || t('Failed to submit session booking.'));
             },
         });
     };
@@ -205,7 +286,16 @@ export default function Welcome({
             </Head>
 
             {/* Flyer Theme Visual Wrapper */}
-            <div className="relative min-h-screen overflow-x-hidden bg-arabic-sand font-sans text-arabic-bronze antialiased selection:bg-arabic-gold/30 selection:text-arabic-bronze">
+            <div className="relative min-h-screen overflow-x-hidden font-sans text-arabic-bronze antialiased selection:bg-arabic-gold/30 selection:text-arabic-bronze">
+                {/* Subtle Islamic Geometric Pattern Background Overlay */}
+                <div 
+                    className="pointer-events-none fixed inset-0 -z-10 opacity-30 mix-blend-multiply"
+                    style={{
+                        backgroundImage: `url('/images/bg-pattern.png')`,
+                        backgroundRepeat: 'repeat',
+                        backgroundSize: '400px',
+                    }}
+                />
                 {/* Elegant translucent Arabic letters in background */}
                 <div className="pointer-events-none absolute top-[20%] left-[6%] hidden font-serif-ar text-7xl text-arabic-gold/10 select-none md:text-8xl lg:block">
                     ق
@@ -351,7 +441,7 @@ export default function Welcome({
                                 <div className="group overflow-hidden rounded-t-[15rem] rounded-b-3xl border-4 border-arabic-cream bg-arabic-cream/30 p-2 shadow-2xl">
                                     <div className="relative aspect-[4/5] overflow-hidden rounded-t-[14.5rem] rounded-b-2xl bg-arabic-sand">
                                         <img
-                                            src="/images/zouhir.jpg"
+                                            src="/images/zouhir.png"
                                             alt="Ustaz Zouhir - Native Moroccan Arabic Teacher"
                                             className="h-full w-full object-cover transition duration-700 ease-out group-hover:scale-[1.03]"
                                         />
@@ -385,22 +475,74 @@ export default function Welcome({
                     <div className="mx-auto mb-14 text-center max-w-2xl space-y-4 animate-fade-in-up">
                         <span className="text-[11px] font-black tracking-[0.25em] text-arabic-gold uppercase flex items-center justify-center gap-2">
                             <span className="h-1 w-6 bg-gradient-to-r from-transparent to-arabic-gold rounded-full" />
-                            ✦ {t('PILIHAN PAKET PRIVAT')} ✦
+                            ✦ {classType === 'private' ? t('PILIHAN PAKET PRIVAT') : t('PILIHAN PAKET GRUP')} ✦
                             <span className="h-1 w-6 bg-gradient-to-l from-transparent to-arabic-gold rounded-full" />
                         </span>
                         <h2 className="font-serif text-3xl font-black text-arabic-bronze sm:text-4xl md:text-5xl tracking-wide leading-tight">
                             {t('Investasi Pembelajaran')}
                         </h2>
                         <p className="text-xs sm:text-sm font-semibold text-arabic-bronze/70 max-w-lg mx-auto leading-relaxed">
-                            {t('Pilih wilayah Anda untuk melihat biaya program privat 1-on-1 dan metode pembayaran lokal.')}
+                            {t('Pilih jenis program dan siklus pembayaran untuk memulai perjalanan Al-Quran Anda.')}
                         </p>
 
-                        <div className="flex flex-col items-center justify-center gap-4 mt-6">
+                        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mt-6">
+                            {/* Country Selector */}
+                            <div className="inline-flex rounded-full bg-arabic-cream/35 p-1.5 border border-arabic-cream/80 shadow-[0_8px_30px_rgb(30,56,51,0.02)] backdrop-blur-md transition duration-300">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setCountry('id');
+                                        setSelectedProgramId(null);
+                                    }}
+                                    className={`flex items-center gap-2 rounded-full px-4 py-2 text-xs font-black transition-all duration-300 cursor-pointer ${
+                                        country === 'id'
+                                            ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
+                                            : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
+                                    }`}
+                                >
+                                    <img src="/images/flags/id.svg" alt="ID flag" className="h-3.5 w-5 rounded-sm object-cover shadow-sm" />
+                                    <span className="font-bold">{t('Indonesia')}</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setCountry('my');
+                                        setSelectedProgramId(null);
+                                    }}
+                                    className={`flex items-center gap-2 rounded-full px-4 py-2 text-xs font-black transition-all duration-300 cursor-pointer ${
+                                        country === 'my'
+                                            ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
+                                            : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
+                                    }`}
+                                >
+                                    <img src="/images/flags/my.svg" alt="MY flag" className="h-3.5 w-5 rounded-sm object-cover shadow-sm" />
+                                    <span className="font-bold">{t('Malaysia')}</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setCountry('sg');
+                                        setSelectedProgramId(null);
+                                    }}
+                                    className={`flex items-center gap-2 rounded-full px-4 py-2 text-xs font-black transition-all duration-300 cursor-pointer ${
+                                        country === 'sg'
+                                            ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
+                                            : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
+                                    }`}
+                                >
+                                    <img src="/images/flags/sg.svg" alt="SG flag" className="h-3.5 w-5 rounded-sm object-cover shadow-sm" />
+                                    <span className="font-bold">{t('Singapore')}</span>
+                                </button>
+                            </div>
+
                             {/* Billing Cycle Switcher */}
                             <div className="inline-flex rounded-full bg-arabic-cream/35 p-1.5 border border-arabic-cream/80 shadow-[0_8px_30px_rgb(30,56,51,0.02)] backdrop-blur-md transition duration-300">
                                 <button
                                     type="button"
-                                    onClick={() => setBillingCycle('monthly')}
+                                    onClick={() => {
+                                        setBillingCycle('monthly');
+                                        setSelectedProgramId(null);
+                                    }}
                                     className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-black transition-all duration-300 cursor-pointer ${
                                         billingCycle === 'monthly'
                                             ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
@@ -411,7 +553,10 @@ export default function Welcome({
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => setBillingCycle('program')}
+                                    onClick={() => {
+                                        setBillingCycle('program');
+                                        setSelectedProgramId(null);
+                                    }}
                                     className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-black transition-all duration-300 cursor-pointer ${
                                         billingCycle === 'program'
                                             ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
@@ -422,311 +567,298 @@ export default function Welcome({
                                 </button>
                             </div>
 
-                            {/* Country Selector (Flags with Bold Names) */}
+                            {/* Class Type Switcher */}
                             <div className="inline-flex rounded-full bg-arabic-cream/35 p-1.5 border border-arabic-cream/80 shadow-[0_8px_30px_rgb(30,56,51,0.02)] backdrop-blur-md transition duration-300">
                                 <button
                                     type="button"
-                                    onClick={() => setCountry('id')}
-                                    className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-xs transition-all duration-300 cursor-pointer ${
-                                        country === 'id'
+                                    onClick={() => {
+                                        setClassType('private');
+                                        setSelectedProgramId(null);
+                                    }}
+                                    className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-black transition-all duration-300 cursor-pointer ${
+                                        classType === 'private'
                                             ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
                                             : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
                                     }`}
                                 >
-                                    <img src="/images/flags/id.svg" alt="Indonesia" className="w-4.5 h-4.5 object-contain" />
-                                    <span className="font-bold">{t('Indonesia')}</span>
+                                    {t('Private')}
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => setCountry('my')}
-                                    className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-xs transition-all duration-300 cursor-pointer ${
-                                        country === 'my'
+                                    onClick={() => {
+                                        setClassType('group');
+                                        setSelectedProgramId(null);
+                                    }}
+                                    className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-black transition-all duration-300 cursor-pointer ${
+                                        classType === 'group'
                                             ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
                                             : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
                                     }`}
                                 >
-                                    <img src="/images/flags/my.svg" alt="Malaysia" className="w-4.5 h-4.5 object-contain" />
-                                    <span className="font-bold">{t('Malaysia')}</span>
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setCountry('sg')}
-                                    className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-xs transition-all duration-300 cursor-pointer ${
-                                        country === 'sg'
-                                            ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
-                                            : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
-                                    }`}
-                                >
-                                    <img src="/images/flags/sg.svg" alt="Singapore" className="w-4.5 h-4.5 object-contain" />
-                                    <span className="font-bold">{t('Singapore')}</span>
+                                    {t('Group')}
                                 </button>
                             </div>
                         </div>
                     </div>
 
                     <div className="mx-auto grid max-w-7xl gap-8 sm:grid-cols-2 lg:grid-cols-4">
-                        {programs.map((program) => {
-                            // Find matching letter emblem
-                            let letter = 'ق';
-                            const progName = getTranslation(
-                                program.name,
-                                'en',
-                            ).toLowerCase();
+                        {programs
+                            .filter((program) => program.type === classType || program.type === 'both')
+                            .map((program) => {
+                                const progName = getTranslation(
+                                    program.name,
+                                    'en',
+                                ).toLowerCase();
 
-                            if (progName.includes('tahseen') || progName.includes('tahsin')) {
-                                letter = 'ح';
-                            } else if (progName.includes('tajweed') || progName.includes('tajwid')) {
-                                letter = 'ت';
-                            } else if (progName.includes('athfal')) {
-                                letter = 'ط';
-                            }
+                                const progKey = getProgramKey(progName);
 
-                            // Dynamic pricing config
-                            const prices: Record<string, Record<'id' | 'my' | 'sg', Record<'monthly' | 'program', { amount: string; unit: string }>>> = {
-                                talqin: {
-                                    id: {
-                                        monthly: { amount: 'Rp500.000', unit: 'bulan' },
-                                        program: { amount: 'Rp1.500.000', unit: 'paket' },
-                                    },
-                                    my: {
-                                        monthly: { amount: 'RM 150', unit: 'bulan' },
-                                        program: { amount: 'RM 450', unit: 'paket' },
-                                    },
-                                    sg: {
-                                        monthly: { amount: 'S$45', unit: 'month' },
-                                        program: { amount: 'S$135', unit: 'package' },
-                                    },
-                                },
-                                tahseen: {
-                                    id: {
-                                        monthly: { amount: 'Rp500.000', unit: 'bulan' },
-                                        program: { amount: 'Rp1.500.000', unit: 'paket' },
-                                    },
-                                    my: {
-                                        monthly: { amount: 'RM 150', unit: 'bulan' },
-                                        program: { amount: 'RM 450', unit: 'paket' },
-                                    },
-                                    sg: {
-                                        monthly: { amount: 'S$45', unit: 'month' },
-                                        program: { amount: 'S$135', unit: 'package' },
-                                    },
-                                },
-                                tajweed: {
-                                    id: {
-                                        monthly: { amount: 'Rp600.000', unit: 'bulan' },
-                                        program: { amount: 'Rp2.000.000', unit: 'paket' },
-                                    },
-                                    my: {
-                                        monthly: { amount: 'RM 180', unit: 'bulan' },
-                                        program: { amount: 'RM 600', unit: 'paket' },
-                                    },
-                                    sg: {
-                                        monthly: { amount: 'S$55', unit: 'month' },
-                                        program: { amount: 'S$180', unit: 'package' },
-                                    },
-                                },
-                                athfal: {
-                                    id: {
-                                        monthly: { amount: 'Rp700.000', unit: 'bulan' },
-                                        program: { amount: 'Rp2.500.000', unit: 'paket' },
-                                    },
-                                    my: {
-                                        monthly: { amount: 'RM 210', unit: 'bulan' },
-                                        program: { amount: 'RM 750', unit: 'paket' },
-                                    },
-                                    sg: {
-                                        monthly: { amount: 'S$65', unit: 'month' },
-                                        program: { amount: 'S$225', unit: 'package' },
-                                    },
-                                },
-                            };
+                                // Find matching duration footer or use dynamic values if present
+                                let sessionsText = classType === 'private'
+                                    ? (billingCycle === 'program' ? t('24 pertemuan') : t('8 pertemuan/bulan'))
+                                    : (billingCycle === 'program' ? t('24 pertemuan') : t('8 pertemuan/bulan'));
 
-                            const getProgramKey = (name: string) => {
-                                const lower = name.toLowerCase();
-                                if (lower.includes('talqin')) return 'talqin';
-                                if (lower.includes('tahseen') || lower.includes('tahsin')) return 'tahseen';
-                                if (lower.includes('tajweed') || lower.includes('tajwid')) return 'tajweed';
-                                if (lower.includes('athfal')) return 'athfal';
-                                return 'tahseen';
-                            };
+                                let timingText = classType === 'private'
+                                    ? t('Jadwal Fleksibel')
+                                    : t('Sabtu & Minggu');
 
-                            const progKey = getProgramKey(progName);
-                            const priceConfig = prices[progKey] || prices.tahseen;
-                            const activePrice = priceConfig[country][billingCycle];
+                                let durationText = t('60 menit per pertemuan');
 
-                            // Find matching duration footer or use dynamic values if present
-                            let sessionsText = t('2 Sesi per minggu');
-                            let timingText = t('Sabtu & Minggu');
-                            let durationText = t('Durasi 1 jam per sesi');
-
-                            if (billingCycle === 'program') {
-                                sessionsText = t('24 pertemuan');
-                                timingText = t('Jadwal Fleksibel');
-                                durationText = t('Durasi 1 jam per sesi');
-                            } else {
-                                if (progName.includes('athfal')) {
+                                if (billingCycle === 'monthly' && progName.includes('athfal') && classType === 'private') {
                                     sessionsText = t('Durasi 12 minggu');
                                     timingText = t('60 menit per pertemuan');
-                                    durationText = t(
-                                        'Bimbingan intensif & hafalan',
-                                    );
+                                    durationText = t('Bimbingan intensif & hafalan');
                                 }
-                            }
 
-                            const programDetails: Record<string, Record<'monthly' | 'program', string[]>> = {
-                                talqin: {
-                                    monthly: [
-                                        t('8 pertemuan/bulan'),
-                                        t('60 menit per pertemuan'),
-                                        t('Bahasa Indonesia & Arab'),
-                                        t('Evaluasi berkala'),
-                                    ],
-                                    program: [
-                                        t('24 pertemuan'),
-                                        t('Bimbingan intensif'),
-                                        t('Evaluasi berkala'),
-                                        t('Sertifikat kelulusan'),
-                                    ],
-                                },
-                                tahseen: {
-                                    monthly: [
-                                        t('8 pertemuan/bulan'),
-                                        t('60 menit per pertemuan'),
-                                        t('Bahasa Indonesia & Arab'),
-                                        t('Evaluasi berkala'),
-                                    ],
-                                    program: [
-                                        t('24 pertemuan'),
-                                        t('perbaikan makhraj&sifat'),
-                                        t('perbaikan bacaan'),
-                                        t('sertifikat'),
-                                    ],
-                                },
-                                tajweed: {
-                                    monthly: [
-                                        t('8 pertemuan/bulan'),
-                                        t('Materi tajwid lengkap'),
-                                        t('Praktik bacaan'),
-                                    ],
-                                    program: [
-                                        t('24 pertemuan'),
-                                        t('Materi tajwid lengkap'),
-                                        t('Evaluasi berkala.'),
-                                        t('Sertifikat.'),
-                                    ],
-                                },
-                                athfal: {
-                                    monthly: [
-                                        t('Hafalan matan'),
-                                        t('Penjelasan bait'),
-                                        t('Praktik tajwid'),
-                                        t('Sertifikat setelah selesai program'),
-                                    ],
-                                    program: [
-                                        t('24 pertemuan'),
-                                        t('Sertifikat'),
-                                        t('Grup konsultasi'),
-                                    ],
-                                },
-                            };
+                                const programDetails: Record<
+                                    string,
+                                    Record<
+                                        'private' | 'group',
+                                        Record<'monthly' | 'program', string[]>
+                                    >
+                                > = {
+                                    talqin: {
+                                        private: {
+                                            monthly: [
+                                                t('8 pertemuan/bulan'),
+                                                t('60 menit per pertemuan'),
+                                                t('Bahasa Indonesia & Arab'),
+                                                t('Evaluasi berkala'),
+                                            ],
+                                            program: [
+                                                t('24 pertemuan'),
+                                                t('60 menit per pertemuan'),
+                                                t('Bahasa Indonesia & Arab'),
+                                                t('Evaluasi berkala'),
+                                            ],
+                                        },
+                                        group: {
+                                            monthly: [
+                                                t('8 pertemuan/bulan'),
+                                                t('perbaikan makhraj&sifat'),
+                                                t('perbaikan bacaan'),
+                                                t('sertifikat'),
+                                            ],
+                                            program: [
+                                                t('24 pertemuan'),
+                                                t('perbaikan makhraj&sifat'),
+                                                t('perbaikan bacaan'),
+                                                t('sertifikat'),
+                                            ],
+                                        },
+                                    },
+                                    tahseen: {
+                                        private: {
+                                            monthly: [
+                                                t('8 pertemuan/bulan'),
+                                                t('60 menit per pertemuan'),
+                                                t('Bahasa Indonesia & Arab'),
+                                                t('Evaluasi berkala'),
+                                            ],
+                                            program: [
+                                                t('24 pertemuan'),
+                                                t('60 menit per pertemuan'),
+                                                t('Bahasa Indonesia & Arab'),
+                                                t('Evaluasi berkala'),
+                                            ],
+                                        },
+                                        group: {
+                                            monthly: [
+                                                t('8 pertemuan/bulan'),
+                                                t('perbaikan makhraj&sifat'),
+                                                t('perbaikan bacaan'),
+                                                t('sertifikat'),
+                                            ],
+                                            program: [
+                                                t('24 pertemuan'),
+                                                t('perbaikan makhraj&sifat'),
+                                                t('perbaikan bacaan'),
+                                                t('sertifikat'),
+                                            ],
+                                        },
+                                    },
+                                    tajweed: {
+                                        private: {
+                                            monthly: [
+                                                t('8 pertemuan/bulan'),
+                                                t('Materi tajwid lengkap'),
+                                                t('Praktik bacaan'),
+                                            ],
+                                            program: [
+                                                t('24 pertemuan'),
+                                                t('Materi tajwid lengkap'),
+                                                t('Praktik bacaan'),
+                                            ],
+                                        },
+                                        group: {
+                                            monthly: [
+                                                t('8 pertemuan/bulan'),
+                                                t('Materi tajwid lengkap'),
+                                                t('Evaluasi berkala.'),
+                                                t('Sertifikat.'),
+                                            ],
+                                            program: [
+                                                t('24 pertemuan'),
+                                                t('Materi tajwid lengkap'),
+                                                t('Evaluasi berkala.'),
+                                                t('Sertifikat.'),
+                                            ],
+                                        },
+                                    },
+                                    athfal: {
+                                        private: {
+                                            monthly: [
+                                                t('Hafalan matan'),
+                                                t('Penjelasan bait'),
+                                                t('Praktik tajwid'),
+                                                t('Sertifikat setelah selesai program'),
+                                            ],
+                                            program: [
+                                                t('24 pertemuan'),
+                                                t('Hafalan matan'),
+                                                t('Penjelasan bait'),
+                                                t('Sertifikat setelah selesai program'),
+                                            ],
+                                        },
+                                        group: {
+                                            monthly: [
+                                                t('8 pertemuan/bulan'),
+                                                t('Sertifikat'),
+                                                t('Grup konsultasi'),
+                                            ],
+                                            program: [
+                                                t('24 pertemuan'),
+                                                t('Sertifikat'),
+                                                t('Grup konsultasi'),
+                                            ],
+                                        },
+                                    },
+                                };
 
-                            const details = programDetails[progKey]?.[billingCycle] || getTranslationList(
-                                program.details_json,
-                                locale,
-                            );
+                                const details = programDetails[progKey]?.[classType]?.[billingCycle] || getTranslationList(
+                                    program.details_json,
+                                    locale,
+                                );
 
-                            return (
-                                <div
-                                    key={program.id}
-                                    className="group relative flex flex-col justify-between overflow-hidden rounded-t-[11rem] rounded-b-[2.5rem] border border-arabic-cream/80 bg-arabic-sand shadow-lg hover:shadow-[0_22px_45px_-5px_rgba(30,56,51,0.12)] border-t-4 border-t-arabic-gold/70 transition-all duration-500 hover:-translate-y-2"
-                                >
-                                    <div className="absolute top-0 right-0 left-0 h-24 bg-gradient-to-b from-arabic-cream/30 to-transparent" />
+                                return (
+                                    <div
+                                        key={program.id}
+                                        className="group relative flex flex-col justify-between overflow-hidden rounded-t-[11rem] rounded-b-[2.5rem] border border-arabic-cream/80 bg-arabic-sand shadow-lg hover:shadow-[0_22px_45px_-5px_rgba(30,56,51,0.12)] border-t-4 border-t-arabic-gold/70 transition-all duration-500 hover:-translate-y-2"
+                                    >
+                                        <div className="absolute top-0 right-0 left-0 h-24 bg-gradient-to-b from-arabic-cream/30 to-transparent" />
 
-                                    <div className="flex flex-grow flex-col items-center space-y-6 p-7 pt-14">
-                                        {/* Circular golden emblem with animated program icon */}
-                                        <div className="group/emblem relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-4 border-arabic-gold/60 bg-arabic-cream shadow-md transition duration-300 group-hover:scale-105">
-                                            <div className="absolute inset-0 bg-arabic-gold/5 transition duration-500 group-hover/emblem:scale-110" />
-                                            {progKey === 'talqin' && (
-                                                <Headphones
-                                                    className="z-10 h-9 w-9 text-arabic-gold select-none group-hover:animate-float"
-                                                    style={{ animationDuration: '4s' }}
-                                                />
-                                            )}
-                                            {progKey === 'tahseen' && (
-                                                <BookOpen
-                                                    className="z-10 h-9 w-9 text-arabic-gold select-none group-hover:animate-float"
-                                                    style={{ animationDuration: '4s' }}
-                                                />
-                                            )}
-                                            {progKey === 'tajweed' && (
-                                                <Sparkles
-                                                    className="z-10 h-9 w-9 text-arabic-gold select-none group-hover:animate-float"
-                                                    style={{ animationDuration: '4s' }}
-                                                />
-                                            )}
-                                            {progKey === 'athfal' && (
-                                                <Award
-                                                    className="z-10 h-9 w-9 text-arabic-gold select-none group-hover:animate-float"
-                                                    style={{ animationDuration: '4s' }}
-                                                />
-                                            )}
-                                        </div>
-                                        <div className="space-y-2 text-center w-full">
-                                            <h3 className="font-serif text-2xl font-black text-arabic-bronze leading-tight">
-                                                {getTranslation(
-                                                    program.name,
-                                                    locale,
+                                        <div className="flex flex-grow flex-col items-center space-y-6 p-7 pt-14">
+                                            {/* Circular golden emblem with animated program icon */}
+                                            <div className="group/emblem relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-4 border-arabic-gold/60 bg-arabic-cream shadow-md transition duration-300 group-hover:scale-105">
+                                                <div className="absolute inset-0 bg-arabic-gold/5 transition duration-500 group-hover/emblem:scale-110" />
+                                                {progKey === 'talqin' && (
+                                                    <Headphones
+                                                        className="z-10 h-9 w-9 text-arabic-gold select-none group-hover:animate-float"
+                                                        style={{ animationDuration: '4s' }}
+                                                    />
                                                 )}
-                                            </h3>
-                                            <span className="text-[10px] font-black tracking-widest text-arabic-gold uppercase block">
-                                                • {t('Programs')} •
-                                            </span>
+                                                {progKey === 'tahseen' && (
+                                                    <BookOpen
+                                                        className="z-10 h-9 w-9 text-arabic-gold select-none group-hover:animate-float"
+                                                        style={{ animationDuration: '4s' }}
+                                                    />
+                                                )}
+                                                {progKey === 'tajweed' && (
+                                                    <Sparkles
+                                                        className="z-10 h-9 w-9 text-arabic-gold select-none group-hover:animate-float"
+                                                        style={{ animationDuration: '4s' }}
+                                                    />
+                                                )}
+                                                {progKey === 'athfal' && (
+                                                    <Award
+                                                        className="z-10 h-9 w-9 text-arabic-gold select-none group-hover:animate-float"
+                                                        style={{ animationDuration: '4s' }}
+                                                    />
+                                                )}
+                                            </div>
+                                            <div className="space-y-2 text-center w-full">
+                                                <div className="flex justify-center mb-1">
+                                                    {classType === 'private' ? (
+                                                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100/70 border border-emerald-200 px-3 py-0.5 text-[9px] font-black tracking-widest uppercase text-emerald-800">
+                                                            ✦ {t('Private')}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-100/70 border border-amber-200 px-3 py-0.5 text-[9px] font-black tracking-widest uppercase text-amber-800">
+                                                            ✦ {t('Group')}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <h3 className="font-serif text-2xl font-black text-arabic-bronze leading-tight">
+                                                    {getProgramTitle(progKey, classType)}
+                                                </h3>
+                                                <span className="text-[10px] font-black tracking-widest text-arabic-gold uppercase block">
+                                                    • {t('Programs')} •
+                                                </span>
 
-                                            {/* Pricing Badge (Ticket style with premium details) */}
-                                            <div className="mt-3.5 inline-flex flex-col items-center bg-gradient-to-br from-arabic-cream/55 to-arabic-sand/80 border border-arabic-cream/85 py-3.5 rounded-2xl w-full shadow-sm relative overflow-hidden group/price">
-                                                <span className="text-[10px] font-bold text-arabic-gold tracking-widest uppercase block mb-0.5">
-                                                    {t('Investasi')}
-                                                </span>
-                                                <span className="text-2xl font-black text-arabic-bronze tracking-wide">
-                                                    {activePrice.amount}
-                                                </span>
-                                                <span className="text-[9px] font-extrabold text-arabic-bronze/50 uppercase tracking-widest mt-1">
-                                                    / {t(activePrice.unit)}
-                                                </span>
+                                                {/* Pricing Badge (Ticket style with premium details) */}
+                                                <div className="mt-3.5 inline-flex flex-col items-center bg-gradient-to-br from-arabic-cream/55 to-arabic-sand/80 border border-arabic-cream/85 py-3.5 rounded-2xl w-full shadow-sm relative overflow-hidden group/price">
+                                                    <span className="text-[10px] font-bold text-arabic-gold tracking-widest uppercase block mb-0.5">
+                                                        {t('Investasi')}
+                                                    </span>
+                                                    <span className="text-2xl font-black text-arabic-bronze tracking-wide">
+                                                        {getProgramPrice(program, classType, country, billingCycle)}
+                                                    </span>
+                                                    <span className="text-[9px] font-extrabold text-arabic-bronze/50 uppercase tracking-widest mt-1">
+                                                        / {getBillingCycleUnit(billingCycle, country)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            
+                                            <ul className="w-full space-y-3.5 ps-2 text-start text-xs font-semibold text-arabic-bronze/85">
+                                                {details.map((detail, idx) => (
+                                                    <li
+                                                        key={idx}
+                                                        className="flex items-start gap-2.5"
+                                                    >
+                                                        <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-arabic-gold" />
+                                                        <span className="leading-relaxed">{detail}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+
+                                        {/* Flyer-style brown details card footer */}
+                                        <div className="flex flex-col gap-2 rounded-t-[2rem] border-t border-arabic-gold bg-gradient-to-br from-arabic-bronze to-[#2A4843] p-6 text-arabic-sand shadow-inner">
+                                            <div className="flex items-center gap-2.5 text-[11px] font-extrabold">
+                                                <Calendar className="h-4 w-4 text-arabic-gold" />
+                                                <span>{sessionsText}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2.5 text-[11px] font-extrabold">
+                                                <Clock className="h-4 w-4 text-arabic-gold" />
+                                                <span>{timingText}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2.5 text-[11px] font-extrabold">
+                                                <Sparkles className="h-4 w-4 text-arabic-gold" />
+                                                <span>{durationText}</span>
                                             </div>
                                         </div>
-                                        
-                                        <ul className="w-full space-y-3.5 ps-2 text-start text-xs font-semibold text-arabic-bronze/85">
-                                            {details.map((detail, idx) => (
-                                                <li
-                                                    key={idx}
-                                                    className="flex items-start gap-2.5"
-                                                >
-                                                    <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-arabic-gold" />
-                                                    <span className="leading-relaxed">{detail}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
                                     </div>
-
-                                    {/* Flyer-style brown details card footer */}
-                                    <div className="flex flex-col gap-2 rounded-t-[2rem] border-t border-arabic-gold bg-gradient-to-br from-arabic-bronze to-[#2A4843] p-6 text-arabic-sand shadow-inner">
-                                        <div className="flex items-center gap-2.5 text-[11px] font-extrabold">
-                                            <Calendar className="h-4 w-4 text-arabic-gold" />
-                                            <span>{sessionsText}</span>
-                                        </div>
-                                        <div className="flex items-center gap-2.5 text-[11px] font-extrabold">
-                                            <Clock className="h-4 w-4 text-arabic-gold" />
-                                            <span>{timingText}</span>
-                                        </div>
-                                        <div className="flex items-center gap-2.5 text-[11px] font-extrabold">
-                                            <Sparkles className="h-4 w-4 text-arabic-gold" />
-                                            <span>{durationText}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
                     </div>
                 </section>
 
@@ -741,14 +873,14 @@ export default function Welcome({
                             <div>
                                 <span className="text-[10px] font-black tracking-[0.2em] text-arabic-gold uppercase block">{t('Metode Pembayaran')}</span>
                                 <h3 className="font-serif text-2xl font-black text-arabic-bronze mt-1">
-                                    {country === 'id' && 'Metode Pembayaran di Indonesia'}
-                                    {country === 'my' && 'Kaedah Pembayaran di Malaysia'}
-                                    {country === 'sg' && 'Payment Methods for Singapore'}
+                                    {country === 'id' && t('Metode Pembayaran di Indonesia')}
+                                    {country === 'my' && t('Kaedah Pembayaran di Malaysia')}
+                                    {country === 'sg' && t('Payment Methods for Singapore')}
                                 </h3>
                                 <p className="text-xs font-semibold text-arabic-bronze/70 mt-1 max-w-xl leading-relaxed">
-                                    {country === 'id' && 'Gunakan QRIS atau Transfer Bank Lokal untuk kemudahan transaksi Anda.'}
-                                    {country === 'my' && 'FPX Online Banking dan DuitNow QR disokong untuk pembayaran pantas.'}
-                                    {country === 'sg' && 'Local Bank Transfer and PayNow QR are supported for quick checkout.'}
+                                    {country === 'id' && t('Gunakan QRIS atau Transfer Bank Lokal untuk kemudahan transaksi Anda.')}
+                                    {country === 'my' && t('FPX Online Banking dan DuitNow QR disokong untuk pembayaran pantas.')}
+                                    {country === 'sg' && t('Local Bank Transfer and PayNow QR are supported for quick checkout.')}
                                 </p>
                             </div>
                             <div className="flex items-center gap-2 rounded-full bg-arabic-sand px-4.5 py-2 border border-arabic-cream flex-shrink-0 self-start md:self-auto shadow-sm">
@@ -767,10 +899,10 @@ export default function Welcome({
                                         <div className="space-y-2">
                                             <span className="block text-xs font-black text-arabic-bronze">{t('QRIS (Pembayaran Instan)')}</span>
                                             <span className="block text-[11px] leading-relaxed font-semibold text-arabic-bronze/75">
-                                                Scan kode QRIS resmi kami menggunakan GoPay, OVO, Dana, LinkAja, ShopeePay, atau aplikasi Mobile Banking Anda.
+                                                {t('Scan kode QRIS resmi kami menggunakan GoPay, OVO, Dana, LinkAja, ShopeePay, atau aplikasi Mobile Banking Anda.')}
                                             </span>
                                             <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100/70 text-emerald-850 px-2.5 py-0.5 text-[9px] font-bold">
-                                                ✦ Paling Direkomendasikan
+                                                {t('✦ Paling Direkomendasikan')}
                                             </span>
                                         </div>
                                     </div>
@@ -782,7 +914,7 @@ export default function Welcome({
                                         <div className="space-y-2.5 w-full">
                                             <span className="block text-xs font-black text-arabic-bronze">{t('Transfer Bank (BCA)')}</span>
                                             <span className="block text-[11px] leading-relaxed font-semibold text-arabic-bronze/75">
-                                                Kirim transfer langsung ke rekening Bank BCA resmi:
+                                                {t('Kirim transfer langsung ke rekening Bank BCA resmi:')}
                                             </span>
                                             <button
                                                 type="button"
@@ -792,7 +924,7 @@ export default function Welcome({
                                             >
                                                 <code className="text-xs font-mono font-black tracking-wider text-arabic-bronze group-hover/item:text-arabic-gold transition">8225198557</code>
                                                 <div className="flex items-center gap-1.5 text-[9px] font-bold text-arabic-bronze/60 group-hover/item:text-arabic-bronze transition">
-                                                    <span>a/n Tahseen Live</span>
+                                                    <span>{t('a/n Tahseen Live')}</span>
                                                     <Copy className="h-3.5 w-3.5 text-arabic-gold/80 group-hover/item:scale-110 transition" />
                                                 </div>
                                             </button>
@@ -810,22 +942,22 @@ export default function Welcome({
                                         <div className="space-y-2">
                                             <span className="block text-xs font-black text-arabic-bronze">{t('DuitNow QR')}</span>
                                             <span className="block text-[11px] leading-relaxed font-semibold text-arabic-bronze/75">
-                                                Imbas Kod QR DuitNow menggunakan aplikasi perbankan mudah alih atau e-Dompet (Touch 'n Go, GrabPay, Boost).
+                                                {t('Imbas Kod QR DuitNow menggunakan aplikasi perbankan mudah alih atau e-Dompet (Touch \'n Go, GrabPay, Boost).')}
                                             </span>
                                             <span className="inline-flex items-center gap-1 rounded-full bg-red-100/70 text-red-800 px-2.5 py-0.5 text-[9px] font-bold">
-                                                ✦ Paling Pantas
+                                                {t('✦ Paling Pantas')}
                                             </span>
                                         </div>
                                     </div>
 
                                     <div className="flex gap-4.5 items-start rounded-[1.8rem] bg-arabic-sand p-5 border border-arabic-cream shadow-sm hover:border-arabic-gold/30 hover:shadow-md transition-all duration-300">
                                         <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-arabic-bronze/10 text-arabic-bronze font-black text-sm flex-shrink-0 border border-arabic-bronze/10">
-                                            BANK
+                                             BANK
                                         </div>
                                         <div className="space-y-2.5 w-full">
                                             <span className="block text-xs font-black text-arabic-bronze">{t('FPX / Bank Transfer')}</span>
                                             <span className="block text-[11px] leading-relaxed font-semibold text-arabic-bronze/75">
-                                                Pindahkan terus ke akaun bank Maybank kami:
+                                                {t('Pindahkan terus ke akaun bank Maybank kami:')}
                                             </span>
                                             <button
                                                 type="button"
@@ -835,7 +967,7 @@ export default function Welcome({
                                             >
                                                 <code className="text-xs font-mono font-black tracking-wider text-arabic-bronze group-hover/item:text-arabic-gold transition">162021583940</code>
                                                 <div className="flex items-center gap-1.5 text-[9px] font-bold text-arabic-bronze/60 group-hover/item:text-arabic-bronze transition">
-                                                    <span>a/n Tahseen Live</span>
+                                                    <span>{t('a/n Tahseen Live')}</span>
                                                     <Copy className="h-3.5 w-3.5 text-arabic-gold/80 group-hover/item:scale-110 transition" />
                                                 </div>
                                             </button>
@@ -853,17 +985,17 @@ export default function Welcome({
                                         <div className="space-y-2.5 w-full">
                                             <span className="block text-xs font-black text-arabic-bronze">{t('PayNow QR')}</span>
                                             <span className="block text-[11px] leading-relaxed font-semibold text-arabic-bronze/75">
-                                                Scan the PayNow QR code or send to UEN registration number:
+                                                {t('Scan the PayNow QR code or send to UEN registration number:')}
                                             </span>
                                             <button
                                                 type="button"
                                                 onClick={() => handleCopyToClipboard('T20LL9855G')}
                                                 className="bg-arabic-cream/35 p-3 rounded-xl border border-arabic-cream/80 flex justify-between items-center w-full cursor-pointer hover:border-arabic-gold/50 hover:bg-arabic-cream/60 transition group/item"
-                                                title="Click to copy UEN number"
+                                                title={t('Click to copy UEN number')}
                                             >
                                                 <code className="text-xs font-mono font-black tracking-wider text-arabic-bronze group-hover/item:text-arabic-gold transition">T20LL9855G</code>
                                                 <div className="flex items-center gap-1.5 text-[9px] font-bold text-arabic-bronze/60 group-hover/item:text-arabic-bronze transition">
-                                                    <span>Tahseen Live</span>
+                                                    <span>{t('Tahseen Live')}</span>
                                                     <Copy className="h-3.5 w-3.5 text-arabic-gold/80 group-hover/item:scale-110 transition" />
                                                 </div>
                                             </button>
@@ -877,17 +1009,17 @@ export default function Welcome({
                                         <div className="space-y-2.5 w-full">
                                             <span className="block text-xs font-black text-arabic-bronze">{t('Bank Transfer (DBS)')}</span>
                                             <span className="block text-[11px] leading-relaxed font-semibold text-arabic-bronze/75">
-                                                Transfer directly to our DBS bank account:
+                                                {t('Transfer directly to our DBS bank account:')}
                                             </span>
                                             <button
                                                 type="button"
                                                 onClick={() => handleCopyToClipboard('123-45678-9')}
                                                 className="bg-arabic-cream/35 p-3 rounded-xl border border-arabic-cream/80 flex justify-between items-center w-full cursor-pointer hover:border-arabic-gold/50 hover:bg-arabic-cream/60 transition group/item"
-                                                title="Click to copy account number"
+                                                title={t('Click to copy account number')}
                                             >
                                                 <code className="text-xs font-mono font-black tracking-wider text-arabic-bronze group-hover/item:text-arabic-gold transition">123-45678-9</code>
                                                 <div className="flex items-center gap-1.5 text-[9px] font-bold text-arabic-bronze/60 group-hover/item:text-arabic-bronze transition">
-                                                    <span>Tahseen Live</span>
+                                                    <span>{t('Tahseen Live')}</span>
                                                     <Copy className="h-3.5 w-3.5 text-arabic-gold/80 group-hover/item:scale-110 transition" />
                                                 </div>
                                             </button>
@@ -988,15 +1120,15 @@ export default function Welcome({
                     id="booking-calendar"
                     className="mx-auto max-w-7xl border-t border-arabic-cream/65 px-6 py-16 md:py-24"
                 >
-                    <div className="mx-auto mb-12 max-w-2xl space-y-3 text-center">
-                        <div className="flex items-center justify-center gap-1.5 text-xs font-black tracking-widest text-arabic-gold uppercase">
-                                    <span>{t('Daftar Sekarang!')}</span>
+                    <div className="mx-auto mb-12 max-w-2xl space-y-4 text-center">
+                        <div className="inline-flex items-center gap-2 rounded-full bg-arabic-gold/10 border border-arabic-gold/30 px-4 py-1.5 text-[10px] font-black tracking-[0.15em] text-arabic-gold uppercase animate-pulse">
+                            ✦ {t('Free 30-Min Trial')} ✦
                         </div>
-                        <h2 className="font-serif text-3xl font-black text-arabic-bronze md:text-4xl">
-                            {t('Interactive Session Scheduler')}
+                        <h2 className="font-serif text-3xl leading-tight font-black text-arabic-bronze md:text-4xl">
+                            {t('Start with a Free 30-Minute Trial Class')}
                         </h2>
-                        <p className="text-sm font-medium text-arabic-bronze/70">
-                            {t('Check available teaching slots below and book your private 1-to-1 session in real time.')}
+                        <p className="text-xs sm:text-sm font-semibold text-arabic-bronze/70 leading-relaxed">
+                            {t('Experience a private 1-to-1 session with our native Moroccan teachers. Pick a convenient time below to begin your Quranic journey with no commitment.')}
                         </p>
                     </div>
 
@@ -1148,8 +1280,9 @@ export default function Welcome({
                                                             )}
                                                         </label>
                                                         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                                                            {programs.map(
-                                                                (prog) => (
+                                                            {programs
+                                                                .filter((prog) => prog.type === classType || prog.type === 'both')
+                                                                .map((prog) => (
                                                                     <button
                                                                         key={
                                                                             prog.id
@@ -1167,18 +1300,11 @@ export default function Welcome({
                                                                                 : 'border-arabic-cream bg-arabic-sand text-arabic-bronze hover:bg-arabic-cream'
                                                                         }`}
                                                                     >
-                                                                        {getTranslation(
-                                                                            prog.name,
-                                                                            locale,
-                                                                        )
-                                                                            .replace(
-                                                                                ' Program',
-                                                                                '',
-                                                                            )
-                                                                            .replace(
-                                                                                'Program ',
-                                                                                '',
-                                                                            )}
+                                                                        {getProgramTitle(getProgramKey(getTranslation(prog.name, 'en')), classType)
+                                                                            .replace(' Privat', '')
+                                                                            .replace(' Private', '')
+                                                                            .replace(' Program', '')
+                                                                            .replace('Program ', '')}
                                                                     </button>
                                                                 ),
                                                             )}
@@ -1313,34 +1439,37 @@ export default function Welcome({
                                                 </Button>
                                             </form>
                                         ) : (
-                                            <div className="flex flex-col items-center justify-between gap-4 rounded-2xl border border-arabic-cream bg-arabic-sand p-4 text-center sm:flex-row sm:text-start">
-                                                <div>
-                                                    <span className="block text-[10px] font-black text-arabic-bronze uppercase">
-                                                        {t('Log In')}
+                                            <div className="flex flex-col items-center justify-between gap-6 rounded-[2rem] border border-arabic-gold/30 bg-gradient-to-br from-arabic-cream/60 to-arabic-sand/80 p-6 text-center sm:text-start shadow-md relative overflow-hidden">
+                                                {/* Decorative background glow */}
+                                                <div className="absolute -right-6 -bottom-6 -z-10 h-24 w-24 rounded-full bg-arabic-gold/15 blur-2xl" />
+                                                
+                                                <div className="space-y-1.5 max-w-md">
+                                                    <span className="inline-flex items-center gap-1 rounded-full bg-arabic-gold/15 border border-arabic-gold/30 px-2.5 py-0.5 text-[9px] font-black tracking-wider text-arabic-gold uppercase">
+                                                        ✦ {t('Special Offer')} ✦
                                                     </span>
-                                                    <p className="mt-0.5 text-[11px] leading-normal text-arabic-bronze/70">
-                                                        {t(
-                                                            'Please login or register to reserve this private slot.',
-                                                        ) ||
-                                                            'Please login or register.'}
+                                                    <h5 className="font-serif text-base font-black text-arabic-bronze leading-tight">
+                                                        {t('Claim Your Free Trial Session!')}
+                                                    </h5>
+                                                    <p className="text-[11px] leading-relaxed font-semibold text-arabic-bronze/70">
+                                                        {t('You are one step away! Create a free student account now to reserve this time slot and get full access to our learning dashboard.')}
                                                     </p>
                                                 </div>
-                                                <div className="flex gap-2">
-                                                    <Link href={login()}>
+                                                <div className="flex flex-col sm:flex-row gap-3.5 w-full sm:w-auto">
+                                                    <Link href={register()} className="w-full sm:w-auto">
                                                         <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            className="h-9 rounded-xl border-arabic-bronze/25 text-xs text-arabic-bronze hover:bg-arabic-cream"
+                                                            size="default"
+                                                            className="w-full h-10 rounded-full bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-xs font-black text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.15)] hover:shadow-lg transition-all duration-300 hover:scale-[1.02]"
                                                         >
-                                                            {t('Log In')}
+                                                            {t('Register & Book Now')}
                                                         </Button>
                                                     </Link>
-                                                    <Link href={register()}>
+                                                    <Link href={login()} className="w-full sm:w-auto">
                                                         <Button
-                                                            size="sm"
-                                                            className="h-9 rounded-xl bg-arabic-bronze text-xs text-arabic-sand hover:bg-arabic-bronze/90"
+                                                            size="default"
+                                                            variant="outline"
+                                                            className="w-full h-10 rounded-full border-arabic-bronze/25 text-xs font-bold text-arabic-bronze hover:bg-arabic-cream"
                                                         >
-                                                            {t('Register')}
+                                                            {t('Already a student? Log In')}
                                                         </Button>
                                                     </Link>
                                                 </div>

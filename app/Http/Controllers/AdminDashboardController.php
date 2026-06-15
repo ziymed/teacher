@@ -147,6 +147,20 @@ class AdminDashboardController extends Controller
             'details_json.id' => ['nullable', 'string'],
             'details_json.ar' => ['nullable', 'string'],
             'details_json.en' => ['nullable', 'string'],
+            'type' => ['required', 'string', 'in:private,group,both'],
+            'prices_json' => ['required', 'array'],
+            'prices_json.private.id.monthly' => ['required', 'numeric', 'min:0'],
+            'prices_json.private.id.program' => ['required', 'numeric', 'min:0'],
+            'prices_json.private.my.monthly' => ['required', 'numeric', 'min:0'],
+            'prices_json.private.my.program' => ['required', 'numeric', 'min:0'],
+            'prices_json.private.sg.monthly' => ['required', 'numeric', 'min:0'],
+            'prices_json.private.sg.program' => ['required', 'numeric', 'min:0'],
+            'prices_json.group.id.monthly' => ['required', 'numeric', 'min:0'],
+            'prices_json.group.id.program' => ['required', 'numeric', 'min:0'],
+            'prices_json.group.my.monthly' => ['required', 'numeric', 'min:0'],
+            'prices_json.group.my.program' => ['required', 'numeric', 'min:0'],
+            'prices_json.group.sg.monthly' => ['required', 'numeric', 'min:0'],
+            'prices_json.group.sg.program' => ['required', 'numeric', 'min:0'],
         ]);
 
         $details = [];
@@ -161,6 +175,8 @@ class AdminDashboardController extends Controller
             'name' => $request->name,
             'description' => $request->description,
             'details_json' => $details,
+            'type' => $request->type,
+            'prices_json' => $request->prices_json,
             'is_hidden' => false,
         ]);
 
@@ -191,6 +207,20 @@ class AdminDashboardController extends Controller
             'details_json.id' => ['nullable', 'string'],
             'details_json.ar' => ['nullable', 'string'],
             'details_json.en' => ['nullable', 'string'],
+            'type' => ['required', 'string', 'in:private,group,both'],
+            'prices_json' => ['required', 'array'],
+            'prices_json.private.id.monthly' => ['required', 'numeric', 'min:0'],
+            'prices_json.private.id.program' => ['required', 'numeric', 'min:0'],
+            'prices_json.private.my.monthly' => ['required', 'numeric', 'min:0'],
+            'prices_json.private.my.program' => ['required', 'numeric', 'min:0'],
+            'prices_json.private.sg.monthly' => ['required', 'numeric', 'min:0'],
+            'prices_json.private.sg.program' => ['required', 'numeric', 'min:0'],
+            'prices_json.group.id.monthly' => ['required', 'numeric', 'min:0'],
+            'prices_json.group.id.program' => ['required', 'numeric', 'min:0'],
+            'prices_json.group.my.monthly' => ['required', 'numeric', 'min:0'],
+            'prices_json.group.my.program' => ['required', 'numeric', 'min:0'],
+            'prices_json.group.sg.monthly' => ['required', 'numeric', 'min:0'],
+            'prices_json.group.sg.program' => ['required', 'numeric', 'min:0'],
         ]);
 
         $details = [];
@@ -205,6 +235,8 @@ class AdminDashboardController extends Controller
             'name' => $request->name,
             'description' => $request->description,
             'details_json' => $details,
+            'type' => $request->type,
+            'prices_json' => $request->prices_json,
         ]);
 
         return back()->with('success', 'Quranic Program successfully updated!');

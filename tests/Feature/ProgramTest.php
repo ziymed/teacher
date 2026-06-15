@@ -54,6 +54,19 @@ test('admin can create a program', function () {
                 'ar' => 'القاعدة 1, القاعدة 2',
                 'en' => 'Rule 1, Rule 2',
             ],
+            'type' => 'both',
+            'prices_json' => [
+                'private' => [
+                    'id' => ['monthly' => 500000, 'program' => 1500000],
+                    'my' => ['monthly' => 150, 'program' => 450],
+                    'sg' => ['monthly' => 45, 'program' => 135],
+                ],
+                'group' => [
+                    'id' => ['monthly' => 500000, 'program' => 1500000],
+                    'my' => ['monthly' => 150, 'program' => 450],
+                    'sg' => ['monthly' => 45, 'program' => 135],
+                ],
+            ],
         ]);
 
     $response->assertRedirect();
@@ -62,6 +75,7 @@ test('admin can create a program', function () {
     expect($program)->not->toBeNull();
     expect($program->description['en'])->toBe('Advanced reading rules');
     expect($program->is_hidden)->toBeFalse();
+    expect($program->type)->toBe('both');
     expect($program->details_json['en'])->toBe(['Rule 1', 'Rule 2']);
 });
 
@@ -89,6 +103,19 @@ test('admin can update a program', function () {
             'ar' => ['تفصيل قديم'],
             'en' => ['Old detail'],
         ],
+        'type' => 'private',
+        'prices_json' => [
+            'private' => [
+                'id' => ['monthly' => 500000, 'program' => 1500000],
+                'my' => ['monthly' => 150, 'program' => 450],
+                'sg' => ['monthly' => 45, 'program' => 135],
+            ],
+            'group' => [
+                'id' => ['monthly' => 500000, 'program' => 1500000],
+                'my' => ['monthly' => 150, 'program' => 450],
+                'sg' => ['monthly' => 45, 'program' => 135],
+            ],
+        ],
     ]);
 
     $response = $this->actingAs($admin)
@@ -108,12 +135,26 @@ test('admin can update a program', function () {
                 'ar' => 'تفصيل جديد 1, تفصيل جديد 2',
                 'en' => 'New detail 1, New detail 2',
             ],
+            'type' => 'group',
+            'prices_json' => [
+                'private' => [
+                    'id' => ['monthly' => 600000, 'program' => 1800000],
+                    'my' => ['monthly' => 180, 'program' => 540],
+                    'sg' => ['monthly' => 55, 'program' => 165],
+                ],
+                'group' => [
+                    'id' => ['monthly' => 700000, 'program' => 2000000],
+                    'my' => ['monthly' => 210, 'program' => 600],
+                    'sg' => ['monthly' => 60, 'program' => 180],
+                ],
+            ],
         ]);
 
     $response->assertRedirect();
     $program->refresh();
     expect($program->name['en'])->toBe('Updated Program');
     expect($program->description['en'])->toBe('Updated description');
+    expect($program->type)->toBe('group');
     expect($program->details_json['en'])->toBe(['New detail 1', 'New detail 2']);
 });
 

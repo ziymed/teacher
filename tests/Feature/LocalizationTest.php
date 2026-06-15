@@ -98,6 +98,19 @@ test('admin can store and update program with translations', function () {
         'role' => 'admin',
     ]);
 
+    $pricesPayload = [
+        'private' => [
+            'id' => ['monthly' => 500000, 'program' => 1500000],
+            'my' => ['monthly' => 150, 'program' => 450],
+            'sg' => ['monthly' => 45, 'program' => 135],
+        ],
+        'group' => [
+            'id' => ['monthly' => 500000, 'program' => 1500000],
+            'my' => ['monthly' => 150, 'program' => 450],
+            'sg' => ['monthly' => 45, 'program' => 135],
+        ],
+    ];
+
     $response = $this->actingAs($admin)
         ->post(route('admin.programs.store'), [
             'name' => [
@@ -115,11 +128,14 @@ test('admin can store and update program with translations', function () {
                 'ar' => 'تفصيل ١, تفصيل ٢',
                 'en' => 'Detail 1 En, Detail 2 En',
             ],
+            'type' => 'both',
+            'prices_json' => $pricesPayload,
         ]);
 
     $response->assertRedirect();
 
     $program = Program::latest('id')->first();
+    expect($program)->not->toBeNull();
     expect($program->name)->toBe([
         'id' => 'Nama Baru',
         'ar' => 'اسم جديد',
@@ -154,6 +170,8 @@ test('admin can store and update program with translations', function () {
                 'ar' => 'تفصيل تعديل',
                 'en' => 'Detail Edit En',
             ],
+            'type' => 'both',
+            'prices_json' => $pricesPayload,
         ]);
 
     $responseUpdate->assertRedirect();

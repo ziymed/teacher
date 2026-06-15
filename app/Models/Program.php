@@ -42,6 +42,8 @@ class Program extends Model
         'description',
         'details_json',
         'is_hidden',
+        'type',
+        'prices_json',
     ];
 
     /**
@@ -56,6 +58,7 @@ class Program extends Model
             'description' => 'array',
             'details_json' => 'array',
             'is_hidden' => 'boolean',
+            'prices_json' => 'array',
         ];
     }
 

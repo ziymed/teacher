@@ -19,279 +19,218 @@ class DatabaseSeeder extends Seeder
     {
         // 1. Seed Core Programs
         $talqin = Program::where('name->en', 'Talqin Program')->first();
+        $talqinData = [
+            'name' => [
+                'id' => 'Program Talqin',
+                'ar' => 'برنامج التلقين',
+                'en' => 'Talqin Program',
+            ],
+            'description' => [
+                'id' => 'Mendengarkan dan mengulang bacaan Al-Quran. Dirancang untuk pemula dan anak-anak untuk membantu memperbaiki pelafalan, melatih kelancaran, dan membaca surah pendek & doa harian.',
+                'ar' => 'الاستماع وتكرار قراءة القرآن الكريم. مصمم للمبتدئين والأطفال للمساعدة في تصحيح النطق والطلاقة وحفظ السور القصيرة والأدعية اليومية.',
+                'en' => 'Listening and repeating Al-Quran readings. Designed for beginners and children to help correct pronunciation, master fluency, and read short surahs & daily prayers.',
+            ],
+            'details_json' => [
+                'id' => [
+                    'Dengarkan dan ulangi bacaan Al-Quran',
+                    'Sangat cocok untuk pemula dan anak-anak',
+                    'Memperbaiki pelafalan dan melatih kelancaran',
+                    'Mencakup surah pendek dan doa harian',
+                ],
+                'ar' => [
+                    'الاستماع وتكرار تلاوة القرآن الكريم',
+                    'مثالي للمبتدئين والأطفال',
+                    'تصحيح النطق وتدريب الطلاقة',
+                    'يغطي السور القصيرة والأدعية اليومية',
+                ],
+                'en' => [
+                    'Listen and repeat Al-Quran recitation',
+                    'Ideal for beginners and children',
+                    'Corrects pronunciation and masters fluency',
+                    'Covers short surahs and daily prayers',
+                ],
+            ],
+            'type' => 'both',
+            'prices_json' => [
+                'private' => [
+                    'id' => ['monthly' => 500000, 'program' => 1500000],
+                    'my' => ['monthly' => 150, 'program' => 450],
+                    'sg' => ['monthly' => 45, 'program' => 135],
+                ],
+                'group' => [
+                    'id' => ['monthly' => 500000, 'program' => 1500000],
+                    'my' => ['monthly' => 150, 'program' => 450],
+                    'sg' => ['monthly' => 45, 'program' => 135],
+                ],
+            ],
+        ];
+
         if ($talqin) {
-            $talqin->update([
-                'name' => [
-                    'id' => 'Program Talqin',
-                    'ar' => 'برنامج التلقين',
-                    'en' => 'Talqin Program',
-                ],
-                'description' => [
-                    'id' => 'Mendengarkan dan mengulang bacaan Al-Quran. Dirancang untuk pemula dan anak-anak untuk membantu memperbaiki pelafalan, melatih kelancaran, dan membaca surah pendek & doa harian.',
-                    'ar' => 'الاستماع وتكرار قراءة القرآن الكريم. مصمم للمبتدئين والأطفال للمساعدة في تصحيح النطق والطلاقة وحفظ السور القصيرة والأدعية اليومية.',
-                    'en' => 'Listening and repeating Al-Quran readings. Designed for beginners and children to help correct pronunciation, master fluency, and read short surahs & daily prayers.',
-                ],
-                'details_json' => [
-                    'id' => [
-                        'Dengarkan dan ulangi bacaan Al-Quran',
-                        'Sangat cocok untuk pemula dan anak-anak',
-                        'Memperbaiki pelafalan dan melatih kelancaran',
-                        'Mencakup surah pendek dan doa harian',
-                    ],
-                    'ar' => [
-                        'الاستماع وتكرار تلاوة القرآن الكريم',
-                        'مثالي للمبتدئين والأطفال',
-                        'تصحيح النطق وتدريب الطلاقة',
-                        'يغطي السور القصيرة والأدعية اليومية',
-                    ],
-                    'en' => [
-                        'Listen and repeat Al-Quran recitation',
-                        'Ideal for beginners and children',
-                        'Corrects pronunciation and masters fluency',
-                        'Covers short surahs and daily prayers',
-                    ],
-                ],
-            ]);
+            $talqin->update($talqinData);
         } else {
-            $talqin = Program::create([
-                'name' => [
-                    'id' => 'Program Talqin',
-                    'ar' => 'برنامج التلقين',
-                    'en' => 'Talqin Program',
-                ],
-                'description' => [
-                    'id' => 'Mendengarkan dan mengulang bacaan Al-Quran. Dirancang untuk pemula dan anak-anak untuk membantu memperbaiki pelafalan, melatih kelancaran, dan membaca surah pendek & doa harian.',
-                    'ar' => 'الاستماع وتكرار قراءة القرآن الكريم. مصمم للمبتدئين والأطفال للمساعدة في تصحيح النطق والطلاقة وحفظ السور القصيرة والأدعية اليومية.',
-                    'en' => 'Listening and repeating Al-Quran readings. Designed for beginners and children to help correct pronunciation, master fluency, and read short surahs & daily prayers.',
-                ],
-                'details_json' => [
-                    'id' => [
-                        'Dengarkan dan ulangi bacaan Al-Quran',
-                        'Sangat cocok untuk pemula dan anak-anak',
-                        'Memperbaiki pelafalan dan melatih kelancaran',
-                        'Mencakup surah pendek dan doa harian',
-                    ],
-                    'ar' => [
-                        'الاستماع وتكرar تلاوة القرآن الكريم',
-                        'مثالي للمبتدئين والأطفال',
-                        'تصحيح النطق وتدريب الطلاقة',
-                        'يغطي السور القصيرة والأدعية اليومية',
-                    ],
-                    'en' => [
-                        'Listen and repeat Al-Quran recitation',
-                        'Ideal for beginners and children',
-                        'Corrects pronunciation and masters fluency',
-                        'Covers short surahs and daily prayers',
-                    ],
-                ],
-            ]);
+            $talqin = Program::create($talqinData);
         }
 
         $tahseen = Program::where('name->en', 'Tahseen Program')
             ->orWhere('name->en', 'Tahseen Private')
             ->first();
+        $tahseenData = [
+            'name' => [
+                'id' => 'Tahsin Privat',
+                'ar' => 'برنامج التحسين الخاص',
+                'en' => 'Tahseen Private',
+            ],
+            'description' => [
+                'id' => 'Memperbaiki bacaan Al-Quran, fokus pada makhraj and artikulasi yang tepat. Tingkatkan kelancaran dan kepercayaan diri membaca melalui koreksi aktif oleh guru.',
+                'ar' => 'تحسين قراءة القرآن الكريم، مع التركيز على المخارج ومواضع الحروف بدقة. تعزيز الطلاقة والثقة بالقراءة من خلال التصحيح المستمر من المعلم.',
+                'en' => 'Improving Al-Quran reading, focusing on makhraj and precise articulation. Enhance fluency and reading confidence through active correction by the teacher.',
+            ],
+            'details_json' => [
+                'id' => [
+                    '8 pertemuan/bulan',
+                    '60 menit per pertemuan',
+                    'Bahasa Indonesia & Arab',
+                    'Evaluasi berkala',
+                ],
+                'ar' => [
+                    '٨ حصص شهرياً',
+                    '٦٠ دقيقة لكل حصة',
+                    'باللغة الإندونيسية والعربية',
+                    'تقييم دوري مستمر',
+                ],
+                'en' => [
+                    '8 sessions/month',
+                    '60 minutes per session',
+                    'Indonesian & Arabic medium',
+                    'Periodic evaluations',
+                ],
+            ],
+            'type' => 'both',
+            'prices_json' => [
+                'private' => [
+                    'id' => ['monthly' => 500000, 'program' => 1500000],
+                    'my' => ['monthly' => 150, 'program' => 450],
+                    'sg' => ['monthly' => 45, 'program' => 135],
+                ],
+                'group' => [
+                    'id' => ['monthly' => 500000, 'program' => 1500000],
+                    'my' => ['monthly' => 150, 'program' => 450],
+                    'sg' => ['monthly' => 45, 'program' => 135],
+                ],
+            ],
+        ];
+
         if ($tahseen) {
-            $tahseen->update([
-                'name' => [
-                    'id' => 'Tahsin Privat',
-                    'ar' => 'برنامج التحسين الخاص',
-                    'en' => 'Tahseen Private',
-                ],
-                'description' => [
-                    'id' => 'Memperbaiki bacaan Al-Quran, fokus pada makhraj dan artikulasi yang tepat. Tingkatkan kelancaran dan kepercayaan diri membaca melalui koreksi aktif oleh guru.',
-                    'ar' => 'تحسين قراءة القرآن الكريم، مع التركيز على المخارج ومواضع الحروف بدقة. تعزيز الطلاقة والثقة بالقراءة من خلال التصحيح المستمر من المعلم.',
-                    'en' => 'Improving Al-Quran reading, focusing on makhraj and precise articulation. Enhance fluency and reading confidence through active correction by the teacher.',
-                ],
-                'details_json' => [
-                    'id' => [
-                        '8 pertemuan/bulan',
-                        '60 menit per pertemuan',
-                        'Bahasa Indonesia & Arab',
-                        'Evaluasi berkala',
-                    ],
-                    'ar' => [
-                        '٨ حصص شهرياً',
-                        '٦٠ دقيقة لكل حصة',
-                        'باللغة الإندونيسية والعربية',
-                        'تقييم دوري مستمر',
-                    ],
-                    'en' => [
-                        '8 sessions/month',
-                        '60 minutes per session',
-                        'Indonesian & Arabic medium',
-                        'Periodic evaluations',
-                    ],
-                ],
-            ]);
+            $tahseen->update($tahseenData);
         } else {
-            $tahseen = Program::create([
-                'name' => [
-                    'id' => 'Tahsin Privat',
-                    'ar' => 'برنامج التحسين الخاص',
-                    'en' => 'Tahseen Private',
-                ],
-                'description' => [
-                    'id' => 'Memperbaiki bacaan Al-Quran, fokus pada makhraj dan artikulasi yang tepat. Tingkatkan kelancaran dan kepercayaan diri membaca melalui koreksi aktif oleh guru.',
-                    'ar' => 'تحسين قراءة القرآن الكريم، مع التركيز على المخارج ومواضع الحروف بدقة. تعزيز الطلاقة والثقة بالقراءة من خلال التصحيح المستمر من المعلم.',
-                    'en' => 'Improving Al-Quran reading, focusing on makhraj and precise articulation. Enhance fluency and reading confidence through active correction by the teacher.',
-                ],
-                'details_json' => [
-                    'id' => [
-                        '8 pertemuan/bulan',
-                        '60 menit per pertemuan',
-                        'Bahasa Indonesia & Arab',
-                        'Evaluasi berkala',
-                    ],
-                    'ar' => [
-                        '٨ حصص شهرياً',
-                        '٦٠ دقيقة لكل حصة',
-                        'باللغة الإندونيسية والعربية',
-                        'تقييم دوري مستمر',
-                    ],
-                    'en' => [
-                        '8 sessions/month',
-                        '60 minutes per session',
-                        'Indonesian & Arabic medium',
-                        'Periodic evaluations',
-                    ],
-                ],
-            ]);
+            $tahseen = Program::create($tahseenData);
         }
 
         $tajweed = Program::where('name->en', 'Tajweed Program')
             ->orWhere('name->en', 'Basic Tajweed Private')
             ->first();
+        $tajweedData = [
+            'name' => [
+                'id' => 'Tajwid Dasar Privat',
+                'ar' => 'برنامج التجويد الأساسي الخاص',
+                'en' => 'Basic Tajweed Private',
+            ],
+            'description' => [
+                'id' => 'Menguasai aturan tajwid. Pelajari aturan seperti Nun Sakinah, Mad, Qalqalah, Ghunnah, dll., dan terapkan secara dinamis selama membaca Al-Quran dengan benar dan indah.',
+                'ar' => 'إتقان قواعد التجويد. دراسة أحكام النون الساكنة والمد والقلقلة والغنة وغيرها، وتطبيقها ديناميكياً أثناء التلاوة بشكل صحيح وجميل.',
+                'en' => 'Mastering tajweed rules. Study rules like Nun Sakinah, Madd, Qalqalah, Ghunnah, etc., and apply them dynamically during recitation correctly and beautifully.',
+            ],
+            'details_json' => [
+                'id' => [
+                    '8 pertemuan/bulan',
+                    'Materi tajwid lengkap',
+                    'Praktik bacaan',
+                ],
+                'ar' => [
+                    '٨ حصص شهرياً',
+                    'منهج تجويد كامل',
+                    'تدريب عملي على التلاوة',
+                ],
+                'en' => [
+                    '8 sessions/month',
+                    'Comprehensive tajweed topics',
+                    'Practical recitation practice',
+                ],
+            ],
+            'type' => 'both',
+            'prices_json' => [
+                'private' => [
+                    'id' => ['monthly' => 600000, 'program' => 1800000],
+                    'my' => ['monthly' => 180, 'program' => 540],
+                    'sg' => ['monthly' => 55, 'program' => 165],
+                ],
+                'group' => [
+                    'id' => ['monthly' => 700000, 'program' => 2000000],
+                    'my' => ['monthly' => 210, 'program' => 600],
+                    'sg' => ['monthly' => 60, 'program' => 180],
+                ],
+            ],
+        ];
+
         if ($tajweed) {
-            $tajweed->update([
-                'name' => [
-                    'id' => 'Tajwid Dasar Privat',
-                    'ar' => 'برنامج التجويد الأساسي الخاص',
-                    'en' => 'Basic Tajweed Private',
-                ],
-                'description' => [
-                    'id' => 'Menguasai aturan tajwid. Pelajari aturan seperti Nun Sakinah, Mad, Qalqalah, Ghunnah, dll., dan terapkan secara dinamis selama membaca Al-Quran dengan benar dan indah.',
-                    'ar' => 'إتقان قواعد التجويد. دراسة أحكام النون الساكنة والمد والقلقلة والغنة وغيرها، وتطبيقها ديناميكياً أثناء التلاوة بشكل صحيح وجميل.',
-                    'en' => 'Mastering tajweed rules. Study rules like Nun Sakinah, Madd, Qalqalah, Ghunnah, etc., and apply them dynamically during recitation correctly and beautifully.',
-                ],
-                'details_json' => [
-                    'id' => [
-                        '8 pertemuan/bulan',
-                        'Materi tajwid lengkap',
-                        'Praktik bacaan',
-                    ],
-                    'ar' => [
-                        '٨ حصص شهرياً',
-                        'منهج تجويد كامل',
-                        'تدريب عملي على التلاوة',
-                    ],
-                    'en' => [
-                        '8 sessions/month',
-                        'Comprehensive tajweed topics',
-                        'Practical recitation practice',
-                    ],
-                ],
-            ]);
+            $tajweed->update($tajweedData);
         } else {
-            $tajweed = Program::create([
-                'name' => [
-                    'id' => 'Tajwid Dasar Privat',
-                    'ar' => 'برنامج التجويد الأساسي الخاص',
-                    'en' => 'Basic Tajweed Private',
-                ],
-                'description' => [
-                    'id' => 'Menguasai aturan tajwid. Pelajari aturan seperti Nun Sakinah, Mad, Qalqalah, Ghunnah, dll., dan terapkan secara dinamis selama membaca Al-Quran dengan benar dan indah.',
-                    'ar' => 'إتقان قواعد التجويد. دراسة أحكام النون الساكنة والمد والقلقلة والغنة وغيرها، وتطبيقها ديناميكياً أثناء التلاوة بشكل صحيح وجميل.',
-                    'en' => 'Mastering tajweed rules. Study rules like Nun Sakinah, Madd, Qalqalah, Ghunnah, etc., and apply them dynamically during recitation correctly and beautifully.',
-                ],
-                'details_json' => [
-                    'id' => [
-                        '8 pertemuan/bulan',
-                        'Materi tajwid lengkap',
-                        'Praktik bacaan',
-                    ],
-                    'ar' => [
-                        '٨ حصص شهرياً',
-                        'منهج تجويد كامل',
-                        'تدريب عملي على التلاوة',
-                    ],
-                    'en' => [
-                        '8 sessions/month',
-                        'Comprehensive tajweed topics',
-                        'Practical recitation practice',
-                    ],
-                ],
-            ]);
+            $tajweed = Program::create($tajweedData);
         }
 
         $tuhfatulAthfal = Program::where('name->en', 'Tuhfatul Athfal Program')
             ->orWhere('name->en', 'Tuhfatul Athfal Private')
             ->first();
+        $tuhfatulAthfalData = [
+            'name' => [
+                'id' => 'Tuhfatul Athfal Privat',
+                'ar' => 'برنامج تحفة الأطفال الخاص',
+                'en' => 'Tuhfatul Athfal Private',
+            ],
+            'description' => [
+                'id' => 'Durasi: 12 minggu. Durasi per pertemuan: 60 menit. Tujuan umum: Peserta mampu menghafal matan Tuhfatul Athfal, memahami makna setiap bait, mengetahui hukum-hukum tajwid yang dijelaskan dalam matan, dan menerapkannya dalam membaca Al-Qur\'an.',
+                'ar' => 'المدة: 12 أسبوعاً. مدة اللقاء: 60 دقيقة. الهدف العام: قدرة المشارك على حفظ متن تحفة الأطفال، وفهم معاني أبياته، ومعرفة أحكام التجويد الموضحة فيه، وتطبيقها في قراءة القرآن الكريم.',
+                'en' => 'Duration: 12 weeks. Meeting duration: 60 minutes. General objective: Participants are able to memorize the text of Tuhfatul Athfal, understand the meaning of each stanza, know the tajweed rules explained in the text, and apply them in reading the Al-Quran.',
+            ],
+            'details_json' => [
+                'id' => [
+                    'Hafalan matan',
+                    'Penjelasan bait',
+                    'Praktik tajwid',
+                    'Sertifikat setelah selesai program',
+                ],
+                'ar' => [
+                    'حفظ متن تحفة الأطفال',
+                    'شرح أبيات المنظومة',
+                    'تطبيق التجويد العملي',
+                    'شهادة عند إتمام البرنامج',
+                ],
+                'en' => [
+                    'Memorize the Matn',
+                    'Detailed stanza explanation',
+                    'Practical tajweed application',
+                    'Certificate upon completion',
+                ],
+            ],
+            'type' => 'both',
+            'prices_json' => [
+                'private' => [
+                    'id' => ['monthly' => 700000, 'program' => 2100000],
+                    'my' => ['monthly' => 210, 'program' => 630],
+                    'sg' => ['monthly' => 65, 'program' => 195],
+                ],
+                'group' => [
+                    'id' => ['monthly' => 900000, 'program' => 2500000],
+                    'my' => ['monthly' => 270, 'program' => 750],
+                    'sg' => ['monthly' => 80, 'program' => 225],
+                ],
+            ],
+        ];
+
         if ($tuhfatulAthfal) {
-            $tuhfatulAthfal->update([
-                'name' => [
-                    'id' => 'Tuhfatul Athfal Privat',
-                    'ar' => 'برنامج تحفة الأطفال الخاص',
-                    'en' => 'Tuhfatul Athfal Private',
-                ],
-                'description' => [
-                    'id' => 'Durasi: 12 minggu. Durasi per pertemuan: 60 menit. Tujuan umum: Peserta mampu menghafal matan Tuhfatul Athfal, memahami makna setiap bait, mengetahui hukum-hukum tajwid yang dijelaskan dalam matan, dan menerapkannya dalam membaca Al-Qur\'an.',
-                    'ar' => 'المدة: 12 أسبوعاً. مدة اللقاء: 60 دقيقة. الهدف العام: قدرة المشارك على حفظ متن تحفة الأطفال، وفهم معاني أبياته، ومعرفة أحكام التجويد الموضحة فيه، وتطبيقها في قراءة القرآن الكريم.',
-                    'en' => 'Duration: 12 weeks. Meeting duration: 60 minutes. General objective: Participants are able to memorize the text of Tuhfatul Athfal, understand the meaning of each stanza, know the tajweed rules explained in the text, and apply them in reading the Al-Quran.',
-                ],
-                'details_json' => [
-                    'id' => [
-                        'Hafalan matan',
-                        'Penjelasan bait',
-                        'Praktik tajwid',
-                        'Sertifikat setelah selesai program',
-                    ],
-                    'ar' => [
-                        'حفظ متن تحفة الأطفال',
-                        'شرح أبيات المنظومة',
-                        'تطبيق التجويد العملي',
-                        'شهادة عند إتمام البرنامج',
-                    ],
-                    'en' => [
-                        'Memorize the Matn',
-                        'Detailed stanza explanation',
-                        'Practical tajweed application',
-                        'Certificate upon completion',
-                    ],
-                ],
-            ]);
+            $tuhfatulAthfal->update($tuhfatulAthfalData);
         } else {
-            $tuhfatulAthfal = Program::create([
-                'name' => [
-                    'id' => 'Tuhfatul Athfal Privat',
-                    'ar' => 'برنامج تحفة الأطفال الخاص',
-                    'en' => 'Tuhfatul Athfal Private',
-                ],
-                'description' => [
-                    'id' => 'Durasi: 12 minggu. Durasi per pertemuan: 60 menit. Tujuan umum: Peserta mampu menghafal matan Tuhfatul Athfal, memahami makna setiap bait, mengetahui hukum-hukum tajwid yang dijelaskan dalam matan, dan menerapkannya dalam membaca Al-Qur\'an.',
-                    'ar' => 'المدة: 12 أسبوعاً. مدة اللقاء: 60 دقيقة. الهدف العام: قدرة المشارك على حفظ متن تحفة الأطفال، وفهم معاني أبياته، ومعرفة أحكام التجويد الموضحة فيه، وتطبيقها في قراءة القرآن الكريم.',
-                    'en' => 'Duration: 12 weeks. Meeting duration: 60 minutes. General objective: Participants are able to memorize the text of Tuhfatul Athfal, understand the meaning of each stanza, know the tajweed rules explained in the text, and apply them in reading the Al-Quran.',
-                ],
-                'details_json' => [
-                    'id' => [
-                        'Hafalan matan',
-                        'Penjelasan bait',
-                        'Praktik tajwid',
-                        'Sertifikat setelah selesai program',
-                    ],
-                    'ar' => [
-                        'حفظ متن تحفة الأطفال',
-                        'شرح أبيات المنظومة',
-                        'تطبيق التجويد العملي',
-                        'شهادة عند إتمام البرنامج',
-                    ],
-                    'en' => [
-                        'Memorize the Matn',
-                        'Detailed stanza explanation',
-                        'Practical tajweed application',
-                        'Certificate upon completion',
-                    ],
-                ],
-            ]);
+            $tuhfatulAthfal = Program::create($tuhfatulAthfalData);
         }
 
         // 2. Seed Admin User
