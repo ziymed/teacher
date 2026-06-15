@@ -4,12 +4,19 @@ import { useTranslation } from '@/hooks/use-translation';
 import { home } from '@/routes';
 import type { AuthLayoutProps } from '@/types';
 
+import { useEffect } from 'react';
+
 export default function AuthSimpleLayout({
     children,
     title,
     description,
 }: AuthLayoutProps) {
-    const { t } = useTranslation();
+    const { t, locale, direction } = useTranslation();
+
+    useEffect(() => {
+        document.documentElement.dir = direction;
+        document.documentElement.lang = locale;
+    }, [locale, direction]);
 
     return (
         <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">

@@ -189,6 +189,7 @@
     html[lang='ar'] {
         --font-sans: var(--font-serif-ar) !important;
         --font-serif: var(--font-serif-ar) !important;
+        direction: rtl;
     }
 
     html[lang='ar'],
