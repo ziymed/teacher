@@ -186,17 +186,18 @@
     }
 
     /* Arabic typography rules */
+    html[lang='ar'] {
+        --font-sans: var(--font-serif-ar) !important;
+        --font-serif: var(--font-serif-ar) !important;
+    }
+
     html[lang='ar'],
     html[lang='ar'] body,
     html[lang='ar'] input,
     html[lang='ar'] button,
     html[lang='ar'] textarea,
     html[lang='ar'] select {
-        font-family: var(--font-serif-ar);
-    }
-
-    html[lang='ar'] .font-serif {
-        font-family: var(--font-serif-ar);
+        font-family: var(--font-serif-ar) !important;
     }
 
     /* Disable letter-spacing for Arabic script to prevent disjointed character rendering */
