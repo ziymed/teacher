@@ -588,7 +588,7 @@ export default function StudentDashboard({
                                                                                         variant="outline"
                                                                                         className="rounded-full border-arabic-cream/60 text-[8px] font-bold text-arabic-bronze/60 bg-arabic-cream/10 px-1.5 py-0"
                                                                                     >
-                                                                                        {spec}
+                                                                                        {t(spec)}
                                                                                     </Badge>
                                                                                 ))}
                                                                             </div>

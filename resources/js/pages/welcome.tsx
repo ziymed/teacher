@@ -184,12 +184,17 @@ export default function Welcome({
             const typeText = classType === 'private' ? t('Private') : t('Group');
 
             const text = encodeURIComponent(
-                `Assalamualaikum Admin, saya ingin membeli ${title} (${typeText} - ${cycleText}) seharga ${price} di tahseen.live. Mohon info cara pembayarannya.`
+                t('whatsapp_buy_message', {
+                    title,
+                    type: typeText,
+                    cycle: cycleText,
+                    price,
+                })
             );
             return `https://wa.me/6596506229?text=${text}`;
         }
         return `https://wa.me/6596506229?text=${encodeURIComponent(
-            'Assalamualaikum Admin, saya ingin bertanya tentang program belajar Al-Quran di tahseen.live'
+            t('whatsapp_ask_message')
         )}`;
     };
 
@@ -1250,7 +1255,7 @@ export default function Welcome({
                                                         variant="secondary"
                                                         className="bg-arabic-bronze text-[10px] text-arabic-sand"
                                                     >
-                                                        {slotsCount} slots
+                                                        {slotsCount} {t('slots')}
                                                     </Badge>
                                                 </button>
                                             );
@@ -1328,7 +1333,7 @@ export default function Welcome({
                                                                                         variant="outline"
                                                                                         className="rounded-full border-arabic-cream/60 text-[8px] font-bold text-arabic-bronze/60 bg-arabic-cream/20"
                                                                                     >
-                                                                                        {spec}
+                                                                                        {t(spec)}
                                                                                     </Badge>
                                                                                 ))}
                                                                             </div>
