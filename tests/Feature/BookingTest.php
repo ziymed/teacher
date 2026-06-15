@@ -150,3 +150,85 @@ test('booking falls back to available link if chosen link is missing', function 
     $this->assertEquals('zoom', $booking->video_platform);
     $this->assertEquals('https://zoom.us/j/only-zoom-link', $booking->video_url);
 });
+
+test('past bookings are automatically cancelled when slot end time is missed', function () {
+    // Create a slot in the past
+    $pastSlot = Slot::create([
+        'teacher_id' => $this->teacher->id,
+        'start_time' => Carbon::now()->subHours(2),
+        'end_time' => Carbon::now()->subHour(),
+        'is_booked' => true,
+    ]);
+
+    // Create a confirmed booking for the past slot
+    $booking = Booking::create([
+        'student_id' => $this->student->id,
+        'slot_id' => $pastSlot->id,
+        'program_id' => $this->program->id,
+        'status' => 'confirmed',
+    ]);
+
+    // Call cancelMissed
+    $cancelledCount = Booking::cancelMissed();
+    expect($cancelledCount)->toBe(1);
+
+    // Verify booking status is now cancelled in the database
+    $booking->refresh();
+    expect($booking->status)->toBe('cancelled');
+
+    // Verify slot is now unbooked
+    $pastSlot->refresh();
+    expect($pastSlot->is_booked)->toBeFalse();
+});
+
+test('visiting dashboard triggers cancellation of missed bookings', function () {
+    // Create a slot in the past
+    $pastSlot = Slot::create([
+        'teacher_id' => $this->teacher->id,
+        'start_time' => Carbon::now()->subHours(2),
+        'end_time' => Carbon::now()->subHour(),
+        'is_booked' => true,
+    ]);
+
+    $booking = Booking::create([
+        'student_id' => $this->student->id,
+        'slot_id' => $pastSlot->id,
+        'program_id' => $this->program->id,
+        'status' => 'confirmed',
+    ]);
+
+    // Visit dashboard as student
+    $this->actingAs($this->student);
+    $response = $this->get(route('student.dashboard'));
+    $response->assertOk();
+
+    // Verify booking is cancelled automatically
+    $booking->refresh();
+    expect($booking->status)->toBe('cancelled');
+});
+
+test('bookings:cancel-missed console command cancels past bookings', function () {
+    // Create a slot in the past
+    $pastSlot = Slot::create([
+        'teacher_id' => $this->teacher->id,
+        'start_time' => Carbon::now()->subHours(2),
+        'end_time' => Carbon::now()->subHour(),
+        'is_booked' => true,
+    ]);
+
+    $booking = Booking::create([
+        'student_id' => $this->student->id,
+        'slot_id' => $pastSlot->id,
+        'program_id' => $this->program->id,
+        'status' => 'confirmed',
+    ]);
+
+    // Call the console command
+    $this->artisan('bookings:cancel-missed')
+        ->expectsOutput('Alhamdulillah! 1 missed bookings have been successfully cancelled.')
+        ->assertExitCode(0);
+
+    // Verify booking is cancelled
+    $booking->refresh();
+    expect($booking->status)->toBe('cancelled');
+});

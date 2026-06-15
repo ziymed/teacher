@@ -170,13 +170,15 @@ export default function StudentDashboard({
 
     const availableDates = Array.from(
         new Set(
-            availableSlots.map((slot) => getSlotDateString(slot.start_time)),
+            availableSlots
+                .filter((slot) => new Date(slot.start_time).getTime() > Date.now())
+                .map((slot) => getSlotDateString(slot.start_time)),
         ),
     ).sort();
 
     const getSlotsForDate = (dateStr: string) => {
         return availableSlots.filter(
-            (slot) => getSlotDateString(slot.start_time) === dateStr,
+            (slot) => getSlotDateString(slot.start_time) === dateStr && new Date(slot.start_time).getTime() > Date.now(),
         );
     };
 

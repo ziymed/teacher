@@ -123,7 +123,7 @@ export default function Welcome({
     ) => {
         const prices = program.prices_json;
         let amount = 0;
-        
+
         if (prices?.[type]?.[countryCode]?.[cycle] !== undefined) {
             amount = Number(prices[type][countryCode][cycle]);
         } else {
@@ -181,13 +181,13 @@ export default function Welcome({
             const price = getProgramPrice(selectedProg, classType, country, billingCycle);
             const cycleText = billingCycle === 'monthly' ? t('Bulanan') : t('Paket Program');
             const typeText = classType === 'private' ? t('Private') : t('Group');
-            
+
             const text = encodeURIComponent(
                 `Assalamualaikum Admin, saya ingin membeli ${title} (${typeText} - ${cycleText}) seharga ${price} di tahseen.live. Mohon info cara pembayarannya.`
             );
-            return `https://wa.me/6282251985570?text=${text}`;
+            return `https://wa.me/6596506229?text=${text}`;
         }
-        return `https://wa.me/6282251985570?text=${encodeURIComponent(
+        return `https://wa.me/6596506229?text=${encodeURIComponent(
             'Assalamualaikum Admin, saya ingin bertanya tentang program belajar Al-Quran di tahseen.live'
         )}`;
     };
@@ -210,13 +210,15 @@ export default function Welcome({
 
     const availableDates = Array.from(
         new Set(
-            availableSlots.map((slot) => getSlotDateString(slot.start_time)),
+            availableSlots
+                .filter((slot) => new Date(slot.start_time).getTime() > Date.now())
+                .map((slot) => getSlotDateString(slot.start_time)),
         ),
     ).sort();
 
     const getSlotsForDate = (dateStr: string) => {
         return availableSlots.filter(
-            (slot) => getSlotDateString(slot.start_time) === dateStr,
+            (slot) => getSlotDateString(slot.start_time) === dateStr && new Date(slot.start_time).getTime() > Date.now(),
         );
     };
 
@@ -307,7 +309,7 @@ export default function Welcome({
             {/* Flyer Theme Visual Wrapper */}
             <div className="relative min-h-screen overflow-x-hidden font-sans text-arabic-bronze antialiased selection:bg-arabic-gold/30 selection:text-arabic-bronze">
                 {/* Subtle Islamic Geometric Pattern Background Overlay */}
-                <div 
+                <div
                     className="pointer-events-none fixed inset-0 -z-10 opacity-30 mix-blend-multiply"
                     style={{
                         backgroundImage: `url('/images/bg-pattern.png')`,
@@ -513,11 +515,10 @@ export default function Welcome({
                                         setCountry('id');
                                         setSelectedProgramId(null);
                                     }}
-                                    className={`flex items-center gap-2 rounded-full px-4 py-2 text-xs font-black transition-all duration-300 cursor-pointer ${
-                                        country === 'id'
-                                            ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
-                                            : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
-                                    }`}
+                                    className={`flex items-center gap-2 rounded-full px-4 py-2 text-xs font-black transition-all duration-300 cursor-pointer ${country === 'id'
+                                        ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
+                                        : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
+                                        }`}
                                 >
                                     <img src="/images/flags/id.svg" alt="ID flag" className="h-3.5 w-5 rounded-sm object-cover shadow-sm" />
                                     <span className="font-bold">{t('Indonesia')}</span>
@@ -528,11 +529,10 @@ export default function Welcome({
                                         setCountry('my');
                                         setSelectedProgramId(null);
                                     }}
-                                    className={`flex items-center gap-2 rounded-full px-4 py-2 text-xs font-black transition-all duration-300 cursor-pointer ${
-                                        country === 'my'
-                                            ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
-                                            : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
-                                    }`}
+                                    className={`flex items-center gap-2 rounded-full px-4 py-2 text-xs font-black transition-all duration-300 cursor-pointer ${country === 'my'
+                                        ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
+                                        : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
+                                        }`}
                                 >
                                     <img src="/images/flags/my.svg" alt="MY flag" className="h-3.5 w-5 rounded-sm object-cover shadow-sm" />
                                     <span className="font-bold">{t('Malaysia')}</span>
@@ -543,11 +543,10 @@ export default function Welcome({
                                         setCountry('sg');
                                         setSelectedProgramId(null);
                                     }}
-                                    className={`flex items-center gap-2 rounded-full px-4 py-2 text-xs font-black transition-all duration-300 cursor-pointer ${
-                                        country === 'sg'
-                                            ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
-                                            : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
-                                    }`}
+                                    className={`flex items-center gap-2 rounded-full px-4 py-2 text-xs font-black transition-all duration-300 cursor-pointer ${country === 'sg'
+                                        ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
+                                        : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
+                                        }`}
                                 >
                                     <img src="/images/flags/sg.svg" alt="SG flag" className="h-3.5 w-5 rounded-sm object-cover shadow-sm" />
                                     <span className="font-bold">{t('Singapore')}</span>
@@ -562,11 +561,10 @@ export default function Welcome({
                                         setBillingCycle('monthly');
                                         setSelectedProgramId(null);
                                     }}
-                                    className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-black transition-all duration-300 cursor-pointer ${
-                                        billingCycle === 'monthly'
-                                            ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
-                                            : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
-                                    }`}
+                                    className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-black transition-all duration-300 cursor-pointer ${billingCycle === 'monthly'
+                                        ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
+                                        : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
+                                        }`}
                                 >
                                     {t('Bulanan')}
                                 </button>
@@ -576,11 +574,10 @@ export default function Welcome({
                                         setBillingCycle('program');
                                         setSelectedProgramId(null);
                                     }}
-                                    className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-black transition-all duration-300 cursor-pointer ${
-                                        billingCycle === 'program'
-                                            ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
-                                            : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
-                                    }`}
+                                    className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-black transition-all duration-300 cursor-pointer ${billingCycle === 'program'
+                                        ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
+                                        : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
+                                        }`}
                                 >
                                     {t('Paket Program')}
                                 </button>
@@ -594,11 +591,10 @@ export default function Welcome({
                                         setClassType('private');
                                         setSelectedProgramId(null);
                                     }}
-                                    className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-black transition-all duration-300 cursor-pointer ${
-                                        classType === 'private'
-                                            ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
-                                            : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
-                                    }`}
+                                    className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-black transition-all duration-300 cursor-pointer ${classType === 'private'
+                                        ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
+                                        : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
+                                        }`}
                                 >
                                     {t('Private')}
                                 </button>
@@ -608,11 +604,10 @@ export default function Welcome({
                                         setClassType('group');
                                         setSelectedProgramId(null);
                                     }}
-                                    className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-black transition-all duration-300 cursor-pointer ${
-                                        classType === 'group'
-                                            ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
-                                            : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
-                                    }`}
+                                    className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-black transition-all duration-300 cursor-pointer ${classType === 'group'
+                                        ? 'bg-gradient-to-r from-arabic-bronze to-[#2A4843] text-arabic-sand shadow-[0_4px_15px_rgba(30,56,51,0.2)] scale-[1.02]'
+                                        : 'text-arabic-bronze/75 hover:text-arabic-bronze hover:bg-arabic-cream/55'
+                                        }`}
                                 >
                                     {t('Group')}
                                 </button>
@@ -846,7 +841,7 @@ export default function Welcome({
                                                     </span>
                                                 </div>
                                             </div>
-                                            
+
                                             <ul className="w-full space-y-3.5 ps-2 text-start text-xs font-semibold text-arabic-bronze/85">
                                                 {details.map((detail, idx) => (
                                                     <li
@@ -868,11 +863,10 @@ export default function Welcome({
                                                         document.getElementById('booking-calendar')?.scrollIntoView({ behavior: 'smooth' });
                                                         toast.success(t('Program selected! Please choose a learning date and time slot below to complete your booking.'));
                                                     }}
-                                                    className={`w-full rounded-full py-4 text-[10px] font-black tracking-widest uppercase transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md ${
-                                                        selectedProgramId === program.id
-                                                            ? 'bg-arabic-gold text-arabic-sand border border-arabic-gold hover:bg-arabic-gold/90'
-                                                            : 'bg-transparent text-arabic-bronze border border-arabic-bronze/35 hover:bg-arabic-cream/45 hover:border-arabic-bronze'
-                                                    }`}
+                                                    className={`w-full rounded-full py-4 text-[10px] font-black tracking-widest uppercase transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md ${selectedProgramId === program.id
+                                                        ? 'bg-arabic-gold text-arabic-sand border border-arabic-gold hover:bg-arabic-gold/90'
+                                                        : 'bg-transparent text-arabic-bronze border border-arabic-bronze/35 hover:bg-arabic-cream/45 hover:border-arabic-bronze'
+                                                        }`}
                                                 >
                                                     {selectedProgramId === program.id ? t('Selected') : t('Buy / Book Program')}
                                                 </Button>
@@ -1007,7 +1001,7 @@ export default function Welcome({
 
                                     <div className="flex gap-4.5 items-start rounded-[1.8rem] bg-arabic-sand p-5 border border-arabic-cream shadow-sm hover:border-arabic-gold/30 hover:shadow-md transition-all duration-300">
                                         <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-arabic-bronze/10 text-arabic-bronze font-black text-sm flex-shrink-0 border border-arabic-bronze/10">
-                                             BANK
+                                            BANK
                                         </div>
                                         <div className="space-y-2.5 w-full">
                                             <span className="block text-xs font-black text-arabic-bronze">{t('FPX / Bank Transfer')}</span>
@@ -1228,11 +1222,10 @@ export default function Welcome({
                                                             dateStr,
                                                         )
                                                     }
-                                                    className={`flex w-full items-center justify-between rounded-2xl border p-4 text-start text-xs font-bold transition ${
-                                                        isSelected
-                                                            ? 'scale-[1.01] border-arabic-gold bg-arabic-gold/10 text-arabic-bronze'
-                                                            : 'border-arabic-cream bg-arabic-sand text-arabic-bronze hover:border-arabic-gold hover:bg-arabic-cream'
-                                                    }`}
+                                                    className={`flex w-full items-center justify-between rounded-2xl border p-4 text-start text-xs font-bold transition ${isSelected
+                                                        ? 'scale-[1.01] border-arabic-gold bg-arabic-gold/10 text-arabic-bronze'
+                                                        : 'border-arabic-cream bg-arabic-sand text-arabic-bronze hover:border-arabic-gold hover:bg-arabic-cream'
+                                                        }`}
                                                 >
                                                     <span>{formattedDate}</span>
                                                     <Badge
@@ -1280,8 +1273,8 @@ export default function Welcome({
                                                     locale === 'id'
                                                         ? 'id-ID'
                                                         : locale === 'ar'
-                                                          ? 'ar-EG'
-                                                          : 'en-US',
+                                                            ? 'ar-EG'
+                                                            : 'en-US',
                                                     {
                                                         month: 'long',
                                                         day: 'numeric',
@@ -1313,11 +1306,10 @@ export default function Welcome({
                                                                     slot,
                                                                 )
                                                             }
-                                                            className={`rounded-xl border p-3.5 text-center text-xs font-black transition ${
-                                                                isSelected
-                                                                    ? 'border-arabic-bronze bg-arabic-bronze text-arabic-sand'
-                                                                    : 'border-arabic-cream bg-arabic-sand text-arabic-bronze hover:border-arabic-gold'
-                                                            }`}
+                                                            className={`rounded-xl border p-3.5 text-center text-xs font-black transition ${isSelected
+                                                                ? 'border-arabic-bronze bg-arabic-bronze text-arabic-sand'
+                                                                : 'border-arabic-cream bg-arabic-sand text-arabic-bronze hover:border-arabic-gold'
+                                                                }`}
                                                         >
                                                             {t(':time with :teacher', { time: startStr, teacher: slot.teacher?.name || '' })}
                                                         </button>
@@ -1348,12 +1340,11 @@ export default function Welcome({
                                                                                 prog.id,
                                                                             )
                                                                         }
-                                                                        className={`rounded-lg border p-2.5 text-center text-[10px] font-bold transition ${
-                                                                            selectedProgramId ===
+                                                                        className={`rounded-lg border p-2.5 text-center text-[10px] font-bold transition ${selectedProgramId ===
                                                                             prog.id
-                                                                                ? 'border-arabic-gold bg-arabic-gold/10 font-black text-arabic-bronze'
-                                                                                : 'border-arabic-cream bg-arabic-sand text-arabic-bronze hover:bg-arabic-cream'
-                                                                        }`}
+                                                                            ? 'border-arabic-gold bg-arabic-gold/10 font-black text-arabic-bronze'
+                                                                            : 'border-arabic-cream bg-arabic-sand text-arabic-bronze hover:bg-arabic-cream'
+                                                                            }`}
                                                                     >
                                                                         {getProgramTitle(getProgramKey(getTranslation(prog.name, 'en')), classType)
                                                                             .replace(' Privat', '')
@@ -1362,7 +1353,7 @@ export default function Welcome({
                                                                             .replace('Program ', '')}
                                                                     </button>
                                                                 ),
-                                                            )}
+                                                                )}
                                                         </div>
                                                     </div>
 
@@ -1382,23 +1373,22 @@ export default function Welcome({
                                                                     .teacher
                                                                     ?.teacher_profile
                                                                     ?.google_meet_link) && (
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() =>
-                                                                        setSelectedPlatform(
-                                                                            'google_meet',
-                                                                        )
-                                                                    }
-                                                                    className={`flex-1 cursor-pointer rounded-xl border p-2.5 text-center text-xs font-bold transition ${
-                                                                        selectedPlatform ===
-                                                                        'google_meet'
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                            setSelectedPlatform(
+                                                                                'google_meet',
+                                                                            )
+                                                                        }
+                                                                        className={`flex-1 cursor-pointer rounded-xl border p-2.5 text-center text-xs font-bold transition ${selectedPlatform ===
+                                                                            'google_meet'
                                                                             ? 'border-arabic-gold bg-arabic-gold/10 font-black text-arabic-bronze shadow-sm'
                                                                             : 'border-arabic-cream bg-arabic-sand text-arabic-bronze hover:bg-arabic-cream'
-                                                                    }`}
-                                                                >
-                                                                    {t('Google Meet')}
-                                                                </button>
-                                                            )}
+                                                                            }`}
+                                                                    >
+                                                                        {t('Google Meet')}
+                                                                    </button>
+                                                                )}
                                                             {(!selectedSlot
                                                                 .teacher
                                                                 ?.teacher_profile
@@ -1407,23 +1397,22 @@ export default function Welcome({
                                                                     .teacher
                                                                     ?.teacher_profile
                                                                     ?.zoom_link) && (
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() =>
-                                                                        setSelectedPlatform(
-                                                                            'zoom',
-                                                                        )
-                                                                    }
-                                                                    className={`flex-1 cursor-pointer rounded-xl border p-2.5 text-center text-xs font-bold transition ${
-                                                                        selectedPlatform ===
-                                                                        'zoom'
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                            setSelectedPlatform(
+                                                                                'zoom',
+                                                                            )
+                                                                        }
+                                                                        className={`flex-1 cursor-pointer rounded-xl border p-2.5 text-center text-xs font-bold transition ${selectedPlatform ===
+                                                                            'zoom'
                                                                             ? 'border-arabic-gold bg-arabic-gold/10 font-black text-arabic-bronze shadow-sm'
                                                                             : 'border-arabic-cream bg-arabic-sand text-arabic-bronze hover:bg-arabic-cream'
-                                                                    }`}
-                                                                >
-                                                                    {t('Zoom')}
-                                                                </button>
-                                                            )}
+                                                                            }`}
+                                                                    >
+                                                                        {t('Zoom')}
+                                                                    </button>
+                                                                )}
                                                         </div>
                                                     </div>
 
@@ -1497,7 +1486,7 @@ export default function Welcome({
                                             <div className="flex flex-col items-center justify-between gap-6 rounded-[2rem] border border-arabic-gold/30 bg-gradient-to-br from-arabic-cream/60 to-arabic-sand/80 p-6 text-center sm:text-start shadow-md relative overflow-hidden">
                                                 {/* Decorative background glow */}
                                                 <div className="absolute -right-6 -bottom-6 -z-10 h-24 w-24 rounded-full bg-arabic-gold/15 blur-2xl" />
-                                                
+
                                                 <div className="space-y-1.5 max-w-md">
                                                     <span className="inline-flex items-center gap-1 rounded-full bg-arabic-gold/15 border border-arabic-gold/30 px-2.5 py-0.5 text-[9px] font-black tracking-wider text-arabic-gold uppercase">
                                                         ✦ {t('Special Offer')} ✦

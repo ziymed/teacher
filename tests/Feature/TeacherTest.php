@@ -427,3 +427,243 @@ test('teacher batch generate skips overlapping slots and past slots', function (
 
     Carbon::setTestNow();
 });
+
+test('teacher can update their own profile details and meeting rooms', function () {
+    $teacher = User::create([
+        'name' => 'Ustaz Ali',
+        'email' => 'ali@example.com',
+        'password' => bcrypt('password'),
+        'role' => 'teacher',
+    ]);
+
+    $profile = TeacherProfile::create([
+        'user_id' => $teacher->id,
+        'bio' => [
+            'id' => 'Old bio text long enough',
+            'ar' => 'السيرة القديمة الطويلة',
+            'en' => 'Old bio text long enough',
+        ],
+        'whatsapp_number' => '+212612345678',
+        'zoom_link' => 'https://zoom.us/old',
+        'google_meet_link' => 'https://meet.google.com/old',
+    ]);
+
+    $response = $this->actingAs($teacher)
+        ->put(route('teacher.profile.update'), [
+            'bio' => [
+                'id' => 'Biography in ID (Indonesian) which is long enough to pass validation',
+                'ar' => 'السيرة الذاتية الجديدة باللغة العربية وهي طويلة بما يكفي',
+                'en' => 'Biography in EN (English) which is long enough to pass validation',
+            ],
+            'whatsapp_number' => '+212699999999',
+            'zoom_link' => 'https://zoom.us/new-room',
+            'google_meet_link' => 'https://meet.google.com/new-room',
+            'specializations_json' => 'Quran, Tajweed',
+        ]);
+
+    $response->assertRedirect();
+    $response->assertSessionHasNoErrors();
+
+    $profile->refresh();
+    expect($profile->zoom_link)->toBe('https://zoom.us/new-room');
+    expect($profile->google_meet_link)->toBe('https://meet.google.com/new-room');
+    expect($profile->whatsapp_number)->toBe('+212699999999');
+    expect($profile->bio['en'])->toBe('Biography in EN (English) which is long enough to pass validation');
+    expect($profile->specializations_json)->toBe(['Quran', 'Tajweed']);
+});
+
+test('non-teacher cannot update teacher profile details', function () {
+    $student = User::create([
+        'name' => 'Ahmad Student',
+        'email' => 'ahmad@example.com',
+        'password' => bcrypt('password'),
+        'role' => 'student',
+    ]);
+
+    $response = $this->actingAs($student)
+        ->put(route('teacher.profile.update'), [
+            'bio' => [
+                'id' => 'Bio ID which is long enough',
+                'ar' => 'Bio AR which is long enough',
+                'en' => 'Bio EN which is long enough',
+            ],
+            'whatsapp_number' => '+212699999999',
+        ]);
+
+    $response->assertStatus(403);
+});
+
+test('teacher can cancel a booking assigned to them', function () {
+    $teacher = User::create([
+        'name' => 'Ustaz Ali',
+        'email' => 'ali@example.com',
+        'password' => bcrypt('password'),
+        'role' => 'teacher',
+    ]);
+
+    $student = User::create([
+        'name' => 'Ahmad Student',
+        'email' => 'ahmad@example.com',
+        'password' => bcrypt('password'),
+        'role' => 'student',
+    ]);
+
+    $slot = Slot::create([
+        'teacher_id' => $teacher->id,
+        'start_time' => now()->addDay(),
+        'end_time' => now()->addDay()->addHour(),
+        'is_booked' => true,
+    ]);
+
+    $program = Program::create([
+        'name' => 'Test Program',
+        'description' => 'Test description',
+        'details_json' => [],
+    ]);
+
+    $booking = Booking::create([
+        'student_id' => $student->id,
+        'slot_id' => $slot->id,
+        'program_id' => $program->id,
+        'status' => 'confirmed',
+        'video_platform' => 'zoom',
+        'video_url' => 'https://zoom.us/class',
+    ]);
+
+    $response = $this->actingAs($teacher)
+        ->post(route('teacher.bookings.cancel', $booking));
+
+    $response->assertRedirect();
+    $response->assertSessionHasNoErrors();
+
+    $booking->refresh();
+    $slot->refresh();
+
+    expect($booking->status)->toBe('cancelled');
+    expect($slot->is_booked)->toBeFalse();
+});
+
+test('teacher can reschedule a booking to another of their available slots', function () {
+    $teacher = User::create([
+        'name' => 'Ustaz Ali',
+        'email' => 'ali@example.com',
+        'password' => bcrypt('password'),
+        'role' => 'teacher',
+    ]);
+
+    $student = User::create([
+        'name' => 'Ahmad Student',
+        'email' => 'ahmad@example.com',
+        'password' => bcrypt('password'),
+        'role' => 'student',
+    ]);
+
+    $oldSlot = Slot::create([
+        'teacher_id' => $teacher->id,
+        'start_time' => now()->addDay(),
+        'end_time' => now()->addDay()->addHour(),
+        'is_booked' => true,
+    ]);
+
+    $newSlot = Slot::create([
+        'teacher_id' => $teacher->id,
+        'start_time' => now()->addDays(2),
+        'end_time' => now()->addDays(2)->addHour(),
+        'is_booked' => false,
+    ]);
+
+    $program = Program::create([
+        'name' => 'Test Program',
+        'description' => 'Test description',
+        'details_json' => [],
+    ]);
+
+    $booking = Booking::create([
+        'student_id' => $student->id,
+        'slot_id' => $oldSlot->id,
+        'program_id' => $program->id,
+        'status' => 'confirmed',
+        'video_platform' => 'zoom',
+        'video_url' => 'https://zoom.us/class',
+    ]);
+
+    $response = $this->actingAs($teacher)
+        ->post(route('teacher.bookings.reschedule', $booking), [
+            'slot_id' => $newSlot->id,
+        ]);
+
+    $response->assertRedirect();
+    $response->assertSessionHasNoErrors();
+
+    $booking->refresh();
+    $oldSlot->refresh();
+    $newSlot->refresh();
+
+    expect($booking->slot_id)->toBe($newSlot->id);
+    expect($oldSlot->is_booked)->toBeFalse();
+    expect($newSlot->is_booked)->toBeTrue();
+});
+
+test('teacher cannot cancel or reschedule booking of other teachers', function () {
+    $teacher = User::create([
+        'name' => 'Ustaz Ali',
+        'email' => 'ali@example.com',
+        'password' => bcrypt('password'),
+        'role' => 'teacher',
+    ]);
+
+    $otherTeacher = User::create([
+        'name' => 'Ustaz Ahmad',
+        'email' => 'ahmad-teacher@example.com',
+        'password' => bcrypt('password'),
+        'role' => 'teacher',
+    ]);
+
+    $student = User::create([
+        'name' => 'Ahmad Student',
+        'email' => 'ahmad@example.com',
+        'password' => bcrypt('password'),
+        'role' => 'student',
+    ]);
+
+    $slot = Slot::create([
+        'teacher_id' => $otherTeacher->id,
+        'start_time' => now()->addDay(),
+        'end_time' => now()->addDay()->addHour(),
+        'is_booked' => true,
+    ]);
+
+    $program = Program::create([
+        'name' => 'Test Program',
+        'description' => 'Test description',
+        'details_json' => [],
+    ]);
+
+    $booking = Booking::create([
+        'student_id' => $student->id,
+        'slot_id' => $slot->id,
+        'program_id' => $program->id,
+        'status' => 'confirmed',
+        'video_platform' => 'zoom',
+        'video_url' => 'https://zoom.us/class',
+    ]);
+
+    // Try to cancel other teacher's booking
+    $responseCancel = $this->actingAs($teacher)
+        ->post(route('teacher.bookings.cancel', $booking));
+    $responseCancel->assertSessionHasErrors();
+
+    // Try to reschedule other teacher's booking
+    $newSlot = Slot::create([
+        'teacher_id' => $teacher->id,
+        'start_time' => now()->addDays(2),
+        'end_time' => now()->addDays(2)->addHour(),
+        'is_booked' => false,
+    ]);
+
+    $responseReschedule = $this->actingAs($teacher)
+        ->post(route('teacher.bookings.reschedule', $booking), [
+            'slot_id' => $newSlot->id,
+        ]);
+    $responseReschedule->assertSessionHasErrors();
+});

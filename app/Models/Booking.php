@@ -97,4 +97,25 @@ class Booking extends Model
     {
         return $this->belongsTo(Program::class);
     }
+
+    /**
+     * Automatically cancel all bookings where the slot's end time is in the past
+     * and the status is still confirmed or pending.
+     */
+    public static function cancelMissed(): int
+    {
+        $missedBookings = self::whereIn('status', ['confirmed', 'pending'])
+            ->whereHas('slot', function ($query) {
+                $query->where('end_time', '<', now());
+            })
+            ->get();
+
+        $count = 0;
+        foreach ($missedBookings as $booking) {
+            $booking->update(['status' => 'cancelled']);
+            $count++;
+        }
+
+        return $count;
+    }
 }

@@ -17,6 +17,8 @@ class StudentDashboardController extends Controller
      */
     public function index(Request $request): Response
     {
+        Booking::cancelMissed();
+
         $user = $request->user();
 
         // Enforce student role

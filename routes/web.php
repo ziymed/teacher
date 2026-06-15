@@ -48,6 +48,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Teacher Dashboard & Actions
         Route::get('/teacher/dashboard', [TeacherDashboardController::class, 'index'])
             ->name('teacher.dashboard');
+        Route::put('/teacher/profile', [TeacherDashboardController::class, 'updateProfile'])
+            ->name('teacher.profile.update');
         Route::post('/teacher/slots', [TeacherDashboardController::class, 'storeSlot'])
             ->name('teacher.slots.store');
         Route::post('/teacher/slots/batch', [TeacherDashboardController::class, 'batchStoreSlots'])
@@ -58,6 +60,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('teacher.slots.update');
         Route::post('/teacher/bookings/{booking}/complete', [TeacherDashboardController::class, 'completeBooking'])
             ->name('teacher.bookings.complete');
+        Route::post('/teacher/bookings/{booking}/cancel', [TeacherDashboardController::class, 'cancelBooking'])
+            ->name('teacher.bookings.cancel');
+        Route::post('/teacher/bookings/{booking}/reschedule', [TeacherDashboardController::class, 'rescheduleBooking'])
+            ->name('teacher.bookings.reschedule');
 
         // Admin Dashboard & Actions
         Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])

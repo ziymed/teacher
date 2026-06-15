@@ -9,6 +9,7 @@ use App\Models\Slot;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -19,6 +20,8 @@ class TeacherDashboardController extends Controller
      */
     public function index(Request $request): Response
     {
+        Booking::cancelMissed();
+
         $user = $request->user();
 
         // Enforce teacher check
@@ -44,10 +47,13 @@ class TeacherDashboardController extends Controller
 
         $programs = Program::where('is_hidden', false)->get();
 
+        $user->load('teacherProfile');
+
         return Inertia::render('teacher/dashboard', [
             'slots' => $slots,
             'bookings' => $bookings,
             'programs' => $programs,
+            'teacherProfile' => $user->teacherProfile,
         ]);
     }
 
@@ -255,5 +261,116 @@ class TeacherDashboardController extends Controller
         }
 
         return back()->with('success', 'Class marked as completed! Feedback has been shared with the student.');
+    }
+
+    /**
+     * Update the teacher's profile details and meeting rooms.
+     */
+    public function updateProfile(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        if (! $user->isTeacher()) {
+            abort(403, 'Unauthorized profile access.');
+        }
+
+        $request->validate([
+            'bio' => ['required', 'array'],
+            'bio.id' => ['required', 'string', 'min:10', 'max:5000'],
+            'bio.ar' => ['required', 'string', 'min:10', 'max:5000'],
+            'bio.en' => ['required', 'string', 'min:10', 'max:5000'],
+            'whatsapp_number' => ['required', 'string', 'max:255'],
+            'zoom_link' => ['nullable', 'url', 'max:255'],
+            'google_meet_link' => ['nullable', 'url', 'max:255'],
+            'specializations_json' => ['nullable', 'string'],
+        ]);
+
+        $specializations = [];
+        if ($request->filled('specializations_json')) {
+            $specializations = array_filter(array_map('trim', explode(',', $request->specializations_json)));
+        }
+
+        $user->teacherProfile()->updateOrCreate(
+            ['user_id' => $user->id],
+            [
+                'bio' => $request->bio,
+                'whatsapp_number' => $request->whatsapp_number,
+                'zoom_link' => $request->zoom_link,
+                'google_meet_link' => $request->google_meet_link,
+                'specializations_json' => $specializations,
+            ]
+        );
+
+        return back()->with('success', 'Profile and meeting rooms updated successfully!');
+    }
+
+    /**
+     * Cancel a booked slot.
+     */
+    public function cancelBooking(Booking $booking, Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        if ($booking->slot->teacher_id !== $user->id) {
+            return back()->withErrors(['error' => 'You are not the assigned teacher for this session.']);
+        }
+
+        if ($booking->status === 'cancelled') {
+            return back()->withErrors(['error' => 'This session is already cancelled.']);
+        }
+
+        $booking->update([
+            'status' => 'cancelled',
+        ]);
+
+        return back()->with('success', 'Class session cancelled successfully.');
+    }
+
+    /**
+     * Reschedule a booking to another available slot.
+     */
+    public function rescheduleBooking(Booking $booking, Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        if ($booking->slot->teacher_id !== $user->id) {
+            return back()->withErrors(['error' => 'You are not the assigned teacher for this session.']);
+        }
+
+        if ($booking->status === 'cancelled') {
+            return back()->withErrors(['error' => 'Cannot reschedule a cancelled session.']);
+        }
+
+        $request->validate([
+            'slot_id' => ['required', 'integer', 'exists:slots,id'],
+        ]);
+
+        $newSlotId = (int) $request->slot_id;
+        $newSlot = Slot::findOrFail($newSlotId);
+
+        if ($newSlot->teacher_id !== $user->id) {
+            return back()->withErrors(['error' => 'The requested slot does not belong to you.']);
+        }
+
+        if ($newSlot->is_booked) {
+            return back()->withErrors(['error' => 'The requested slot is already booked.']);
+        }
+
+        if ($newSlot->start_time->isPast()) {
+            return back()->withErrors(['error' => 'Cannot reschedule to a slot in the past.']);
+        }
+
+        DB::transaction(function () use ($booking, $newSlot) {
+            $oldSlot = $booking->slot;
+
+            $oldSlot->update(['is_booked' => false]);
+            $newSlot->update(['is_booked' => true]);
+
+            $booking->update([
+                'slot_id' => $newSlot->id,
+            ]);
+        });
+
+        return back()->with('success', 'Class session rescheduled successfully.');
     }
 }

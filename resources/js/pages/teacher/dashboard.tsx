@@ -34,12 +34,13 @@ import AppLayout from '@/layouts/app-layout';
 import { getTranslation } from '@/lib/translation-utils';
 import { dashboard } from '@/routes';
 import { dashboard as teacherDashboard } from '@/routes/teacher';
-import { complete as completeBooking } from '@/routes/teacher/bookings';
+import { complete as completeBooking, cancel as cancelBookingRoute, reschedule as rescheduleBookingRoute } from '@/routes/teacher/bookings';
 import {
     store as storeSlot,
     destroy as destroySlot,
     batch as batchSlots,
 } from '@/routes/teacher/slots';
+import { update as updateProfile } from '@/routes/teacher/profile';
 
 interface Slot {
     id: number;
@@ -71,16 +72,32 @@ interface Booking {
     };
 }
 
+interface TeacherProfile {
+    id: number;
+    user_id: number;
+    bio: {
+        id: string;
+        ar: string;
+        en: string;
+    };
+    whatsapp_number: string;
+    zoom_link?: string;
+    google_meet_link?: string;
+    specializations_json?: string[] | string;
+}
+
 interface TeacherDashboardProps {
     slots: Slot[];
     bookings: Booking[];
     programs: any[];
+    teacherProfile?: TeacherProfile | null;
 }
 
 export default function TeacherDashboard({
     slots = [],
     bookings = [],
     programs = [],
+    teacherProfile = null,
 }: TeacherDashboardProps) {
     const { auth } = usePage<any>().props;
     const user = auth?.user;
@@ -89,8 +106,43 @@ export default function TeacherDashboard({
     const [selectedBooking, setSelectedBooking] = useState<Booking | null>(
         null,
     );
+    const [reschedulingBooking, setReschedulingBooking] = useState<Booking | null>(null);
     const [editingSlot, setEditingSlot] = useState<Slot | null>(null);
     const [activeTab, setActiveTab] = useState<'single' | 'batch'>('single');
+    const [bioLang, setBioLang] = useState<'id' | 'en' | 'ar'>('en');
+
+    const profileForm = useForm({
+        bio: {
+            id: teacherProfile?.bio?.id || '',
+            ar: teacherProfile?.bio?.ar || '',
+            en: teacherProfile?.bio?.en || '',
+        },
+        whatsapp_number: teacherProfile?.whatsapp_number || '',
+        zoom_link: teacherProfile?.zoom_link || '',
+        google_meet_link: teacherProfile?.google_meet_link || '',
+        specializations_json: Array.isArray(teacherProfile?.specializations_json)
+            ? teacherProfile.specializations_json.join(', ')
+            : typeof teacherProfile?.specializations_json === 'string'
+              ? teacherProfile.specializations_json
+              : '',
+    });
+
+    const handleUpdateProfile = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        profileForm.put(updateProfile().url, {
+            onSuccess: () => {
+                toast.success(
+                    t('Alhamdulillah! Profile and meeting links updated successfully!'),
+                );
+            },
+            onError: (err: any) => {
+                toast.error(
+                    err.error || t('Failed to update profile. Please verify your fields.'),
+                );
+            },
+        });
+    };
 
     const editSlotForm = useForm({
         start_time: '',
@@ -116,7 +168,7 @@ export default function TeacherDashboard({
     };
 
     const defaultLayout = {
-        left: ['create_slot', 'slots_list'],
+        left: ['profile_settings', 'create_slot', 'slots_list'],
         right: ['pending_feedback', 'upcoming_classes', 'completed_logs'],
     };
 
@@ -125,9 +177,13 @@ export default function TeacherDashboard({
             user?.dashboard_layout &&
             typeof user.dashboard_layout === 'object'
         ) {
-            const saved = user.dashboard_layout;
+            const saved = { ...user.dashboard_layout };
 
             if (Array.isArray(saved.left) && Array.isArray(saved.right)) {
+                const allItems = [...saved.left, ...saved.right];
+                if (!allItems.includes('profile_settings')) {
+                    saved.left = ['profile_settings', ...saved.left];
+                }
                 return saved;
             }
         }
@@ -367,6 +423,50 @@ export default function TeacherDashboard({
         });
     };
 
+    // Reschedule & Cancel Class Hooks and Handlers
+    const rescheduleForm = useForm({
+        slot_id: '',
+    });
+
+    const cancelForm = useForm({});
+
+    const handleRescheduleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!reschedulingBooking) {
+            return;
+        }
+
+        if (!rescheduleForm.data.slot_id) {
+            toast.error(t('Please select a new slot.'));
+            return;
+        }
+
+        rescheduleForm.post(rescheduleBookingRoute.url(reschedulingBooking.id), {
+            onSuccess: () => {
+                setReschedulingBooking(null);
+                rescheduleForm.reset();
+                toast.success(t('Alhamdulillah! Class session rescheduled successfully.'));
+            },
+            onError: (err: any) => {
+                toast.error(err.error || t('Failed to reschedule session.'));
+            },
+        });
+    };
+
+    const handleCancelBooking = (bookingId: number) => {
+        if (confirm(t('Are you sure you want to cancel this booking? This will free the slot.'))) {
+            cancelForm.post(cancelBookingRoute.url(bookingId), {
+                onSuccess: () => {
+                    toast.success(t('Class session cancelled successfully.'));
+                },
+                onError: (err: any) => {
+                    toast.error(err.error || t('Failed to cancel session.'));
+                },
+            });
+        }
+    };
+
     const breadcrumbs = [
         { title: t('Dashboard'), href: dashboard() },
         { title: t('Teacher Portal'), href: teacherDashboard() },
@@ -389,8 +489,183 @@ export default function TeacherDashboard({
     // Filter finished sessions
     const completedBookings = bookings.filter((b) => b.status === 'completed');
 
+    // Filter available slots for rescheduling
+    const availableSlotsForReschedule = slots.filter(
+        (s) => !s.is_booked && new Date(s.start_time) > new Date(),
+    );
+
     const renderSection = (id: string) => {
         switch (id) {
+            case 'profile_settings':
+                return (
+                    <div className="space-y-4">
+                        <div className="flex cursor-grab items-center justify-between active:cursor-grabbing">
+                            <h3 className="flex items-center gap-2 font-serif text-lg font-black text-arabic-bronze">
+                                <GripVertical className="h-4 w-4 shrink-0 text-arabic-gold/70" />
+                                <Video className="h-4.5 w-4.5 text-arabic-gold" />{' '}
+                                {t('Meeting Rooms & Profile')}
+                            </h3>
+                            <Badge className="bg-arabic-cream text-[9px] font-bold text-arabic-bronze">
+                                {t('Draggable')}
+                            </Badge>
+                        </div>
+                        <Card className="rounded-[1.5rem] border border-arabic-cream bg-arabic-sand shadow-sm">
+                            <CardHeader className="p-5 pb-2">
+                                <CardTitle className="flex items-center gap-1.5 text-sm font-black text-arabic-bronze">
+                                    <User className="h-4 w-4 text-arabic-gold" />{' '}
+                                    {t('Profile Settings')}
+                                </CardTitle>
+                                <CardDescription className="text-[11px] font-medium text-arabic-bronze/70">
+                                    {t('Set your personal meeting room links and update your professional biography.')}
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-5 pt-2">
+                                <form onSubmit={handleUpdateProfile} className="space-y-4">
+                                    <div className="space-y-1.5">
+                                        <label className="block text-[10px] font-bold text-arabic-bronze/60 uppercase">
+                                            {t('Zoom Meeting Link')}
+                                        </label>
+                                        <Input
+                                            type="url"
+                                            value={profileForm.data.zoom_link}
+                                            onChange={(e) => profileForm.setData('zoom_link', e.target.value)}
+                                            placeholder="https://zoom.us/j/your-meeting-id"
+                                            className="rounded-xl border-arabic-cream bg-arabic-sand text-xs placeholder:text-arabic-bronze/40 focus:border-arabic-gold focus-visible:ring-0"
+                                        />
+                                        {profileForm.errors.zoom_link && (
+                                            <p className="text-[10px] font-bold text-red-500">{profileForm.errors.zoom_link}</p>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <label className="block text-[10px] font-bold text-arabic-bronze/60 uppercase">
+                                            {t('Google Meet Link')}
+                                        </label>
+                                        <Input
+                                            type="url"
+                                            value={profileForm.data.google_meet_link}
+                                            onChange={(e) => profileForm.setData('google_meet_link', e.target.value)}
+                                            placeholder="https://meet.google.com/abc-defg-hij"
+                                            className="rounded-xl border-arabic-cream bg-arabic-sand text-xs placeholder:text-arabic-bronze/40 focus:border-arabic-gold focus-visible:ring-0"
+                                        />
+                                        {profileForm.errors.google_meet_link && (
+                                            <p className="text-[10px] font-bold text-red-500">{profileForm.errors.google_meet_link}</p>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <label className="block text-[10px] font-bold text-arabic-bronze/60 uppercase">
+                                            {t('WhatsApp Number')}
+                                        </label>
+                                        <Input
+                                            type="text"
+                                            value={profileForm.data.whatsapp_number}
+                                            onChange={(e) => profileForm.setData('whatsapp_number', e.target.value)}
+                                            placeholder="+628123456789 or +212..."
+                                            className="rounded-xl border-arabic-cream bg-arabic-sand text-xs placeholder:text-arabic-bronze/40 focus:border-arabic-gold focus-visible:ring-0"
+                                        />
+                                        {profileForm.errors.whatsapp_number && (
+                                            <p className="text-[10px] font-bold text-red-500">{profileForm.errors.whatsapp_number}</p>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <label className="block text-[10px] font-bold text-arabic-bronze/60 uppercase">
+                                            {t('Specializations (comma separated)')}
+                                        </label>
+                                        <Input
+                                            type="text"
+                                            value={profileForm.data.specializations_json}
+                                            onChange={(e) => profileForm.setData('specializations_json', e.target.value)}
+                                            placeholder="Tajweed, Tahseen, Talqin"
+                                            className="rounded-xl border-arabic-cream bg-arabic-sand text-xs placeholder:text-arabic-bronze/40 focus:border-arabic-gold focus-visible:ring-0"
+                                        />
+                                        {profileForm.errors.specializations_json && (
+                                            <p className="text-[10px] font-bold text-red-500">{profileForm.errors.specializations_json}</p>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <div className="flex items-center justify-between">
+                                            <label className="block text-[10px] font-bold text-arabic-bronze/60 uppercase">
+                                                {t('Biography')}
+                                            </label>
+                                            <div className="flex gap-1">
+                                                {(['en', 'id', 'ar'] as const).map((lang) => (
+                                                    <button
+                                                        key={lang}
+                                                        type="button"
+                                                        onClick={() => setBioLang(lang)}
+                                                        className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase transition ${
+                                                            bioLang === lang
+                                                                ? 'bg-arabic-gold text-arabic-bronze'
+                                                                : 'bg-arabic-cream/50 text-arabic-bronze/60 hover:bg-arabic-cream'
+                                                        }`}
+                                                    >
+                                                        {lang}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        {bioLang === 'en' && (
+                                            <Textarea
+                                                value={profileForm.data.bio.en}
+                                                onChange={(e) =>
+                                                    profileForm.setData('bio', {
+                                                        ...profileForm.data.bio,
+                                                        en: e.target.value,
+                                                    })
+                                                }
+                                                placeholder="Biography in English..."
+                                                className="min-h-[80px] rounded-xl border-arabic-cream bg-arabic-sand text-xs placeholder:text-arabic-bronze/40 focus:border-arabic-gold focus-visible:ring-0"
+                                            />
+                                        )}
+                                        {bioLang === 'id' && (
+                                            <Textarea
+                                                value={profileForm.data.bio.id}
+                                                onChange={(e) =>
+                                                    profileForm.setData('bio', {
+                                                        ...profileForm.data.bio,
+                                                        id: e.target.value,
+                                                    })
+                                                }
+                                                placeholder="Biography in Indonesian..."
+                                                className="min-h-[80px] rounded-xl border-arabic-cream bg-arabic-sand text-xs placeholder:text-arabic-bronze/40 focus:border-arabic-gold focus-visible:ring-0"
+                                            />
+                                        )}
+                                        {bioLang === 'ar' && (
+                                            <Textarea
+                                                value={profileForm.data.bio.ar}
+                                                onChange={(e) =>
+                                                    profileForm.setData('bio', {
+                                                        ...profileForm.data.bio,
+                                                        ar: e.target.value,
+                                                    })
+                                                }
+                                                dir="rtl"
+                                                placeholder="السيرة الذاتية باللغة العربية..."
+                                                className="min-h-[80px] rounded-xl border-arabic-cream bg-arabic-sand text-xs placeholder:text-arabic-bronze/40 focus:border-arabic-gold focus-visible:ring-0 font-serif"
+                                            />
+                                        )}
+                                        {(profileForm.errors['bio.id'] || profileForm.errors['bio.en'] || profileForm.errors['bio.ar']) && (
+                                            <p className="text-[10px] font-bold text-red-500">
+                                                {profileForm.errors['bio.id'] || profileForm.errors['bio.en'] || profileForm.errors['bio.ar'] || t('All biography translations are required.')}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <Button
+                                        type="submit"
+                                        disabled={profileForm.processing}
+                                        className="h-10 w-full rounded-xl bg-arabic-bronze text-xs font-bold text-arabic-sand shadow-sm hover:bg-arabic-bronze/90"
+                                    >
+                                        {profileForm.processing ? t('Saving...') : t('Save Changes')}
+                                    </Button>
+                                </form>
+                            </CardContent>
+                        </Card>
+                    </div>
+                );
             case 'create_slot':
                 return (
                     <div className="space-y-4">
@@ -931,7 +1206,7 @@ export default function TeacherDashboard({
                                                     </div>
                                                 )}
                                             </CardContent>
-                                            <CardFooter className="border-t border-arabic-cream/45 bg-arabic-cream/15 p-5 pt-2">
+                                            <CardFooter className="flex flex-col gap-2 border-t border-arabic-cream/45 bg-arabic-cream/15 p-5 pt-4">
                                                 <a
                                                     href={booking.video_url}
                                                     target="_blank"
@@ -943,6 +1218,29 @@ export default function TeacherDashboard({
                                                         {t('Open Meeting link')}
                                                     </Button>
                                                 </a>
+                                                <div className="flex w-full gap-2">
+                                                    <Button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setReschedulingBooking(booking);
+                                                            rescheduleForm.setData('slot_id', '');
+                                                        }}
+                                                        variant="outline"
+                                                        className="h-8 flex-1 rounded-lg border-arabic-bronze/25 text-[11px] font-bold text-arabic-bronze hover:bg-arabic-cream"
+                                                    >
+                                                        <RefreshCw className="mr-1 h-3 w-3 text-arabic-gold" />
+                                                        {t('Reschedule')}
+                                                    </Button>
+                                                    <Button
+                                                        type="button"
+                                                        onClick={() => handleCancelBooking(booking.id)}
+                                                        variant="outline"
+                                                        className="h-8 flex-1 rounded-lg border-rose-200 text-[11px] font-bold text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                                                    >
+                                                        <X className="mr-1 h-3 w-3 text-rose-500" />
+                                                        {t('Cancel Class')}
+                                                    </Button>
+                                                </div>
                                             </CardFooter>
                                         </Card>
                                     );
@@ -1342,6 +1640,122 @@ export default function TeacherDashboard({
                                         {editSlotForm.processing
                                             ? t('Saving...')
                                             : t('Save Changes')}
+                                    </Button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
+
+                {/* Reschedule Booking Modal Drawer */}
+                {reschedulingBooking && (
+                    <div className="fixed inset-0 z-50 flex animate-in items-center justify-center bg-arabic-bronze/45 p-4 backdrop-blur-sm duration-200 fade-in">
+                        <div className="flex max-h-[90vh] w-full max-w-md animate-in flex-col overflow-hidden rounded-[2rem] border-2 border-arabic-cream bg-arabic-sand shadow-2xl duration-200 zoom-in-95">
+                            <div className="flex shrink-0 items-center justify-between border-b border-arabic-cream bg-arabic-cream/60 px-6 py-4">
+                                <div>
+                                    <span className="block text-[9px] font-bold tracking-widest text-arabic-gold uppercase">
+                                        {t('Reschedule Manager')}
+                                    </span>
+                                    <h4 className="font-serif text-base font-black text-arabic-bronze">
+                                        {t('Reschedule Class')}
+                                    </h4>
+                                </div>
+                                <button
+                                    onClick={() => setReschedulingBooking(null)}
+                                    className="rounded-full p-2 text-arabic-bronze/60 transition hover:bg-arabic-cream hover:text-arabic-bronze"
+                                >
+                                    <X className="h-5 w-5" />
+                                </button>
+                            </div>
+
+                            <form
+                                onSubmit={handleRescheduleSubmit}
+                                className="flex flex-1 flex-col overflow-hidden"
+                            >
+                                <div className="flex-1 space-y-4 overflow-y-auto p-6 text-xs text-arabic-bronze">
+                                    <div>
+                                        <span className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
+                                            {t('Student')}
+                                        </span>
+                                        <span className="block text-sm font-black mt-0.5">
+                                            {reschedulingBooking.student.name}
+                                        </span>
+                                    </div>
+
+                                    <div>
+                                        <span className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
+                                            {t('Current Scheduled Time')}
+                                        </span>
+                                        <span className="block font-medium mt-0.5">
+                                            {(() => {
+                                                const date = new Date(reschedulingBooking.slot.start_time);
+                                                return date.toLocaleDateString(
+                                                    locale === 'id' ? 'id-ID' : locale === 'ar' ? 'ar-EG' : 'en-US',
+                                                    { weekday: 'short', month: 'short', day: 'numeric' }
+                                                ) + ' @ ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                            })()}
+                                        </span>
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
+                                            {t('Select New Available Time Slot')}
+                                        </label>
+                                        {availableSlotsForReschedule.length > 0 ? (
+                                            <select
+                                                value={rescheduleForm.data.slot_id}
+                                                onChange={(e) =>
+                                                    rescheduleForm.setData(
+                                                        'slot_id',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="w-full rounded-xl border border-arabic-cream bg-arabic-sand p-2.5 text-xs font-bold text-arabic-bronze shadow-sm outline-none focus:border-arabic-gold focus-visible:ring-0"
+                                            >
+                                                <option value="">
+                                                    -- {t('Select an available slot')} --
+                                                </option>
+                                                {availableSlotsForReschedule.map((slot) => {
+                                                    const slotStart = new Date(slot.start_time);
+                                                    const slotEnd = new Date(slot.end_time);
+                                                    const dur = Math.round((slotEnd.getTime() - slotStart.getTime()) / (1000 * 60));
+                                                    const formatted = slotStart.toLocaleDateString(
+                                                        locale === 'id' ? 'id-ID' : locale === 'ar' ? 'ar-EG' : 'en-US',
+                                                        { month: 'short', day: 'numeric' }
+                                                    ) + ' @ ' + slotStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ` (${dur} mins)`;
+
+                                                    return (
+                                                        <option key={slot.id} value={slot.id}>
+                                                            {formatted}
+                                                        </option>
+                                                    );
+                                                })}
+                                            </select>
+                                        ) : (
+                                            <div className="rounded-xl border border-rose-200 bg-rose-50/50 p-3 text-[11px] font-medium text-rose-700">
+                                                ⚠️ {t('You have no other available future slots. Please open a new hour slot first.')}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="flex shrink-0 justify-end gap-2 border-t border-arabic-cream bg-arabic-cream/30 px-6 py-4">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => setReschedulingBooking(null)}
+                                        className="h-9 rounded-full border-arabic-bronze/25 text-xs font-bold text-arabic-bronze hover:bg-arabic-cream"
+                                    >
+                                        {t('Cancel')}
+                                    </Button>
+                                    <Button
+                                        type="submit"
+                                        disabled={rescheduleForm.processing || !rescheduleForm.data.slot_id}
+                                        className="h-9 rounded-full bg-arabic-bronze px-6 text-xs font-bold text-arabic-sand shadow-sm hover:bg-arabic-bronze/90 disabled:opacity-50"
+                                    >
+                                        {rescheduleForm.processing
+                                            ? t('Rescheduling...')
+                                            : t('Confirm Reschedule')}
                                     </Button>
                                 </div>
                             </form>

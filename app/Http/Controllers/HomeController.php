@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Booking;
 use App\Models\Program;
 use App\Models\Slot;
 use App\Models\User;
@@ -17,6 +18,8 @@ class HomeController extends Controller
      */
     public function index(Request $request): Response
     {
+        Booking::cancelMissed();
+
         $programs = Program::where('is_hidden', false)->get();
 
         $teachers = User::where('role', 'teacher')

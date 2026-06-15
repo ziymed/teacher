@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('slots:generate-weekly')->weeklyOn(0, '00:00');
+Schedule::command('bookings:cancel-missed')->hourly();
