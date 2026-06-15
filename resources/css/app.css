@@ -192,7 +192,7 @@
     html[lang='ar'] button,
     html[lang='ar'] textarea,
     html[lang='ar'] select {
-        font-family: var(--font-sans-ar);
+        font-family: var(--font-serif-ar);
     }
 
     html[lang='ar'] .font-serif {
