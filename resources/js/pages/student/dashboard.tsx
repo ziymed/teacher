@@ -41,12 +41,21 @@ import { dashboard as studentDashboard } from '@/routes/student';
 
 interface Slot {
     id: number;
+    teacher_id: number;
     start_time: string;
     end_time: string;
     is_booked: boolean;
     teacher?: {
+        id: number;
         name: string;
         avatar?: string;
+        teacher_profile?: {
+            bio: any;
+            specializations_json?: any;
+            whatsapp_number: string;
+            zoom_link?: string;
+            google_meet_link?: string;
+        };
     };
 }
 
@@ -113,6 +122,7 @@ export default function StudentDashboard({
 
     // Booking States
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
+    const [selectedTeacherId, setSelectedTeacherId] = useState<number | null>(null);
     const [selectedSlot, setSelectedSlot] = useState<any | null>(null);
     const [selectedProgramId, setSelectedProgramId] = useState<number | null>(
         null,
@@ -182,8 +192,24 @@ export default function StudentDashboard({
         );
     };
 
+    const getTeachersForDate = (dateStr: string) => {
+        const slotsOnDate = getSlotsForDate(dateStr);
+        const teachersMap = new Map<number, any>();
+        slotsOnDate.forEach((slot) => {
+            if (slot.teacher) {
+                teachersMap.set(slot.teacher_id, slot.teacher);
+            }
+        });
+        return Array.from(teachersMap.values());
+    };
+
+    const getSlotsForDateAndTeacher = (dateStr: string, teacherId: number) => {
+        return getSlotsForDate(dateStr).filter((slot) => slot.teacher_id === teacherId);
+    };
+
     const handleSelectDate = (dateStr: string) => {
         setSelectedDate(dateStr);
+        setSelectedTeacherId(null);
         setSelectedSlot(null);
     };
 
@@ -510,70 +536,168 @@ export default function StudentDashboard({
                                         </div>
                                     </div>
 
-                                    {/* Step 2: Select Slot Time */}
+                                    {/* Step 2: Select Teacher OR Show Selected Teacher */}
                                     {selectedDate && (
-                                        <div className="animate-in space-y-2 duration-200 fade-in">
-                                            <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                {t('Select Time Slot')}
-                                            </label>
-                                            <div className="grid max-h-[140px] grid-cols-2 gap-2 overflow-y-auto pr-1">
-                                                {getSlotsForDate(
-                                                    selectedDate,
-                                                ).map((slot) => {
-                                                    const isSelected =
-                                                        selectedSlot?.id ===
-                                                        slot.id;
-                                                    const startTime = new Date(
-                                                        slot.start_time,
-                                                    );
-                                                    const endTime = new Date(
-                                                        slot.end_time,
-                                                    );
-                                                    const duration = Math.round(
-                                                        (endTime.getTime() -
-                                                            startTime.getTime()) /
-                                                            (1000 * 60),
-                                                    );
-                                                    const startStr =
-                                                        startTime.toLocaleTimeString(
-                                                            [],
-                                                            {
-                                                                hour: '2-digit',
-                                                                minute: '2-digit',
-                                                            },
-                                                        );
-                                                    const endStr =
-                                                        endTime.toLocaleTimeString(
-                                                            [],
-                                                            {
-                                                                hour: '2-digit',
-                                                                minute: '2-digit',
-                                                            },
-                                                        );
-
-                                                    return (
+                                        <div className="animate-in space-y-4 duration-200 fade-in">
+                                            {!selectedTeacherId ? (
+                                                <div className="space-y-2.5">
+                                                    <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
+                                                        {t('Select Teacher')}
+                                                    </label>
+                                                    <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
+                                                        {getTeachersForDate(selectedDate).map((teacher) => (
+                                                            <div
+                                                                key={teacher.id}
+                                                                className="flex items-center justify-between rounded-xl border border-arabic-cream bg-arabic-sand p-3 transition hover:border-arabic-gold hover:shadow-xs"
+                                                            >
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full border border-arabic-gold bg-arabic-cream shadow-xs flex items-center justify-center">
+                                                                        {teacher.avatar ? (
+                                                                            <img
+                                                                                src={teacher.avatar}
+                                                                                alt={teacher.name}
+                                                                                className="h-full w-full object-cover"
+                                                                            />
+                                                                        ) : (
+                                                                            <span className="text-xs font-black text-arabic-bronze uppercase">
+                                                                                {teacher.name.charAt(0)}
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="min-w-0">
+                                                                        <h5 className="font-serif text-[11px] font-black text-arabic-bronze leading-tight">
+                                                                            {teacher.name}
+                                                                        </h5>
+                                                                        {teacher.teacher_profile?.bio && (
+                                                                            <p className="text-[9px] font-medium text-arabic-bronze/70 line-clamp-1 mt-0.5 max-w-[180px] sm:max-w-xs">
+                                                                                {typeof teacher.teacher_profile.bio === 'object'
+                                                                                    ? getTranslation(teacher.teacher_profile.bio, locale)
+                                                                                    : teacher.teacher_profile.bio}
+                                                                            </p>
+                                                                        )}
+                                                                        {teacher.teacher_profile?.specializations_json && (
+                                                                            <div className="flex flex-wrap gap-1 mt-1">
+                                                                                {(Array.isArray(teacher.teacher_profile.specializations_json)
+                                                                                    ? teacher.teacher_profile.specializations_json
+                                                                                    : typeof teacher.teacher_profile.specializations_json === 'string'
+                                                                                      ? JSON.parse(teacher.teacher_profile.specializations_json)
+                                                                                      : []
+                                                                                ).slice(0, 2).map((spec: string, idx: number) => (
+                                                                                    <Badge
+                                                                                        key={idx}
+                                                                                        variant="outline"
+                                                                                        className="rounded-full border-arabic-cream/60 text-[8px] font-bold text-arabic-bronze/60 bg-arabic-cream/10 px-1.5 py-0"
+                                                                                    >
+                                                                                        {spec}
+                                                                                    </Badge>
+                                                                                ))}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                                <Button
+                                                                    type="button"
+                                                                    onClick={() => setSelectedTeacherId(teacher.id)}
+                                                                    className="h-6.5 rounded-full bg-arabic-bronze px-2.5 text-[9px] font-black tracking-widest uppercase text-arabic-sand shadow-sm hover:bg-arabic-bronze/90 cursor-pointer"
+                                                                >
+                                                                    {t('Select')}
+                                                                </Button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-4">
+                                                    {/* Selected Teacher Summary Banner */}
+                                                    <div className="flex items-center justify-between rounded-xl border border-arabic-gold/30 bg-arabic-gold/5 p-2.5">
+                                                        <div className="flex items-center gap-2.5">
+                                                            <div className="h-8 w-8 overflow-hidden rounded-full border border-arabic-gold bg-arabic-cream flex items-center justify-center shrink-0">
+                                                                {(() => {
+                                                                    const selectedTeacher = getTeachersForDate(selectedDate).find(
+                                                                        (t) => t.id === selectedTeacherId,
+                                                                    );
+                                                                    return selectedTeacher?.avatar ? (
+                                                                        <img
+                                                                            src={selectedTeacher.avatar}
+                                                                            alt={selectedTeacher.name}
+                                                                            className="h-full w-full object-cover"
+                                                                        />
+                                                                    ) : (
+                                                                        <span className="text-xs font-black text-arabic-bronze uppercase">
+                                                                            {selectedTeacher?.name.charAt(0)}
+                                                                        </span>
+                                                                    );
+                                                                })()}
+                                                            </div>
+                                                            <div>
+                                                                <span className="block text-[8px] font-black text-arabic-gold uppercase tracking-widest leading-none mb-0.5">
+                                                                    {t('Selected Teacher')}
+                                                                </span>
+                                                                <span className="block text-[11px] font-black text-arabic-bronze leading-none">
+                                                                    {
+                                                                        getTeachersForDate(selectedDate).find(
+                                                                            (t) => t.id === selectedTeacherId,
+                                                                        )?.name
+                                                                    }
+                                                                </span>
+                                                            </div>
+                                                        </div>
                                                         <button
-                                                            key={slot.id}
                                                             type="button"
-                                                            onClick={() =>
-                                                                handleSelectSlot(
-                                                                    slot,
-                                                                )
-                                                            }
-                                                            className={`cursor-pointer rounded-lg border p-2.5 text-center text-[11px] font-bold transition ${
-                                                                isSelected
-                                                                    ? 'border-arabic-bronze bg-arabic-bronze text-arabic-sand'
-                                                                    : 'border-arabic-cream bg-arabic-sand text-arabic-bronze hover:border-arabic-gold'
-                                                            }`}
+                                                            onClick={() => {
+                                                                setSelectedTeacherId(null);
+                                                                setSelectedSlot(null);
+                                                            }}
+                                                            className="text-[9px] font-bold text-rose-600 hover:underline cursor-pointer"
                                                         >
-                                                            {startStr} -{' '}
-                                                            {endStr} ({duration}
-                                                            m) •{' '}
-                                                            {slot.teacher?.name}
+                                                            {t('Change Teacher')}
                                                         </button>
-                                                    );
-                                                })}
-                                            </div>
+                                                    </div>
+
+                                                    {/* Step 3: Select Time Slot */}
+                                                    <div className="space-y-2 animate-in duration-200 fade-in">
+                                                        <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
+                                                            {t('Select Time Slot')}
+                                                        </label>
+                                                        <div className="grid max-h-[140px] grid-cols-2 gap-2 overflow-y-auto pr-1">
+                                                            {getSlotsForDateAndTeacher(
+                                                                selectedDate,
+                                                                selectedTeacherId,
+                                                            ).map((slot) => {
+                                                                const isSelected = selectedSlot?.id === slot.id;
+                                                                const startTime = new Date(slot.start_time);
+                                                                const endTime = new Date(slot.end_time);
+                                                                const duration = Math.round(
+                                                                    (endTime.getTime() - startTime.getTime()) / (1000 * 60)
+                                                                );
+                                                                const startStr = startTime.toLocaleTimeString([], {
+                                                                    hour: '2-digit',
+                                                                    minute: '2-digit',
+                                                                });
+                                                                const endStr = endTime.toLocaleTimeString([], {
+                                                                    hour: '2-digit',
+                                                                    minute: '2-digit',
+                                                                });
+
+                                                                return (
+                                                                    <button
+                                                                        key={slot.id}
+                                                                        type="button"
+                                                                        onClick={() => handleSelectSlot(slot)}
+                                                                        className={`cursor-pointer rounded-lg border p-2 text-center text-[10px] font-bold transition ${
+                                                                            isSelected
+                                                                                ? 'border-arabic-bronze bg-arabic-bronze text-arabic-sand'
+                                                                                : 'border-arabic-cream bg-arabic-sand text-arabic-bronze hover:border-arabic-gold'
+                                                                        }`}
+                                                                    >
+                                                                        {startStr} - {endStr} ({duration}m)
+                                                                    </button>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
 

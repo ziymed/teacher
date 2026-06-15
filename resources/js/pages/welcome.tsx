@@ -78,6 +78,7 @@ export default function Welcome({
     }, [locale, direction]);
 
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
+    const [selectedTeacherId, setSelectedTeacherId] = useState<number | null>(null);
     const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
     const [selectedProgramId, setSelectedProgramId] = useState<number | null>(
         null,
@@ -222,8 +223,25 @@ export default function Welcome({
         );
     };
 
+    const getTeachersForDate = (dateStr: string) => {
+        const slotsOnDate = getSlotsForDate(dateStr);
+        const teachersMap = new Map<number, any>();
+        slotsOnDate.forEach((slot) => {
+            if (slot.teacher) {
+                // Ensure teacher object contains its profile
+                teachersMap.set(slot.teacher_id, slot.teacher);
+            }
+        });
+        return Array.from(teachersMap.values());
+    };
+
+    const getSlotsForDateAndTeacher = (dateStr: string, teacherId: number) => {
+        return getSlotsForDate(dateStr).filter((slot) => slot.teacher_id === teacherId);
+    };
+
     const handleSelectDate = (dateStr: string) => {
         setSelectedDate(dateStr);
+        setSelectedTeacherId(null);
         setSelectedSlot(null);
     };
 
@@ -1251,202 +1269,272 @@ export default function Welcome({
                             {/* Right Side: Slots & Booking details */}
                             <div className="flex flex-col justify-between bg-arabic-cream/20 p-8 md:col-span-7">
                                 <div className="space-y-6">
-                                    <div className="space-y-2">
-                                        <span className="block text-[10px] font-bold tracking-widest text-arabic-gold uppercase">
-                                            {t('Step 2')}
-                                        </span>
-                                        <h4 className="font-serif text-lg font-black text-arabic-bronze">
-                                            {t('Choose Hour & Details') ||
-                                                'Choose Hour & Details'}
-                                        </h4>
-                                    </div>
-
                                     {selectedDate ? (
-                                        <div className="space-y-4">
-                                            <span className="block text-[11px] font-bold tracking-wider text-arabic-bronze/60 uppercase">
-                                                {t(
-                                                    'Available slots on this day',
-                                                ) || 'Available slots'}{' '}
-                                                {new Date(
-                                                    selectedDate,
-                                                ).toLocaleDateString(
-                                                    locale === 'id'
-                                                        ? 'id-ID'
-                                                        : locale === 'ar'
-                                                            ? 'ar-EG'
-                                                            : 'en-US',
-                                                    {
-                                                        month: 'long',
-                                                        day: 'numeric',
-                                                        year: 'numeric',
-                                                    },
-                                                )}
-                                            </span>
+                                        <div className="space-y-6">
+                                            {!selectedTeacherId ? (
+                                                <div className="space-y-4">
+                                                    <div className="space-y-2">
+                                                        <span className="block text-[10px] font-bold tracking-widest text-arabic-gold uppercase">
+                                                            {t('Step 2')}
+                                                        </span>
+                                                        <h4 className="font-serif text-lg font-black text-arabic-bronze">
+                                                            {t('Select Teacher')}
+                                                        </h4>
+                                                        <p className="text-xs leading-relaxed font-medium text-arabic-bronze/70">
+                                                            {t('Choose a teacher available on this day to view their open slots.')}
+                                                        </p>
+                                                    </div>
 
-                                            <div className="grid max-h-[160px] grid-cols-2 gap-3 overflow-y-auto pr-1">
-                                                {getSlotsForDate(
-                                                    selectedDate,
-                                                ).map((slot) => {
-                                                    const isSelected =
-                                                        selectedSlot?.id ===
-                                                        slot.id;
-                                                    const startStr = new Date(
-                                                        slot.start_time,
-                                                    ).toLocaleTimeString([], {
-                                                        hour: '2-digit',
-                                                        minute: '2-digit',
-                                                    });
-
-                                                    return (
+                                                    <div className="space-y-3 max-h-[350px] overflow-y-auto pr-1">
+                                                        {getTeachersForDate(selectedDate).map((teacher) => (
+                                                            <div
+                                                                key={teacher.id}
+                                                                className="flex flex-col sm:flex-row gap-4 items-center justify-between rounded-2xl border border-arabic-cream bg-arabic-sand p-4 transition duration-300 hover:border-arabic-gold hover:shadow-md"
+                                                            >
+                                                                <div className="flex flex-col sm:flex-row gap-4 items-center text-center sm:text-start">
+                                                                    <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full border-2 border-arabic-gold bg-arabic-cream shadow-sm flex items-center justify-center">
+                                                                        {teacher.avatar ? (
+                                                                            <img
+                                                                                src={teacher.avatar}
+                                                                                alt={teacher.name}
+                                                                                className="h-full w-full object-cover"
+                                                                            />
+                                                                        ) : (
+                                                                            <span className="text-base font-black text-arabic-bronze uppercase">
+                                                                                {teacher.name.charAt(0)}
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <h5 className="font-serif text-sm font-black text-arabic-bronze">
+                                                                            {teacher.name}
+                                                                        </h5>
+                                                                        <p className="text-[10px] leading-normal font-medium text-arabic-bronze/70 mt-1 max-w-xs line-clamp-2">
+                                                                            {teacher.teacher_profile?.bio &&
+                                                                                (typeof teacher.teacher_profile.bio === 'object'
+                                                                                    ? getTranslation(teacher.teacher_profile.bio, locale)
+                                                                                    : teacher.teacher_profile.bio)}
+                                                                        </p>
+                                                                        {teacher.teacher_profile?.specializations_json && (
+                                                                            <div className="flex flex-wrap gap-1 mt-2">
+                                                                                {(Array.isArray(teacher.teacher_profile.specializations_json)
+                                                                                    ? teacher.teacher_profile.specializations_json
+                                                                                    : typeof teacher.teacher_profile.specializations_json === 'string'
+                                                                                      ? JSON.parse(teacher.teacher_profile.specializations_json)
+                                                                                      : []
+                                                                                ).map((spec: string, idx: number) => (
+                                                                                    <Badge
+                                                                                        key={idx}
+                                                                                        variant="outline"
+                                                                                        className="rounded-full border-arabic-cream/60 text-[8px] font-bold text-arabic-bronze/60 bg-arabic-cream/20"
+                                                                                    >
+                                                                                        {spec}
+                                                                                    </Badge>
+                                                                                ))}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                                <Button
+                                                                    type="button"
+                                                                    onClick={() => setSelectedTeacherId(teacher.id)}
+                                                                    className="h-8 rounded-full bg-arabic-bronze px-4 text-[10px] font-black tracking-widest uppercase text-arabic-sand shadow-sm hover:bg-arabic-bronze/90 cursor-pointer w-full sm:w-auto"
+                                                                >
+                                                                    {t('Select')}
+                                                                </Button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-6">
+                                                    {/* Selected Teacher Summary Banner */}
+                                                    <div className="flex items-center justify-between rounded-2xl border border-arabic-gold/30 bg-arabic-gold/5 p-3.5">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="h-10 w-10 overflow-hidden rounded-full border border-arabic-gold bg-arabic-cream flex items-center justify-center shrink-0">
+                                                                {(() => {
+                                                                    const selectedTeacher = getTeachersForDate(selectedDate).find(
+                                                                        (t) => t.id === selectedTeacherId,
+                                                                    );
+                                                                    return selectedTeacher?.avatar ? (
+                                                                        <img
+                                                                            src={selectedTeacher.avatar}
+                                                                            alt={selectedTeacher.name}
+                                                                            className="h-full w-full object-cover"
+                                                                        />
+                                                                    ) : (
+                                                                        <span className="text-xs font-black text-arabic-bronze uppercase">
+                                                                            {selectedTeacher?.name.charAt(0)}
+                                                                        </span>
+                                                                    );
+                                                                })()}
+                                                            </div>
+                                                            <div>
+                                                                <span className="block text-[8px] font-black text-arabic-gold uppercase tracking-widest">
+                                                                    {t('Selected Teacher')}
+                                                                </span>
+                                                                <span className="block text-xs font-black text-arabic-bronze">
+                                                                    {
+                                                                        getTeachersForDate(selectedDate).find(
+                                                                            (t) => t.id === selectedTeacherId,
+                                                                        )?.name
+                                                                    }
+                                                                </span>
+                                                            </div>
+                                                        </div>
                                                         <button
-                                                            key={slot.id}
                                                             type="button"
-                                                            onClick={() =>
-                                                                handleSelectSlot(
-                                                                    slot,
-                                                                )
-                                                            }
-                                                            className={`rounded-xl border p-3.5 text-center text-xs font-black transition ${isSelected
-                                                                ? 'border-arabic-bronze bg-arabic-bronze text-arabic-sand'
-                                                                : 'border-arabic-cream bg-arabic-sand text-arabic-bronze hover:border-arabic-gold'
-                                                                }`}
+                                                            onClick={() => {
+                                                                setSelectedTeacherId(null);
+                                                                setSelectedSlot(null);
+                                                            }}
+                                                            className="text-[10px] font-bold text-rose-600 hover:underline cursor-pointer"
                                                         >
-                                                            {t(':time with :teacher', { time: startStr, teacher: slot.teacher?.name || '' })}
+                                                            {t('Change Teacher')}
                                                         </button>
-                                                    );
-                                                })}
-                                            </div>
+                                                    </div>
 
-                                            {selectedSlot && (
-                                                <div className="animate-in space-y-4 border-t border-arabic-cream pt-4 duration-200 fade-in slide-in-from-top-1">
-                                                    {/* Select Program */}
-                                                    <div className="space-y-2">
-                                                        <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                            {t(
-                                                                'Select Program',
-                                                            )}
-                                                        </label>
-                                                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                                                            {programs
-                                                                .filter((prog) => prog.type === classType || prog.type === 'both')
-                                                                .map((prog) => (
+                                                    <div className="space-y-4">
+                                                        <div className="space-y-1">
+                                                            <span className="block text-[10px] font-bold tracking-widest text-arabic-gold uppercase">
+                                                                {t('Step 3')}
+                                                            </span>
+                                                            <h4 className="font-serif text-base font-black text-arabic-bronze">
+                                                                {t('Select Time Slot')}
+                                                            </h4>
+                                                        </div>
+
+                                                        <div className="grid max-h-[160px] grid-cols-2 gap-3 overflow-y-auto pr-1">
+                                                            {getSlotsForDateAndTeacher(
+                                                                selectedDate,
+                                                                selectedTeacherId,
+                                                            ).map((slot) => {
+                                                                const isSelected = selectedSlot?.id === slot.id;
+                                                                const startStr = new Date(slot.start_time).toLocaleTimeString(
+                                                                    [],
+                                                                    {
+                                                                        hour: '2-digit',
+                                                                        minute: '2-digit',
+                                                                    },
+                                                                );
+
+                                                                return (
                                                                     <button
-                                                                        key={
-                                                                            prog.id
-                                                                        }
+                                                                        key={slot.id}
                                                                         type="button"
-                                                                        onClick={() =>
-                                                                            setSelectedProgramId(
-                                                                                prog.id,
-                                                                            )
-                                                                        }
-                                                                        className={`rounded-lg border p-2.5 text-center text-[10px] font-bold transition ${selectedProgramId ===
-                                                                            prog.id
-                                                                            ? 'border-arabic-gold bg-arabic-gold/10 font-black text-arabic-bronze'
-                                                                            : 'border-arabic-cream bg-arabic-sand text-arabic-bronze hover:bg-arabic-cream'
-                                                                            }`}
+                                                                        onClick={() => handleSelectSlot(slot)}
+                                                                        className={`rounded-xl border p-3.5 text-center text-xs font-black transition ${
+                                                                            isSelected
+                                                                                ? 'border-arabic-bronze bg-arabic-bronze text-arabic-sand'
+                                                                                : 'border-arabic-cream bg-arabic-sand text-arabic-bronze hover:border-arabic-gold'
+                                                                        }`}
                                                                     >
-                                                                        {getProgramTitle(getProgramKey(getTranslation(prog.name, 'en')), classType)
-                                                                            .replace(' Privat', '')
-                                                                            .replace(' Private', '')
-                                                                            .replace(' Program', '')
-                                                                            .replace('Program ', '')}
+                                                                        {startStr}
                                                                     </button>
-                                                                ),
-                                                                )}
+                                                                );
+                                                            })}
                                                         </div>
                                                     </div>
 
-                                                    {/* Select Meeting Platform */}
-                                                    <div className="animate-in space-y-2 duration-200 fade-in">
-                                                        <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                            {t(
-                                                                'Choose Platform',
-                                                            )}
-                                                        </label>
-                                                        <div className="flex gap-3">
-                                                            {(!selectedSlot
-                                                                .teacher
-                                                                ?.teacher_profile
-                                                                ?.zoom_link ||
-                                                                selectedSlot
-                                                                    .teacher
-                                                                    ?.teacher_profile
-                                                                    ?.google_meet_link) && (
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() =>
-                                                                            setSelectedPlatform(
-                                                                                'google_meet',
-                                                                            )
-                                                                        }
-                                                                        className={`flex-1 cursor-pointer rounded-xl border p-2.5 text-center text-xs font-bold transition ${selectedPlatform ===
-                                                                            'google_meet'
-                                                                            ? 'border-arabic-gold bg-arabic-gold/10 font-black text-arabic-bronze shadow-sm'
-                                                                            : 'border-arabic-cream bg-arabic-sand text-arabic-bronze hover:bg-arabic-cream'
-                                                                            }`}
-                                                                    >
-                                                                        {t('Google Meet')}
-                                                                    </button>
-                                                                )}
-                                                            {(!selectedSlot
-                                                                .teacher
-                                                                ?.teacher_profile
-                                                                ?.google_meet_link ||
-                                                                selectedSlot
-                                                                    .teacher
-                                                                    ?.teacher_profile
-                                                                    ?.zoom_link) && (
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() =>
-                                                                            setSelectedPlatform(
-                                                                                'zoom',
-                                                                            )
-                                                                        }
-                                                                        className={`flex-1 cursor-pointer rounded-xl border p-2.5 text-center text-xs font-bold transition ${selectedPlatform ===
-                                                                            'zoom'
-                                                                            ? 'border-arabic-gold bg-arabic-gold/10 font-black text-arabic-bronze shadow-sm'
-                                                                            : 'border-arabic-cream bg-arabic-sand text-arabic-bronze hover:bg-arabic-cream'
-                                                                            }`}
-                                                                    >
-                                                                        {t('Zoom')}
-                                                                    </button>
-                                                                )}
-                                                        </div>
-                                                    </div>
+                                                    {selectedSlot && (
+                                                        <div className="animate-in space-y-4 border-t border-arabic-cream pt-4 duration-200 fade-in slide-in-from-top-1">
+                                                            {/* Select Program */}
+                                                            <div className="space-y-2">
+                                                                <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
+                                                                    {t('Select Program')}
+                                                                </label>
+                                                                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                                                                    {programs
+                                                                        .filter(
+                                                                            (prog) =>
+                                                                                prog.type === classType ||
+                                                                                prog.type === 'both',
+                                                                        )
+                                                                        .map((prog) => (
+                                                                            <button
+                                                                                key={prog.id}
+                                                                                type="button"
+                                                                                onClick={() => setSelectedProgramId(prog.id)}
+                                                                                className={`rounded-lg border p-2.5 text-center text-[10px] font-bold transition ${
+                                                                                    selectedProgramId === prog.id
+                                                                                        ? 'border-arabic-gold bg-arabic-gold/10 font-black text-arabic-bronze'
+                                                                                        : 'border-arabic-cream bg-arabic-sand text-arabic-bronze hover:bg-arabic-cream'
+                                                                                }`}
+                                                                            >
+                                                                                {getProgramTitle(
+                                                                                    getProgramKey(getTranslation(prog.name, 'en')),
+                                                                                    classType,
+                                                                                )
+                                                                                    .replace(' Privat', '')
+                                                                                    .replace(' Private', '')
+                                                                                    .replace(' Program', '')
+                                                                                    .replace('Program ', '')}
+                                                                            </button>
+                                                                        ))}
+                                                                </div>
+                                                            </div>
 
-                                                    {/* Student Notes */}
-                                                    <div className="space-y-2">
-                                                        <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
-                                                            {t(
-                                                                'Additional Notes (Optional)',
-                                                            )}
-                                                        </label>
-                                                        <Textarea
-                                                            placeholder={t(
-                                                                'Share topics, questions, or specific surahs you want to focus on...',
-                                                            )}
-                                                            value={notes}
-                                                            onChange={(e) =>
-                                                                setNotes(
-                                                                    e.target
-                                                                        .value,
-                                                                )
-                                                            }
-                                                            className="min-h-[70px] rounded-xl border-arabic-cream bg-arabic-sand text-xs placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
-                                                        />
-                                                    </div>
+                                                            {/* Select Meeting Platform */}
+                                                            <div className="animate-in space-y-2 duration-200 fade-in">
+                                                                <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
+                                                                    {t('Choose Platform')}
+                                                                </label>
+                                                                <div className="flex gap-3">
+                                                                    {(!selectedSlot.teacher?.teacher_profile?.zoom_link ||
+                                                                        selectedSlot.teacher?.teacher_profile?.google_meet_link) && (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => setSelectedPlatform('google_meet')}
+                                                                            className={`flex-1 cursor-pointer rounded-xl border p-2.5 text-center text-xs font-bold transition ${
+                                                                                selectedPlatform === 'google_meet'
+                                                                                    ? 'border-arabic-gold bg-arabic-gold/10 font-black text-arabic-bronze shadow-xs'
+                                                                                    : 'border-arabic-cream bg-arabic-sand text-arabic-bronze hover:bg-arabic-cream'
+                                                                            }`}
+                                                                        >
+                                                                            {t('Google Meet')}
+                                                                        </button>
+                                                                    )}
+                                                                    {(!selectedSlot.teacher?.teacher_profile?.google_meet_link ||
+                                                                        selectedSlot.teacher?.teacher_profile?.zoom_link) && (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => setSelectedPlatform('zoom')}
+                                                                            className={`flex-1 cursor-pointer rounded-xl border p-2.5 text-center text-xs font-bold transition ${
+                                                                                selectedPlatform === 'zoom'
+                                                                                    ? 'border-arabic-gold bg-arabic-gold/10 font-black text-arabic-bronze shadow-xs'
+                                                                                    : 'border-arabic-cream bg-arabic-sand text-arabic-bronze hover:bg-arabic-cream'
+                                                                            }`}
+                                                                        >
+                                                                            {t('Zoom')}
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Student Notes */}
+                                                            <div className="space-y-2">
+                                                                <label className="block text-[10px] font-black text-arabic-bronze/60 uppercase">
+                                                                    {t('Additional Notes (Optional)')}
+                                                                </label>
+                                                                <Textarea
+                                                                    placeholder={t(
+                                                                        'Share topics, questions, or specific surahs you want to focus on...',
+                                                                    )}
+                                                                    value={notes}
+                                                                    onChange={(e) => setNotes(e.target.value)}
+                                                                    className="min-h-[70px] rounded-xl border-arabic-cream bg-arabic-sand text-xs placeholder:text-arabic-bronze/40 focus:border-arabic-gold"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>
                                     ) : (
-                                        <div className="space-y-3 rounded-2xl border-2 border-dashed border-arabic-cream p-8 text-center">
+                                        <div className="space-y-3 rounded-2xl border-2 border-dashed border-arabic-cream p-8 text-center my-auto">
                                             <Clock className="mx-auto h-8 w-8 animate-pulse text-arabic-bronze/30" />
                                             <p className="text-xs font-bold text-arabic-bronze/60">
-                                                {t(
-                                                    'Choose one of the highlighted dates from the list to view open hour slots.',
-                                                )}
+                                                {t('Choose one of the highlighted dates from the list to view open hour slots.')}
                                             </p>
                                         </div>
                                     )}
