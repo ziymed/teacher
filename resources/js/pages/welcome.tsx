@@ -173,6 +173,25 @@ export default function Welcome({
         toast.success(t('Copied to clipboard!'));
     };
 
+    const getWhatsappUrl = () => {
+        const selectedProg = programs.find((p) => p.id === selectedProgramId);
+        if (selectedProg) {
+            const progKey = getProgramKey(getTranslation(selectedProg.name, 'en'));
+            const title = getProgramTitle(progKey, classType);
+            const price = getProgramPrice(selectedProg, classType, country, billingCycle);
+            const cycleText = billingCycle === 'monthly' ? t('Bulanan') : t('Paket Program');
+            const typeText = classType === 'private' ? t('Private') : t('Group');
+            
+            const text = encodeURIComponent(
+                `Assalamualaikum Admin, saya ingin membeli ${title} (${typeText} - ${cycleText}) seharga ${price} di tahseen.live. Mohon info cara pembayarannya.`
+            );
+            return `https://wa.me/6282251985570?text=${text}`;
+        }
+        return `https://wa.me/6282251985570?text=${encodeURIComponent(
+            'Assalamualaikum Admin, saya ingin bertanya tentang program belajar Al-Quran di tahseen.live'
+        )}`;
+    };
+
     const bookingForm = useForm({
         slot_id: '',
         program_id: '',
@@ -839,6 +858,25 @@ export default function Welcome({
                                                     </li>
                                                 ))}
                                             </ul>
+
+                                            {/* Select/Buy Program Button */}
+                                            <div className="mt-auto pt-4 w-full">
+                                                <Button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setSelectedProgramId(program.id);
+                                                        document.getElementById('booking-calendar')?.scrollIntoView({ behavior: 'smooth' });
+                                                        toast.success(t('Program selected! Please choose a learning date and time slot below to complete your booking.'));
+                                                    }}
+                                                    className={`w-full rounded-full py-4 text-[10px] font-black tracking-widest uppercase transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md ${
+                                                        selectedProgramId === program.id
+                                                            ? 'bg-arabic-gold text-arabic-sand border border-arabic-gold hover:bg-arabic-gold/90'
+                                                            : 'bg-transparent text-arabic-bronze border border-arabic-bronze/35 hover:bg-arabic-cream/45 hover:border-arabic-bronze'
+                                                    }`}
+                                                >
+                                                    {selectedProgramId === program.id ? t('Selected') : t('Buy / Book Program')}
+                                                </Button>
+                                            </div>
                                         </div>
 
                                         {/* Flyer-style brown details card footer */}
@@ -888,6 +926,23 @@ export default function Welcome({
                                 <span className="text-[9px] font-black text-arabic-bronze/85 uppercase tracking-wider">{t('Aman & Terverifikasi')}</span>
                             </div>
                         </div>
+
+                        {selectedProgramId && (
+                            <div className="mt-6 p-5 rounded-2xl bg-arabic-sand border border-arabic-gold/30 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-300 shadow-sm">
+                                <div className="text-center sm:text-start">
+                                    <span className="block text-[9px] font-black text-arabic-gold uppercase tracking-[0.15em]">{t('Selected Program')}</span>
+                                    <span className="block text-base font-black text-arabic-bronze mt-1">
+                                        {programs.find(p => p.id === selectedProgramId) && getProgramTitle(getProgramKey(getTranslation(programs.find(p => p.id === selectedProgramId)!.name, 'en')), classType)}
+                                    </span>
+                                </div>
+                                <div className="text-center sm:text-end bg-arabic-cream/35 px-4 py-2 rounded-xl border border-arabic-cream/80">
+                                    <span className="block text-[9px] font-bold text-arabic-gold uppercase tracking-wider">{t('Investasi')}</span>
+                                    <span className="block text-base font-black text-arabic-bronze mt-0.5">
+                                        {programs.find(p => p.id === selectedProgramId) && getProgramPrice(programs.find(p => p.id === selectedProgramId)!, classType, country, billingCycle)}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
 
                         <div className="grid gap-6 md:grid-cols-2 pt-6">
                             {country === 'id' && (
@@ -1039,7 +1094,7 @@ export default function Welcome({
                                 </span>
                             </div>
                             <a
-                                href="https://wa.me/6282251985570?text=Assalamualaikum%20Admin,%20saya%20ingin%20konfirmasi%20pembayaran%20program%20tahseen.live"
+                                href={getWhatsappUrl()}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5.5 py-2.5 text-xs font-black text-white shadow-md hover:bg-emerald-700 hover:shadow-lg transition-all duration-300 flex-shrink-0 cursor-pointer"

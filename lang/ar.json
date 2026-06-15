@@ -534,5 +534,9 @@
     "Click to copy UEN number": "اضغط لنسخ رقم UEN",
     "Tahseen Live": "تحسين لايف",
     "Transfer directly to our DBS bank account:": "حول مباشرة إلى حساب بنك DBS الخاص بنا:",
-    "Click to copy account number": "اضغط لنسخ رقم الحساب"
+    "Click to copy account number": "اضغط لنسخ رقم الحساب",
+    "Program selected! Please choose a learning date and time slot below to complete your booking.": "تم اختيار البرنامج! يرجى اختيار تاريخ ووقت الحصة أدناه لإكمال الحجز.",
+    "Selected": "محدد",
+    "Buy / Book Program": "شراء / حجز البرنامج",
+    "Selected Program": "البرنامج المختار"
 }
